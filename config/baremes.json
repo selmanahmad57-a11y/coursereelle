@@ -1,0 +1,36 @@
+{
+  "version_schema": 1,
+  "regles_annoncees": [],
+  "parametres_systeme": [
+    {
+      "cle": "seuil_outliers_ecarts_types",
+      "libelle": "Écart à la moyenne au-delà duquel une valeur est classée hors distribution",
+      "valeur": 3,
+      "unite": "ECARTS_TYPES",
+      "usage": "statistique",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Dossier fondateur, section 5, filtre 4 : méthode standard, publiée intégralement sur la page Méthode. Exclut des statistiques publiques sans jamais rejeter la course elle-même."
+    },
+    {
+      "cle": "seuil_publication_statistiques",
+      "libelle": "Nombre de courses validées requis avant publication des statistiques publiques",
+      "valeur": 100,
+      "unite": "COURSES",
+      "usage": "affichage",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Dossier fondateur, section 9, semaine 7 : sous ce seuil, seul le compteur est affiché — un site vide décrédibilise."
+    },
+    {
+      "cle": "effectif_minimal_fiabilite_temps_reel",
+      "libelle": "Nombre de courses à partir duquel la moyenne du temps réel est considérée robuste",
+      "valeur": 500,
+      "unite": "COURSES",
+      "usage": "statistique",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Dossier fondateur, section 5, filtre 5 : le temps réel est la seule donnée invérifiable par OCR, elle est fiabilisée par la masse."
+    }
+  ]
+}

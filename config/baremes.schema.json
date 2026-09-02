@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://coursereelle.fr/schemas/baremes.schema.json",
+  "title": "Barèmes datés — Course Réelle",
+  "description": "Source unique de vérité des valeurs du projet. Deux familles strictement séparées : les règles ANNONCÉES par les plateformes (références de comparaison, jamais critères de rejet) et les PARAMÈTRES du système (critères techniques ajustables). Toute valeur est datée : une course est toujours jugée selon les règles en vigueur à sa date. Convention de période : valable_du et valable_au sont INCLUSIFS ; valable_au = null signifie « toujours en vigueur ».",
+  "type": "object",
+  "required": ["version_schema", "regles_annoncees", "parametres_systeme"],
+  "additionalProperties": false,
+  "properties": {
+    "version_schema": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Incrémenté à chaque changement incompatible de la structure."
+    },
+    "regles_annoncees": {
+      "type": "array",
+      "description": "Ce que les plateformes annoncent publiquement. Sert UNIQUEMENT de référence de comparaison et de classification. Aucune de ces valeurs ne peut provoquer le rejet d'une course : une course payée sous le minimum annoncé est une preuve à publier, pas une erreur à filtrer.",
+      "items": { "$ref": "#/$defs/regle_annoncee" }
+    },
+    "parametres_systeme": {
+      "type": "array",
+      "description": "Les réglages du système, décidés par le projet et publiés sur la page Méthode.",
+      "items": { "$ref": "#/$defs/parametre_systeme" }
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Date au format AAAA-MM-JJ."
+    },
+    "cle": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$",
+      "description": "Identifiant stable, utilisé par le code. Ne change jamais, même quand la valeur change."
+    },
+    "unite": {
+      "type": "string",
+      "enum": [
+        "EUR_PAR_HEURE",
+        "EUR_PAR_COURSE",
+        "EUR_PAR_KM",
+        "POURCENT",
+        "ECARTS_TYPES",
+        "COURSES",
+        "KM",
+        "KM_PAR_HEURE",
+        "MINUTES",
+        "SECONDES",
+        "SOUMISSIONS",
+        "OCTETS"
+      ],
+      "description": "Liste fermée : ajouter une unité est une modification délibérée du schéma, pas un effet de bord."
+    },
+    "plateforme": {
+      "type": "string",
+      "enum": ["uber_eats", "deliveroo", "stuart"],
+      "description": "Liste fermée : ajouter une plateforme est une décision explicite."
+    },
+    "source": {
+      "type": "object",
+      "description": "D'où vient la valeur. C'est ce champ qui rend la page Méthode inattaquable.",
+      "required": ["libelle", "url", "consultee_le"],
+      "additionalProperties": false,
+      "properties": {
+        "libelle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Désignation lisible de la source (accord, communication officielle, page d'aide…)."
+        },
+        "url": {
+          "type": ["string", "null"],
+          "description": "Lien public vers l'annonce ou l'accord. null tant qu'il n'est pas renseigné — une règle sans URL ne doit pas être présentée comme sourcée."
+        },
+        "consultee_le": {
+          "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }],
+          "description": "Date de consultation de la source. null tant que l'URL est absente."
+        }
+      }
+    },
+    "regle_annoncee": {
+      "type": "object",
+      "required": [
+        "cle",
+        "libelle",
+        "plateformes",
+        "valeur",
+        "unite",
+        "usage",
+        "valable_du",
+        "valable_au",
+        "source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cle": { "$ref": "#/$defs/cle" },
+        "libelle": { "type": "string", "minLength": 1 },
+        "plateformes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/plateforme" }
+        },
+        "valeur": { "type": "number" },
+        "unite": { "$ref": "#/$defs/unite" },
+        "usage": {
+          "const": "comparaison",
+          "description": "Valeur constante, volontairement non modifiable : une règle annoncée ne sert QU'À comparer. Le schéma interdit structurellement d'en faire un critère de rejet."
+        },
+        "valable_du": { "$ref": "#/$defs/date" },
+        "valable_au": {
+          "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }]
+        },
+        "source": { "$ref": "#/$defs/source" },
+        "note": { "type": "string" }
+      }
+    },
+    "parametre_systeme": {
+      "type": "object",
+      "required": [
+        "cle",
+        "libelle",
+        "valeur",
+        "unite",
+        "usage",
+        "valable_du",
+        "valable_au",
+        "justification"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cle": { "$ref": "#/$defs/cle" },
+        "libelle": { "type": "string", "minLength": 1 },
+        "valeur": { "type": "number" },
+        "unite": { "$ref": "#/$defs/unite" },
+        "usage": {
+          "type": "string",
+          "enum": ["rejet", "statistique", "affichage", "anti_fraude"],
+          "description": "Seuls les paramètres système peuvent avoir l'usage « rejet »."
+        },
+        "valable_du": { "$ref": "#/$defs/date" },
+        "valable_au": {
+          "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }]
+        },
+        "justification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pourquoi cette valeur. Repris tel quel sur la page Méthode."
+        },
+        "vehicule": {
+          "type": "string",
+          "description": "Présent uniquement pour les paramètres qui dépendent du véhicule déclaré."
+        },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}
