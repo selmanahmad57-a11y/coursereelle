@@ -62,12 +62,18 @@ test("une valeur au milieu d'une ligne partagee garde SA confiance", () => {
   assert.ok(lecture.confiance >= 90, `confiance obtenue : ${lecture.confiance}`);
 });
 
-test("une duree dont le marqueur de secondes est flou reste hesitante", () => {
-  /* Le « s » a 64 : sans lui, la valeur vaudrait 16 et non 16,57. On ne tranche pas. */
+test("une duree dont seul le marqueur de secondes est flou est bien lue", () => {
+  /*
+   * Le « s » est a 64, mais « 16 » et « 34 » sont a 95 et 93. Le marqueur a
+   * rempli son role — le motif a reconnu la forme — et il ne fausse aucune
+   * valeur. Ce test decrivait l'inverse avant que la confiance ne porte sur les
+   * seuls mots porteurs de chiffres.
+   */
   const lecture = lireChamp("dureeEstimeeMinutes", RECAPITULATIF, REGLES);
 
-  assert.equal(lecture.issue, "peu_sure");
-  assert.equal(lecture.valeur, null, "une lecture hesitante ne livre aucune valeur");
+  assert.equal(lecture.issue, "lue");
+  assert.equal(lecture.confiance, 93, "la moins sure des deux paires de chiffres");
+  assert.ok(Math.abs(lecture.valeur - (16 + 34 / 60)) < 0.001);
 });
 
 test("deux valeurs differentes de meme forme rendent la lecture ambigue", () => {
@@ -119,7 +125,18 @@ test("aucune chaine lue ne subsiste dans ce qui est renvoye", () => {
 });
 
 test("une lecture hesitante sur un champ attendu interdit tout verdict", () => {
-  const lecture = lireCapture(CHAMPS_VERIFIES, RECAPITULATIF, REGLES);
+  /* Cette fois le chiffre des secondes lui-meme est incertain, a 64. */
+  const secondesDouteuses = [
+    zone("6,34€", 91),
+    zone("16 min 34 s", 64, [
+      { debut: 0, fin: 2, confiance: 97 },
+      { debut: 3, fin: 6, confiance: 95 },
+      { debut: 7, fin: 9, confiance: 64 },
+      { debut: 10, fin: 11, confiance: 64 },
+    ]),
+  ];
+
+  const lecture = lireCapture(CHAMPS_VERIFIES, secondesDouteuses, REGLES);
 
   assert.deepEqual(lectureConcluante(lecture, ["prixEuros"]), {
     concluante: true,
@@ -181,9 +198,11 @@ test("une forme tronquee par un chiffre voisin ne conclut rien", () => {
    * « 116 min » reconnu comme « 16 min » donnerait une valeur fausse avec une
    * confiance excellente : c'est le garde-fou de structure.
    */
-  const tronquee = zone("116 min", 95, [
-    { debut: 0, fin: 3, confiance: 95 },
-    { debut: 4, fin: 7, confiance: 95 },
+  /* Le motif accepte au plus trois chiffres : sur « 1234 min » il ne peut lire
+     que « 234 min », et le « 1 » colle a gauche revele la troncature. */
+  const tronquee = zone("1234 min", 95, [
+    { debut: 0, fin: 4, confiance: 95 },
+    { debut: 5, fin: 8, confiance: 95 },
   ]);
 
   assert.equal(lireChamp("dureeEstimeeMinutes", [tronquee], REGLES).issue, "ambigue");
