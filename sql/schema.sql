@@ -191,6 +191,12 @@ create index if not exists sessions_ville_idx on sessions (ville_slug);
 --          empreinte = SHA-256(sel_du_jour || adresse)
 --      et n'écrit que cette empreinte. L'adresse n'est jamais écrite nulle part,
 --      ni en clair ni chiffrée.
+--   2 bis. CONSÉQUENCE À NE PAS MANQUER : l'empreinte d'un même appareil change
+--      à minuit. Toute VÉRIFICATION doit donc chercher sous l'empreinte calculée
+--      avec CHAQUE sel encore retenu, jamais sous le seul sel du jour — sans
+--      quoi une pause posée à 23 h 50 serait levée à 00 h 01, silencieusement.
+--      Seule l'ÉCRITURE se fait sous le sel du jour. Voir
+--      lib/validation/anti-fraude.ts et le test « une pause declenchee a 23 h 50 ».
 --   3. Passée la fenêtre, le sel du jour est SUPPRIMÉ. Les empreintes calculées
 --      avec lui deviennent alors irréversibles : plus personne, nous compris, ne
 --      peut relier une empreinte ancienne à une adresse, même en connaissant
@@ -206,7 +212,10 @@ create table if not exists sels_journaliers (
   cree_le   timestamptz not null default now()
 );
 
--- Compteur de la limite horaire. « heure » est un horodatage tronqué à l'heure.
+-- Seaux de comptage, une ligne par empreinte et par heure. Les limites horaire
+-- et journalière se calculent en sommant les seaux qui recouvrent la fenêtre,
+-- ce qui traverse minuit sans rupture dès lors que la recherche porte sur toutes
+-- les empreintes candidates.
 create table if not exists soumissions_horaires (
   empreinte  text not null,
   heure      timestamptz not null,
@@ -215,11 +224,14 @@ create table if not exists soumissions_horaires (
   primary key (empreinte, heure)
 );
 
--- Compteur de la limite journalière, et suivi des échecs OCR consécutifs.
+-- Suivi des échecs OCR consécutifs et de la pause qui en découle.
+-- Les deux limites, horaire et journalière, se comptent en sommant les seaux
+-- ci-dessus sur une fenêtre glissante : il n'y a donc pas de compteur journalier
+-- séparé, qui se réinitialiserait à minuit et rouvrirait la faille décrite
+-- plus haut.
 create table if not exists activite_appareil (
   empreinte              text not null,
   jour                   date not null,
-  soumissions            integer not null default 0,
   echecs_ocr_consecutifs integer not null default 0,
   pause_jusqu_a          timestamptz,
 

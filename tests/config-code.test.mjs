@@ -24,6 +24,8 @@ import {
   controlerCoherencePhysique,
 } from "../lib/validation/regles-physiques.ts";
 import { calculer } from "../lib/calculs.ts";
+import { MOTIFS_REFUS } from "../lib/validation/anti-fraude.ts";
+import { CHAMPS_VERIFIES, MOTIFS_OCR } from "../lib/validation/ocr.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
 const chemin = (nom) => process.env[nom.env] ?? new URL(nom.defaut, import.meta.url);
@@ -321,4 +323,34 @@ test("la duree de retention des empreintes est un bareme, pas une valeur du SQL"
     retention.valeur * 24 >= pause.valeur,
     "la retention doit couvrir au moins la plus longue pause anti-fraude"
   );
+});
+
+/* ------------------------------------------------------------------ */
+/* Motifs normalises des filtres                                        */
+/* ------------------------------------------------------------------ */
+
+test("chaque motif de refus anti-fraude a un libelle", () => {
+  assert.deepEqual(
+    [...MOTIFS_REFUS].sort(),
+    Object.keys(libelles.motifs_anti_fraude).sort(),
+    "un motif sans libelle s'afficherait sous son code dans le tableau de surveillance"
+  );
+});
+
+test("chaque motif de rejet OCR a un libelle", () => {
+  assert.deepEqual([...MOTIFS_OCR].sort(), Object.keys(libelles.motifs_ocr).sort());
+});
+
+test("les champs verifies par l'OCR sont ceux qui figurent sur un recapitulatif", () => {
+  /* Le temps reel n'y est pas, et ne doit jamais y entrer : c'est precisement ce
+     que la plateforme ne montre pas, donc rien ne permet de le verifier. */
+  assert.ok(
+    !CHAMPS_VERIFIES.includes("dureeReelleMinutes"),
+    "le temps reel n'est pas verifiable par OCR, il est fiabilise par la masse"
+  );
+  assert.deepEqual([...CHAMPS_VERIFIES].sort(), [
+    "distanceKm",
+    "dureeEstimeeMinutes",
+    "prixEuros",
+  ]);
 });

@@ -212,6 +212,9 @@ export default function PageMethode() {
             <p className="mt-2 text-sm text-neutral-700">
               {libelles.methode.anti_fraude.consequence}
             </p>
+            <p className="mt-2 border-l-2 border-neutral-300 pl-3 text-sm text-neutral-600">
+              {libelles.methode.anti_fraude.limite}
+            </p>
           </div>
 
           <div className="rounded-lg border border-neutral-200 bg-white p-4">

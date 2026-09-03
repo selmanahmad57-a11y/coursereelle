@@ -195,7 +195,8 @@
     "anti_fraude": {
       "titre": "Comment nous limitons les abus sans savoir qui vous êtes",
       "texte": "Le filtre anti-fraude doit compter les soumissions par appareil. Le faire en conservant les adresses IP créerait exactement le risque que ce site promet d'écarter : une adresse, croisée avec une date, une heure et une ville, peut réidentifier un livreur. Aucune adresse n'est donc jamais écrite, ni en clair ni chiffrée. Un sel aléatoire est tiré chaque jour ; à chaque envoi, le serveur calcule une empreinte à partir de ce sel et de l'adresse, et n'enregistre que l'empreinte.",
-      "consequence": "Passée la fenêtre de conservation, le sel du jour est supprimé, et les empreintes calculées avec lui deviennent définitivement irréversibles — y compris pour nous, y compris en connaissant l'adresse recherchée. Le sel changeant chaque jour, une même adresse produit de toute façon une empreinte différente le lendemain : aucun suivi dans la durée n'est possible."
+      "consequence": "Passée la fenêtre de conservation, le sel du jour est supprimé, et les empreintes calculées avec lui deviennent définitivement irréversibles — y compris pour nous, y compris en connaissant l'adresse recherchée. Le sel changeant chaque jour, une même adresse produit de toute façon une empreinte différente le lendemain : aucun suivi dans la durée n'est possible.",
+      "limite": "Cette même fenêtre énonce deux choses à la fois, et les deux sont vraies : le suivi d'un appareil ne peut jamais excéder la durée de conservation des sels. C'est la garantie d'anonymat, et c'est aussi la limite assumée du filtre — passé ce délai, un appareil redevient inconnu de nous, y compris s'il avait été mis en pause."
     }
   },
   "statuts": {
@@ -208,5 +209,16 @@
     "sous_minimum_annonce": "Sous le minimum annoncé",
     "sous_grille_kilometrique": "Sous la grille kilométrique",
     "temps_estime_incoherent": "Temps estimé incohérent"
+  },
+  "motifs_anti_fraude": {
+    "pause_apres_echecs_ocr": "Appareil en pause après plusieurs échecs de lecture",
+    "limite_horaire": "Trop d'envois dans l'heure écoulée",
+    "limite_journaliere": "Trop d'envois dans les vingt-quatre heures écoulées"
+  },
+  "motifs_ocr": {
+    "capture_illisible": "Capture illisible par le lecteur automatique",
+    "valeur_absente_de_la_capture": "Valeur introuvable sur la capture",
+    "valeur_non_saisie": "Valeur lue sur la capture mais absente du formulaire",
+    "valeur_divergente": "Valeur saisie différente de celle lue sur la capture"
   }
 }
