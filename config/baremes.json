@@ -4,21 +4,142 @@
     {
       "cle": "garantie_horaire_brute",
       "libelle": "Revenu minimal garanti par heure d'activité, hors pourboires",
-      "plateformes": [
-        "uber_eats",
-        "deliveroo"
-      ],
+      "plateformes": ["uber_eats", "deliveroo"],
       "valeur": 19,
       "unite": "EUR_PAR_HEURE",
       "usage": "comparaison",
       "valable_du": "2026-09-01",
       "valable_au": null,
       "source": {
-        "libelle": "Avenant à l'accord ARPE signé par les plateformes (Uber Eats, Deliveroo) et les syndicats Union-Indépendants et FNAE",
+        "libelle": "Communiqué ARPE du 10 juillet 2026 sur l'avenant à l'accord du 20 avril 2023, signé par les plateformes (Uber Eats, Deliveroo) et les syndicats Union-Indépendants et FNAE",
         "url": null,
         "consultee_le": null
       },
-      "note": "Calculée par semaine, sur le seul temps « en course » estimé par la plateforme — ni sur le temps connecté, ni sur le temps vécu. C'est exactement l'écart que le site mesure. Montant brut : cotisations et frais de véhicule restent à la charge du livreur."
+      "note": "Calculée par semaine, sur le seul temps « en course » estimé par la plateforme — ni sur le temps connecté, ni sur le temps vécu. C'est exactement l'écart que le site mesure. Montant brut : cotisations et frais de véhicule restent à la charge du livreur. Remplace une garantie antérieure de 11,75 €/h, non modélisée ici : le site n'accepte pas de courses assez anciennes pour en dépendre."
+    },
+    {
+      "cle": "minimum_par_course",
+      "libelle": "Montant minimal annoncé par course",
+      "plateformes": ["uber_eats"],
+      "valeur": 3,
+      "unite": "EUR_PAR_COURSE",
+      "usage": "comparaison",
+      "valable_du": "2025-05-01",
+      "valable_au": null,
+      "precision_date": "Mois confirmé, jour incertain : une source secondaire situe l'entrée en vigueur en juin 2025.",
+      "source": {
+        "libelle": "Annonce Uber : une enveloppe de 2 millions d'euros pour renforcer les conditions d'activité des livreurs",
+        "url": "https://uber.com/fr/newsroom/une-enveloppe-de-2-millions-deuros-pour-renforcer-les-conditions-dactivite-des-livreurs",
+        "consultee_le": null
+      },
+      "note": "Remplace un minimum antérieur de 2,85 € dont la période n'est pas documentée ici. Ce seuil ne rejette RIEN : une course payée en dessous est une preuve à publier, et le nombre de ces courses est une statistique du site."
+    },
+    {
+      "cle": "remuneration_retrait_fixe",
+      "libelle": "Montant fixe à la récupération de la commande",
+      "plateformes": ["uber_eats"],
+      "groupe": "grille_kilometrique",
+      "valeur": 2,
+      "unite": "EUR_PAR_COURSE",
+      "usage": "comparaison",
+      "valable_du": null,
+      "valable_au": null,
+      "precision_date": "Date d'entrée en vigueur inconnue : valeur constatée sur la page officielle Uber et rapportée le 2026-09-03.",
+      "source": {
+        "libelle": "Page officielle Uber Eats sur la rémunération des livreurs",
+        "url": null,
+        "consultee_le": null
+      }
+    },
+    {
+      "cle": "remuneration_par_km",
+      "libelle": "Montant variable au kilomètre pendant la course",
+      "plateformes": ["uber_eats"],
+      "zone": "hors_paris",
+      "groupe": "grille_kilometrique",
+      "valeur": 0.85,
+      "unite": "EUR_PAR_KM",
+      "usage": "comparaison",
+      "valable_du": null,
+      "valable_au": null,
+      "precision_date": "Date d'entrée en vigueur inconnue : valeur constatée sur la page officielle Uber et rapportée le 2026-09-03.",
+      "source": {
+        "libelle": "Page officielle Uber Eats sur la rémunération des livreurs",
+        "url": null,
+        "consultee_le": null
+      },
+      "note": "Une source secondaire (Legalstart) indique 0,76 €/km hors Paris. La page Uber fait foi comme source annoncée, mais ce désaccord entre sources est lui-même une information : la grille réellement appliquée sera confrontée aux récapitulatifs réels en semaine 5, et l'écart constaté deviendra une statistique du site."
+    },
+    {
+      "cle": "remuneration_par_km",
+      "libelle": "Montant variable au kilomètre pendant la course",
+      "plateformes": ["uber_eats"],
+      "zone": "paris",
+      "groupe": "grille_kilometrique",
+      "valeur": 0.8,
+      "unite": "EUR_PAR_KM",
+      "usage": "comparaison",
+      "valable_du": null,
+      "valable_au": null,
+      "precision_date": "Date d'entrée en vigueur inconnue : valeur constatée sur la page officielle Uber et rapportée le 2026-09-03.",
+      "source": {
+        "libelle": "Page officielle Uber Eats sur la rémunération des livreurs",
+        "url": null,
+        "consultee_le": null
+      },
+      "note": "Une source secondaire (Legalstart) indique 0,81 €/km à Paris. Même remarque que hors Paris : l'écart entre sources annoncées, puis entre grille annoncée et grille constatée, est à documenter."
+    },
+    {
+      "cle": "remuneration_remise_fixe",
+      "libelle": "Montant fixe à la remise de la commande au client",
+      "plateformes": ["uber_eats"],
+      "groupe": "grille_kilometrique",
+      "valeur": 1,
+      "unite": "EUR_PAR_COURSE",
+      "usage": "comparaison",
+      "valable_du": null,
+      "valable_au": null,
+      "precision_date": "Date d'entrée en vigueur inconnue : valeur constatée sur la page officielle Uber et rapportée le 2026-09-03.",
+      "source": {
+        "libelle": "Page officielle Uber Eats sur la rémunération des livreurs",
+        "url": null,
+        "consultee_le": null
+      }
+    },
+    {
+      "cle": "frais_service",
+      "libelle": "Frais de service prélevés par la plateforme sur le chiffre d'affaires brut",
+      "plateformes": ["uber_eats"],
+      "groupe": "grille_kilometrique",
+      "valeur": 5,
+      "unite": "POURCENT",
+      "usage": "comparaison",
+      "valable_du": null,
+      "valable_au": null,
+      "precision_date": "Date d'entrée en vigueur inconnue : valeur constatée sur la page officielle Uber et rapportée le 2026-09-03.",
+      "source": {
+        "libelle": "Page officielle Uber Eats sur la rémunération des livreurs",
+        "url": null,
+        "consultee_le": null
+      }
+    }
+  ],
+  "regles_legales": [
+    {
+      "cle": "taux_cotisations_sociales",
+      "libelle": "Cotisations sociales du micro-entrepreneur, prestations de services commerciales (BIC)",
+      "valeur": 21.2,
+      "unite": "POURCENT",
+      "usage": "calcul",
+      "definition": "Taux appliqué au chiffre d'affaires encaissé. Le « net estimé » affiché par le site est calculé APRÈS ces cotisations, mais AVANT les frais de véhicule (carburant, entretien, assurance, téléphone) et AVANT l'impôt sur le revenu. Cette phrase doit accompagner le chiffre partout où il est affiché.",
+      "valable_du": null,
+      "valable_au": null,
+      "precision_date": "Date d'entrée en vigueur du taux non vérifiée : à renseigner en même temps que l'URL Urssaf.",
+      "source": {
+        "libelle": "Barème des cotisations du micro-entrepreneur, Urssaf (autoentrepreneur.urssaf.fr)",
+        "url": null,
+        "consultee_le": null
+      }
     }
   ],
   "parametres_systeme": [
@@ -51,6 +172,141 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Dossier fondateur, section 5, filtre 5 : le temps réel est la seule donnée invérifiable par OCR, elle est fiabilisée par la masse."
+    },
+    {
+      "cle": "anciennete_maximale_course",
+      "libelle": "Ancienneté maximale d'une course au moment de sa soumission",
+      "valeur": 30,
+      "unite": "JOURS",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Une capture récente est vérifiable et la mémoire du temps réel reste fiable à quelques jours. Cette fenêtre évite aussi d'avoir à modéliser tout l'historique des barèmes : sans elle, il faudrait reconstituer la garantie de 11,75 €/h issue des engagements du 20 avril 2023 et sa parenthèse à 14 € de novembre 2023, pour classer des courses dont personne ne se souvient précisément."
+    },
+    {
+      "cle": "vitesse_moyenne_maximale",
+      "libelle": "Vitesse moyenne au-delà de laquelle la course est physiquement impossible",
+      "vehicule": "a_pied",
+      "valeur": 10,
+      "unite": "KM_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Seuil volontairement généreux : il ne doit rejeter que l'impossible, jamais l'anormal. À réajuster en semaine 5 sur les données réelles."
+    },
+    {
+      "cle": "vitesse_moyenne_maximale",
+      "libelle": "Vitesse moyenne au-delà de laquelle la course est physiquement impossible",
+      "vehicule": "velo",
+      "valeur": 25,
+      "unite": "KM_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Seuil volontairement généreux : il ne doit rejeter que l'impossible, jamais l'anormal. À réajuster en semaine 5 sur les données réelles."
+    },
+    {
+      "cle": "vitesse_moyenne_maximale",
+      "libelle": "Vitesse moyenne au-delà de laquelle la course est physiquement impossible",
+      "vehicule": "velo_electrique",
+      "valeur": 30,
+      "unite": "KM_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Seuil volontairement généreux : il ne doit rejeter que l'impossible, jamais l'anormal. À réajuster en semaine 5 sur les données réelles."
+    },
+    {
+      "cle": "vitesse_moyenne_maximale",
+      "libelle": "Vitesse moyenne au-delà de laquelle la course est physiquement impossible",
+      "vehicule": "scooter_moto",
+      "valeur": 60,
+      "unite": "KM_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Seuil volontairement généreux : il ne doit rejeter que l'impossible, jamais l'anormal. À réajuster en semaine 5 sur les données réelles."
+    },
+    {
+      "cle": "vitesse_moyenne_maximale",
+      "libelle": "Vitesse moyenne au-delà de laquelle la course est physiquement impossible",
+      "vehicule": "voiture",
+      "valeur": 80,
+      "unite": "KM_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Seuil volontairement généreux : il ne doit rejeter que l'impossible, jamais l'anormal. À réajuster en semaine 5 sur les données réelles."
+    },
+    {
+      "cle": "vitesse_moyenne_minimale",
+      "libelle": "Vitesse moyenne en dessous de laquelle la donnée est probablement erronée",
+      "valeur": 2,
+      "unite": "KM_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Commune à tous les véhicules. Sous ce seuil, la distance ou le temps saisi est presque certainement faux."
+    },
+    {
+      "cle": "distance_minimale",
+      "libelle": "Distance minimale acceptable pour une course",
+      "valeur": 0.3,
+      "unite": "KM",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Sous 300 mètres, il s'agit très probablement d'une erreur de saisie."
+    },
+    {
+      "cle": "distance_maximale",
+      "libelle": "Distance maximale acceptable pour une course",
+      "valeur": 40,
+      "unite": "KM",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Au-delà de 40 km, ce n'est plus de la livraison de repas."
+    },
+    {
+      "cle": "soumissions_maximales_par_heure",
+      "libelle": "Soumissions acceptées par appareil et par heure",
+      "valeur": 10,
+      "unite": "SOUMISSIONS",
+      "usage": "anti_fraude",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Valeur de départ volontairement large : on resserre en semaine 5 si les données le justifient. La config datée est faite pour ça."
+    },
+    {
+      "cle": "soumissions_maximales_par_jour",
+      "libelle": "Soumissions acceptées par appareil et par jour",
+      "valeur": 30,
+      "unite": "SOUMISSIONS",
+      "usage": "anti_fraude",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Valeur de départ volontairement large : on resserre en semaine 5 si les données le justifient."
+    },
+    {
+      "cle": "echecs_ocr_avant_pause",
+      "libelle": "Échecs OCR consécutifs déclenchant une pause de l'appareil",
+      "valeur": 3,
+      "unite": "TENTATIVES",
+      "usage": "anti_fraude",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Trois divergences consécutives entre la capture et les chiffres saisis signalent soit une tentative de fraude, soit un format de capture que l'OCR ne sait pas lire — les deux méritent une pause et un passage au tableau de surveillance."
+    },
+    {
+      "cle": "duree_pause_apres_echecs",
+      "libelle": "Durée de la pause imposée après échecs OCR consécutifs",
+      "valeur": 24,
+      "unite": "HEURES",
+      "usage": "anti_fraude",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Assez long pour décourager une tentative automatisée, assez court pour ne pas perdre un livreur de bonne foi dont la capture était simplement illisible."
     }
   ]
 }

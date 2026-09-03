@@ -54,13 +54,21 @@ const validerStructure = (valeur, noeud, chemin, sortie, resoudre) => {
   if (!s || typeof s !== "object") return;
 
   if (Array.isArray(s.oneOf)) {
-    const auMoinsUneValide = s.oneOf.some((variante) => {
+    const essais = s.oneOf.map((variante) => {
       const essai = [];
       validerStructure(valeur, variante, chemin, essai, resoudre);
-      return essai.length === 0;
+      return essai;
     });
-    if (!auMoinsUneValide) {
-      sortie.push(`${chemin} : ${JSON.stringify(valeur)} ne correspond a aucune forme autorisee`);
+
+    if (!essais.some((essai) => essai.length === 0)) {
+      /* Sans ce detail, un oneOf transformerait toute erreur en "aucune forme autorisee". */
+      const detail = essais
+        .flat()
+        .map((message) => message.slice(`${chemin} : `.length))
+        .join(" ; ");
+      sortie.push(
+        `${chemin} : ${JSON.stringify(valeur)} ne correspond a aucune forme autorisee - ${detail}`
+      );
     }
     return;
   }
@@ -123,7 +131,7 @@ const validerStructure = (valeur, noeud, chemin, sortie, resoudre) => {
 /* Passe 2 : coherence temporelle                                      */
 /* ------------------------------------------------------------------ */
 
-const PORTEE_SYSTEME = "systeme";
+const PORTEE_GLOBALE = "global";
 
 const decalerJour = (date, pas) => {
   const d = new Date(`${date}T00:00:00Z`);
@@ -131,26 +139,56 @@ const decalerJour = (date, pas) => {
   return d.toISOString().slice(0, 10);
 };
 
-const porteesDe = (entree) =>
-  Array.isArray(entree.plateformes) ? entree.plateformes : [PORTEE_SYSTEME];
+/**
+ * Les champs qui decoupent la portee d'une famille sont declares dans le schema
+ * (`x-portee`), jamais ecrits en dur ici. Deux vitesses maximales pour deux
+ * vehicules differents, ou deux prix au km pour deux zones, portent la meme cle
+ * et les memes dates sans pour autant se chevaucher.
+ */
+const porteesDe = (entree, champs) => {
+  let combinaisons = [[]];
+
+  for (const champ of champs) {
+    const brut = entree[champ];
+    if (brut === undefined || brut === null) continue;
+    const valeurs = Array.isArray(brut) ? brut : [brut];
+    combinaisons = combinaisons.flatMap((debut) =>
+      valeurs.map((valeur) => [...debut, `${champ}=${valeur}`])
+    );
+  }
+
+  return combinaisons.map((c) => (c.length === 0 ? PORTEE_GLOBALE : c.join(" ")));
+};
+
+/* valable_du null = en vigueur depuis une date anterieure inconnue : trie en tete. */
+const comparerDebuts = (a, b) => {
+  if (a.valable_du === b.valable_du) return 0;
+  if (a.valable_du === null) return -1;
+  if (b.valable_du === null) return 1;
+  return a.valable_du.localeCompare(b.valable_du);
+};
 
 const validerPeriodes = (baremes, familles, erreurs, avertissements) => {
-  for (const famille of familles) {
-    const entrees = baremes[famille];
+  for (const { nom, portee: champsPortee } of familles) {
+    const entrees = baremes[nom];
     if (!Array.isArray(entrees)) continue;
 
     const groupes = new Map();
 
     for (const entree of entrees) {
-      if (typeof entree?.cle !== "string" || typeof entree?.valable_du !== "string") continue;
+      if (typeof entree?.cle !== "string" || !("valable_du" in entree)) continue;
 
-      if (typeof entree.valable_au === "string" && entree.valable_au < entree.valable_du) {
+      if (
+        typeof entree.valable_du === "string" &&
+        typeof entree.valable_au === "string" &&
+        entree.valable_au < entree.valable_du
+      ) {
         erreurs.push(
-          `${famille}/${entree.cle} : periode inversee (${entree.valable_du} -> ${entree.valable_au})`
+          `${nom}/${entree.cle} : periode inversee (${entree.valable_du} -> ${entree.valable_au})`
         );
       }
 
-      for (const portee of porteesDe(entree)) {
+      for (const portee of porteesDe(entree, champsPortee)) {
         const identifiant = `${entree.cle}|${portee}`;
         if (!groupes.has(identifiant)) {
           groupes.set(identifiant, { cle: entree.cle, portee, entrees: [] });
@@ -160,7 +198,7 @@ const validerPeriodes = (baremes, familles, erreurs, avertissements) => {
     }
 
     for (const { cle, portee, entrees: groupe } of groupes.values()) {
-      const tries = [...groupe].sort((a, b) => a.valable_du.localeCompare(b.valable_du));
+      const tries = [...groupe].sort(comparerDebuts);
 
       for (let i = 0; i < tries.length - 1; i += 1) {
         const precedent = tries[i];
@@ -168,18 +206,24 @@ const validerPeriodes = (baremes, familles, erreurs, avertissements) => {
 
         /* Convention : valable_du et valable_au sont inclusifs, null = toujours en vigueur. */
         const chevauchement =
-          precedent.valable_au === null || suivant.valable_du <= precedent.valable_au;
+          precedent.valable_au === null ||
+          suivant.valable_du === null ||
+          suivant.valable_du <= precedent.valable_au;
+
+        const decrire = (e) =>
+          `"${e.valable_du ?? "origine"} -> ${e.valable_au ?? "en vigueur"}"`;
 
         if (chevauchement) {
           erreurs.push(
-            `${famille}/${cle} [${portee}] : chevauchement de periodes entre ` +
-              `"${precedent.valable_du} -> ${precedent.valable_au ?? "en vigueur"}" et ` +
-              `"${suivant.valable_du} -> ${suivant.valable_au ?? "en vigueur"}". ` +
-              `Fermer la premiere au ${decalerJour(suivant.valable_du, -1)}.`
+            `${nom}/${cle} [${portee}] : chevauchement de periodes entre ` +
+              `${decrire(precedent)} et ${decrire(suivant)}. ` +
+              (suivant.valable_du === null
+                ? "Deux valeurs sans date de debut connue ne peuvent pas coexister."
+                : `Fermer la premiere au ${decalerJour(suivant.valable_du, -1)}.`)
           );
         } else if (decalerJour(precedent.valable_au, 1) !== suivant.valable_du) {
           avertissements.push(
-            `${famille}/${cle} [${portee}] : trou entre ${precedent.valable_au} et ` +
+            `${nom}/${cle} [${portee}] : trou entre ${precedent.valable_au} et ` +
               `${suivant.valable_du} - une course datee dans cet intervalle ne pourra pas etre classee.`
           );
         }
@@ -201,15 +245,15 @@ export const validerBaremes = (baremes, schema) => {
 
   validerStructure(baremes, schema, "baremes", erreurs, faireResolveur(schema));
 
-  /* Les familles ne sont pas ecrites en dur : elles sont lues dans le schema. */
+  /* Familles et champs de portee sont lus dans le schema, jamais ecrits en dur ici. */
   const familles = Object.entries(schema.properties)
     .filter(([, s]) => s.type === "array")
-    .map(([nom]) => nom);
+    .map(([nom, s]) => ({ nom, portee: s["x-portee"] ?? [] }));
 
   validerPeriodes(baremes, familles, erreurs, avertissements);
 
   const total = familles.reduce(
-    (somme, famille) => somme + (Array.isArray(baremes[famille]) ? baremes[famille].length : 0),
+    (somme, { nom }) => somme + (Array.isArray(baremes[nom]) ? baremes[nom].length : 0),
     0
   );
 

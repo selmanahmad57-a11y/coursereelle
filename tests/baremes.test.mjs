@@ -4,7 +4,8 @@
  * Usage : node --test tests/
  *
  * Le point critique verifie ici : aucune periode ne peut se chevaucher pour une
- * meme cle et une meme plateforme. Sans cette garantie, une course ne peut plus
+ * meme cle a l'interieur d'une meme portee - plateforme, zone ou vehicule, selon
+ * ce que la famille declare dans `x-portee`. Sans cette garantie, une course ne peut plus
  * etre jugee selon les regles en vigueur a sa date, et l'historique publie
  * devient incoherent.
  *
@@ -52,9 +53,23 @@ const parametre = (surcharges) => ({
   ...surcharges,
 });
 
-const document = ({ regles = [], parametres = [] }) => ({
+const legale = (surcharges) => ({
+  cle: "regle_legale_de_test",
+  libelle: "Regle legale synthetique de test",
+  valeur: 1,
+  unite: "POURCENT",
+  usage: "calcul",
+  definition: "Fixture de test",
+  valable_du: "2024-01-01",
+  valable_au: null,
+  source: { libelle: "Fixture de test", url: null, consultee_le: null },
+  ...surcharges,
+});
+
+const document = ({ regles = [], legales = [], parametres = [] }) => ({
   version_schema: 1,
   regles_annoncees: regles,
+  regles_legales: legales,
   parametres_systeme: parametres,
 });
 
@@ -150,10 +165,10 @@ test("le chevauchement est detecte plateforme par plateforme dans une liste", ()
   );
 
   assert.equal(erreurs.length, 1, "seule la plateforme commune doit remonter");
-  assert.match(erreurs[0], /\[uber_eats\]/);
+  assert.match(erreurs[0], /plateformes=uber_eats/);
 });
 
-test("les parametres systeme sont groupes par cle, sans plateforme", () => {
+test("les parametres systeme sans discriminant partagent la portee globale", () => {
   const { erreurs } = validerBaremes(
     document({
       parametres: [
@@ -165,7 +180,7 @@ test("les parametres systeme sont groupes par cle, sans plateforme", () => {
   );
 
   assert.equal(erreurs.length, 1);
-  assert.match(erreurs[0], /\[systeme\]/);
+  assert.match(erreurs[0], /\[global\]/);
 });
 
 test("des cles differentes ne se chevauchent jamais entre elles", () => {
@@ -285,4 +300,172 @@ test("une source sans url reste acceptee, avec consultee_le a null", () => {
   );
 
   assert.deepEqual(erreurs, []);
+});
+
+/* ------------------------------------------------------------------ */
+/* Portees declarees dans le schema (x-portee)                         */
+/* ------------------------------------------------------------------ */
+
+test("deux vehicules differents ne se chevauchent pas, meme cle et memes dates", () => {
+  const { erreurs } = validerBaremes(
+    document({
+      parametres: [
+        parametre({ cle: "vitesse_max", vehicule: "velo", unite: "KM_PAR_HEURE", usage: "rejet" }),
+        parametre({ cle: "vitesse_max", vehicule: "voiture", unite: "KM_PAR_HEURE", usage: "rejet" }),
+      ],
+    }),
+    schema
+  );
+
+  assert.deepEqual(erreurs, []);
+});
+
+test("le chevauchement est detecte vehicule par vehicule", () => {
+  const { erreurs } = validerBaremes(
+    document({
+      parametres: [
+        parametre({
+          cle: "vitesse_max",
+          vehicule: "velo",
+          valable_du: "2024-01-01",
+          valable_au: "2024-12-31",
+        }),
+        parametre({ cle: "vitesse_max", vehicule: "velo", valable_du: "2024-06-01" }),
+        parametre({ cle: "vitesse_max", vehicule: "voiture", valable_du: "2024-06-01" }),
+      ],
+    }),
+    schema
+  );
+
+  assert.equal(erreurs.length, 1, "seul le velo doit remonter");
+  assert.match(erreurs[0], /vehicule=velo/);
+});
+
+test("deux zones differentes ne se chevauchent pas", () => {
+  const { erreurs } = validerBaremes(
+    document({
+      regles: [
+        regle({ cle: "prix_par_km", zone: "paris", unite: "EUR_PAR_KM" }),
+        regle({ cle: "prix_par_km", zone: "hors_paris", unite: "EUR_PAR_KM" }),
+      ],
+    }),
+    schema
+  );
+
+  assert.deepEqual(erreurs, []);
+});
+
+test("la meme zone et la meme plateforme se chevauchent bien", () => {
+  const { erreurs } = validerBaremes(
+    document({
+      regles: [
+        regle({ cle: "prix_par_km", zone: "paris", unite: "EUR_PAR_KM" }),
+        regle({ cle: "prix_par_km", zone: "paris", unite: "EUR_PAR_KM", valable_du: "2025-01-01" }),
+      ],
+    }),
+    schema
+  );
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /plateformes=uber_eats zone=paris/);
+});
+
+test("une zone hors liste est refusee", () => {
+  const { erreurs } = validerBaremes(document({ regles: [regle({ zone: "lyon" })] }), schema);
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /hors liste autorisee/);
+});
+
+/* ------------------------------------------------------------------ */
+/* Date de debut inconnue                                              */
+/* ------------------------------------------------------------------ */
+
+test("une valeur constatee sans date d'entree en vigueur est acceptee", () => {
+  const { erreurs, avertissements } = validerBaremes(
+    document({
+      regles: [
+        regle({
+          valable_du: null,
+          precision_date: "Date d'entree en vigueur inconnue.",
+        }),
+      ],
+    }),
+    schema
+  );
+
+  assert.deepEqual(erreurs, []);
+  assert.deepEqual(avertissements, []);
+});
+
+test("une date de debut inconnue couvre tout le passe et bloque donc les periodes anterieures", () => {
+  const { erreurs } = validerBaremes(
+    document({
+      regles: [
+        regle({ valable_du: null, valable_au: null }),
+        regle({ valable_du: "2024-01-01", valable_au: "2024-12-31" }),
+      ],
+    }),
+    schema
+  );
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /chevauchement/);
+  assert.match(erreurs[0], /origine/);
+});
+
+test("deux valeurs sans date de debut connue ne peuvent pas coexister", () => {
+  const { erreurs } = validerBaremes(
+    document({ regles: [regle({ valable_du: null }), regle({ valable_du: null })] }),
+    schema
+  );
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /sans date de debut connue/);
+});
+
+test("une date de debut inconnue peut etre fermee et suivie d'une periode datee", () => {
+  const { erreurs, avertissements } = validerBaremes(
+    document({
+      regles: [
+        regle({ valable_du: null, valable_au: "2024-08-31" }),
+        regle({ valable_du: "2024-09-01", valable_au: null }),
+      ],
+    }),
+    schema
+  );
+
+  assert.deepEqual(erreurs, []);
+  assert.deepEqual(avertissements, []);
+});
+
+/* ------------------------------------------------------------------ */
+/* Regles legales                                                      */
+/* ------------------------------------------------------------------ */
+
+test("une regle legale ne peut pas servir de critere de rejet", () => {
+  const { erreurs } = validerBaremes(document({ legales: [legale({ usage: "rejet" })] }), schema);
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /calcul/);
+});
+
+test("une regle legale exige la definition de ce que la valeur recouvre", () => {
+  const incomplete = legale({});
+  delete incomplete.definition;
+
+  const { erreurs } = validerBaremes(document({ legales: [incomplete] }), schema);
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /"definition" absent/);
+});
+
+test("une regle legale n'accepte pas de plateforme : elle ne depend d'aucune", () => {
+  const { erreurs } = validerBaremes(
+    document({ legales: [legale({ plateformes: ["uber_eats"] })] }),
+    schema
+  );
+
+  assert.equal(erreurs.length, 1);
+  assert.match(erreurs[0], /champ inconnu/);
 });
