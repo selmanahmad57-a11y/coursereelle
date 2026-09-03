@@ -382,6 +382,26 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Même logique d'arrondi : « 16 min » affiché peut recouvrir 15,6 comme 16,4."
+    },
+    {
+      "cle": "distance_perceptuelle_maximale",
+      "libelle": "Écart maximal entre deux empreintes perceptuelles au-delà duquel deux captures sont considérées distinctes",
+      "valeur": 5,
+      "unite": "BITS",
+      "usage": "anti_fraude",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Sur une empreinte de 64 bits, un écart de cinq bits ou moins correspond à la même image réenregistrée, recadrée légèrement ou éclaircie — le geste typique d'une campagne de soumissions fabriquées. Valeur de départ à recalibrer en semaine 5 : trop haute, elle confondrait deux courses réellement différentes dont les récapitulatifs se ressemblent."
+    },
+    {
+      "cle": "tolerance_position_gabarit",
+      "libelle": "Décalage toléré entre la position attendue d'un libellé et sa position constatée",
+      "valeur": 5,
+      "unite": "POURCENT",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Exprimé en fraction de la largeur et de la hauteur de l'image, pour absorber les différences de résolution et de barre d'état entre appareils. Sans effet tant qu'aucun gabarit n'est enregistré : le contrôle de gabarit ne rejette rien avant d'avoir été calibré sur de vraies captures."
     }
   ]
 }

@@ -27,6 +27,7 @@ import { calculer } from "../lib/calculs.ts";
 import { MOTIFS_REFUS } from "../lib/validation/anti-fraude.ts";
 import { CHAMPS_VERIFIES, MOTIFS_OCR } from "../lib/validation/ocr.ts";
 import { MOTIFS_CAPTURE } from "../lib/validation/capture.ts";
+import { MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
 const chemin = (nom) => process.env[nom.env] ?? new URL(nom.defaut, import.meta.url);
@@ -42,6 +43,12 @@ const libelles = await lireJson(
 );
 const villes = await lireJson(
   chemin({ env: "VILLES_FICHIER", defaut: "../config/villes.json" })
+);
+const provenance = await lireJson(
+  chemin({ env: "PROVENANCE_FICHIER", defaut: "../config/provenance.json" })
+);
+const gabarits = await lireJson(
+  chemin({ env: "GABARITS_FICHIER", defaut: "../config/gabarits.json" })
 );
 
 /* ------------------------------------------------------------------ */
@@ -394,4 +401,66 @@ test("les tolerances OCR sont declarees par champ, prix a zero", () => {
   assert.equal(tolerance(CLES_SYSTEME.tolerancePrix).valeur, 0, "le prix est la valeur probante");
   assert.ok(tolerance(CLES_SYSTEME.toleranceDistance).valeur > 0);
   assert.ok(tolerance(CLES_SYSTEME.toleranceDureeEstimee).valeur > 0);
+});
+
+/* ------------------------------------------------------------------ */
+/* Controles d'authenticite : configuration livree                      */
+/* ------------------------------------------------------------------ */
+
+test("chaque motif d'authenticite a un libelle", () => {
+  assert.deepEqual(
+    [...MOTIFS_AUTHENTICITE].sort(),
+    Object.keys(libelles.motifs_authenticite).sort()
+  );
+});
+
+test("les types de source generative sont des URI du vocabulaire IPTC", async () => {
+  const provenance = await lireJson(
+    process.env.PROVENANCE_FICHIER ?? new URL("../config/provenance.json", import.meta.url)
+  );
+
+  assert.ok(provenance.types_source_generative.length > 0);
+
+  for (const type of provenance.types_source_generative) {
+    assert.match(
+      type,
+      /^http:\/\/cv\.iptc\.org\/newscodes\/digitalsourcetype\/[A-Za-z]+$/,
+      `type de source hors vocabulaire IPTC : ${type}`
+    );
+  }
+});
+
+test("aucun nom de logiciel generatif n'est devine", () => {
+  /* Les chaines exactes ecrites par chaque generateur doivent etre relevees sur de
+     vrais fichiers. Y mettre des noms devines produirait des rejets faux ET des
+     rejets manques. La liste reste donc vide jusqu'a observation. */
+  assert.deepEqual(
+    provenance.logiciels_generatifs,
+    [],
+    "a remplir depuis de vrais fichiers, jamais de memoire"
+  );
+  assert.ok(provenance.note_maintenance.length > 0);
+});
+
+test("aucun gabarit n'est enregistre avant calibrage, et le controle ne rejette donc rien", () => {
+  assert.deepEqual(
+    gabarits.gabarits,
+    [],
+    "les gabarits se relevent sur de vraies captures, en semaine 5"
+  );
+  assert.ok(gabarits.decision.prudence.length > 0);
+});
+
+test("la page Methode annonce la limite avant les controles", () => {
+  const section = libelles.methode.authenticite;
+
+  for (const partie of ["aveu", "controles", "protection", "conclusion"]) {
+    assert.ok(section[partie]?.length > 0, `${partie} manquant`);
+  }
+
+  assert.match(
+    section.aveu,
+    /aucune vérification ne peut prouver/i,
+    "la limite doit etre enoncee en clair, c'est ce qui rend le reste credible"
+  );
 });

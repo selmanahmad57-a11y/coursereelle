@@ -1,0 +1,9 @@
+{
+  "decision": {
+    "libelle": "Conformité structurelle au gabarit du récapitulatif",
+    "regle": "Un récapitulatif de plateforme a une mise en page stable : les mêmes libellés, aux mêmes endroits. Une capture reconstituée de mémoire par un modèle produit souvent un libellé légèrement faux ou une disposition décalée, que ce contrôle repère.",
+    "prudence": "Tant qu'aucun gabarit n'est enregistré pour une plateforme, ce contrôle ne rejette rien. C'est délibéré et c'est structurel : les gabarits se calibrent sur de vraies captures variées — versions d'application différentes, Android et iOS, mode clair et mode sombre. Rejeter avant d'avoir vu cette diversité écarterait surtout des livreurs honnêtes."
+  },
+  "note_maintenance": "gabarits est vide au lancement. Chaque entrée décrit une variante observée : identifiant, plateforme, description de ce qu'elle couvre, et pour chaque champ attendu ses libellés acceptés et sa zone en fractions de l'image. À remplir en semaine 5, à partir des captures réellement reçues, jamais de mémoire.",
+  "gabarits": []
+}

@@ -10,12 +10,16 @@
  */
 
 import captures from "@/config/captures.json";
+import gabarits from "@/config/gabarits.json";
+import provenance from "@/config/provenance.json";
 import villes from "@/config/villes.json";
 
 import { baremes, formaterValeur } from "./baremes";
 import { CLES_LEGALES, CLES_SYSTEME, UNITES } from "./cles";
 import { uniqueEnVigueur } from "./periodes";
+import type { ReglesAuthenticite } from "./validation/authenticite.ts";
 import type { ContraintesCapture } from "./validation/capture.ts";
+import type { Gabarit } from "./validation/gabarit.ts";
 import type { Tolerances } from "./validation/ocr.ts";
 import type { SeuilsPhysiques } from "./validation/regles-physiques.ts";
 
@@ -164,5 +168,33 @@ export const descriptionContraintes = (
     formats: captures.formats_acceptes.map((format) => format.libelle).join(", "),
     typesMime: captures.formats_acceptes.map((format) => format.type_mime).join(","),
     taille: bornes.length === 2 ? `de ${bornes[0]} à ${bornes[1]}` : (bornes[0] ?? null),
+  };
+};
+
+/* ------------------------------------------------------------------ */
+/* Authenticité                                                        */
+/* ------------------------------------------------------------------ */
+
+export const decisionProvenance = provenance.decision;
+export const decisionGabarits = gabarits.decision;
+
+/* La tolérance de position est exprimée en points de pourcentage dans la
+   configuration, et en fraction de l'image dans le code qui compare. */
+const POURCENT_EN_FRACTION = 100;
+
+export const reglesAuthenticite = (date: string): ReglesAuthenticite => {
+  const tolerance = parametreSysteme(CLES_SYSTEME.toleranceGabarit, date);
+
+  return {
+    provenance: {
+      typesSourceGenerative: provenance.types_source_generative,
+      logicielsGeneratifs: provenance.logiciels_generatifs,
+    },
+    gabarits: gabarits.gabarits as Gabarit[],
+    toleranceGabarit: tolerance === null ? null : tolerance / POURCENT_EN_FRACTION,
+    distancePerceptuelleMaximale: parametreSysteme(
+      CLES_SYSTEME.distancePerceptuelleMaximale,
+      date
+    ),
   };
 };

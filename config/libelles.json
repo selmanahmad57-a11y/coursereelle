@@ -101,6 +101,11 @@
       "symbole": "Mo",
       "decimales_min": 0,
       "decimales_max": 1
+    },
+    "BITS": {
+      "symbole": "bits",
+      "decimales_min": 0,
+      "decimales_max": 0
     }
   },
   "usages": {
@@ -218,6 +223,13 @@
       "texte": "Le filtre anti-fraude doit compter les soumissions par appareil. Le faire en conservant les adresses IP créerait exactement le risque que ce site promet d'écarter : une adresse, croisée avec une date, une heure et une ville, peut réidentifier un livreur. Aucune adresse n'est donc jamais écrite, ni en clair ni chiffrée. Un sel aléatoire est tiré chaque jour ; à chaque envoi, le serveur calcule une empreinte à partir de ce sel et de l'adresse, et n'enregistre que l'empreinte.",
       "consequence": "Passée la fenêtre de conservation, le sel du jour est supprimé, et les empreintes calculées avec lui deviennent définitivement irréversibles — y compris pour nous, y compris en connaissant l'adresse recherchée. Le sel changeant chaque jour, une même adresse produit de toute façon une empreinte différente le lendemain : aucun suivi dans la durée n'est possible.",
       "limite": "Cette même fenêtre énonce deux choses à la fois, et les deux sont vraies : le suivi d'un appareil ne peut jamais excéder la durée de conservation des sels. C'est la garantie d'anonymat, et c'est aussi la limite assumée du filtre — passé ce délai, un appareil redevient inconnu de nous, y compris s'il avait été mis en pause."
+    },
+    "authenticite": {
+      "titre": "Ce qu'une capture prouve, et ce qu'elle ne prouve pas",
+      "aveu": "Commençons par la limite, parce qu'elle commande tout le reste : aucune vérification ne peut prouver qu'une capture d'écran est authentique. Un faux soigneusement fabriqué peut passer nos contrôles. Nous ne prétendons pas l'inverse, et nous préférons l'écrire ici plutôt que de le laisser découvrir.",
+      "controles": "Ce que nous contrôlons malgré tout : la concordance entre les chiffres saisis et ceux lus sur la capture ; les métadonnées de provenance, que les grands générateurs d'images inscrivent dans leurs fichiers ; la similarité avec les captures déjà reçues, y compris recadrées ou retouchées ; et, une fois les gabarits calibrés, la conformité de la mise en page au récapitulatif attendu. Chacun de ces contrôles est contournable par quelqu'un de compétent. Ensemble, ils écartent les tentatives paresseuses, qui sont la majorité.",
+      "protection": "Ce qui protège réellement les chiffres publiés est ailleurs, et ne dépend pas de la détection. Les statistiques publiques sont des médianes, pas des moyennes : sur cinq cents courses, vingt soumissions fabriquées, même extravagantes, ne déplacent pas une médiane, alors qu'elles déplacent une moyenne. Les valeurs qui s'écartent de plus de trois écarts-types sortent des statistiques. Les limites par appareil plafonnent le débit d'une campagne. Et aucune statistique n'est publiée avant que la ville atteigne son seuil de courses, ce qui empêche un petit lot de fausses données de dominer un chiffre.",
+      "conclusion": "Autrement dit : une fraude isolée est sans effet sur ce que le site publie, et une fraude massive devient coûteuse, lente, et visible dans le tableau de surveillance — rafales, similarités, distribution anormale. Si vous testez le site avec une fausse capture, elle est peut-être passée. Elle n'a rien changé."
     }
   },
   "statuts": {
@@ -247,5 +259,10 @@
     "format_non_pris_en_charge": "Format d'image non pris en charge",
     "fichier_trop_volumineux": "Fichier trop lourd",
     "fichier_trop_leger": "Fichier trop léger pour être une capture lisible"
+  },
+  "motifs_authenticite": {
+    "provenance_ia": "Métadonnées de génération automatique détectées",
+    "capture_deja_soumise": "Capture déjà reçue, éventuellement retouchée",
+    "gabarit_non_reconnu": "Mise en page non conforme au récapitulatif attendu"
   }
 }

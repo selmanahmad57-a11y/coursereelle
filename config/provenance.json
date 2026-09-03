@@ -1,0 +1,14 @@
+{
+  "decision": {
+    "libelle": "Contrôle des métadonnées de provenance",
+    "regle": "Les principaux générateurs d'images inscrivent leur origine dans le fichier : type de source numérique IPTC, manifeste C2PA, nom du logiciel créateur. Une capture fabriquée par l'un d'eux et déposée telle quelle porte donc sa propre signature, et nous la refusons.",
+    "limite": "Ce contrôle s'efface avec n'importe quel outil de retouche. Il n'arrête pas un fraudeur compétent, seulement les tentatives paresseuses — qui sont la majorité. L'absence de métadonnées ne prouve donc rien : elle ne fait pas d'une capture une preuve authentique."
+  },
+  "note_maintenance": "types_source_generative reprend le vocabulaire IPTC DigitalSourceType, qui est un standard public et stable. logiciels_generatifs est volontairement vide : les chaînes exactes écrites par chaque générateur dans les champs EXIF Software et XMP CreatorTool doivent être relevées sur de vrais fichiers avant d'être inscrites ici. Y mettre des noms devinés produirait des rejets faux et des rejets manqués.",
+  "types_source_generative": [
+    "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+    "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+    "http://cv.iptc.org/newscodes/digitalsourcetype/algorithmicMedia"
+  ],
+  "logiciels_generatifs": []
+}

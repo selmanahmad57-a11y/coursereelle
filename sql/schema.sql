@@ -56,9 +56,20 @@ create table if not exists courses (
 
   -- Capture d'écran : preuve de vérification, jamais publiée.
   capture_cle_r2          text,
-  -- Empreinte de l'image, pour refuser deux fois la même preuve.
+  -- Empreinte exacte de l'image, pour refuser deux fois le même fichier.
   capture_hash            text,
+  -- Empreinte perceptuelle : elle survit à un recadrage, un réenregistrement ou
+  -- un changement de luminosité, et attrape donc la même capture resoumise
+  -- retouchée. La comparaison se fait par distance, jamais par égalité : pas de
+  -- contrainte d'unicité ici.
+  capture_phash           text,
   capture_supprimee_le    timestamptz,
+
+  -- Traces des contrôles d'authenticité, pour le tableau de surveillance :
+  -- d'où venait l'indice de génération automatique, et quel gabarit a été
+  -- reconnu. NULL quand le contrôle n'a rien trouvé ou n'a pas pu s'appliquer.
+  provenance_indice       text,
+  gabarit_reconnu         text,
 
   -- Ce que l'OCR a lu sur la capture, conservé pour pouvoir auditer un rejet et
   -- calibrer le filtre 2 sur de vrais récapitulatifs.
@@ -85,6 +96,7 @@ create index if not exists courses_date_idx on courses (date_course);
 create index if not exists courses_statut_idx on courses (statut);
 create index if not exists courses_ville_idx on courses (ville_slug);
 create index if not exists courses_plateforme_idx on courses (plateforme);
+create index if not exists courses_phash_idx on courses (capture_phash);
 
 
 -- Saisies « Autre ville », gardées brutes et à part.

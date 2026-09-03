@@ -192,6 +192,26 @@ export default function PageMethode() {
       </Section>
 
       <section className="mt-12">
+        <h2 className="text-xl font-semibold text-neutral-900">
+          {libelles.methode.authenticite.titre}
+        </h2>
+        <div className="mt-4 rounded-lg border border-neutral-300 bg-white p-4">
+          <p className="text-sm font-medium text-neutral-900">
+            {libelles.methode.authenticite.aveu}
+          </p>
+          <p className="mt-3 text-sm text-neutral-700">
+            {libelles.methode.authenticite.controles}
+          </p>
+          <p className="mt-3 text-sm text-neutral-700">
+            {libelles.methode.authenticite.protection}
+          </p>
+          <p className="mt-3 border-t border-neutral-200 pt-3 text-sm font-medium text-neutral-900">
+            {libelles.methode.authenticite.conclusion}
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-12">
         <h2 className="text-xl font-semibold text-neutral-900">Ce que nous ne collectons pas</h2>
         <div className="mt-4 space-y-3">
           <div className="rounded-lg border border-neutral-200 bg-white p-4">

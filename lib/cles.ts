@@ -22,6 +22,8 @@ export const CLES_SYSTEME = {
   tolerancePrix: "tolerance_ocr_prix",
   toleranceDistance: "tolerance_ocr_distance",
   toleranceDureeEstimee: "tolerance_ocr_duree_estimee",
+  distancePerceptuelleMaximale: "distance_perceptuelle_maximale",
+  toleranceGabarit: "tolerance_position_gabarit",
 } as const;
 
 export const CLES_LEGALES = {
@@ -47,4 +49,5 @@ export const UNITES = {
   jours: "JOURS",
   kilooctets: "KILOOCTETS",
   megaoctets: "MEGAOCTETS",
+  bits: "BITS",
 } as const;
