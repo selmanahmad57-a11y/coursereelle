@@ -67,12 +67,47 @@ const enValeur = (champ: ChampVerifie, extrait: string): number | null =>
 
 const MEME_VALEUR = 1e-9;
 
-/** La confiance d'un extrait : celle du moins sûr des mots qu'il recouvre. */
+const CHIFFRE = /\d/;
+
+/**
+ * La confiance d'un extrait : celle du moins sûr des mots PORTEURS DE CHIFFRES
+ * qu'il recouvre.
+ *
+ * Les marqueurs d'unité — « min », « s », « km », « € » — ont un rôle
+ * structurel : ils permettent au motif de reconnaître la forme et d'interpréter
+ * « 16 min 34 s » comme 16,57 minutes. Ce travail est accompli au moment où le
+ * motif correspond ; un marqueur que le lecteur a mal vu mais que le motif a
+ * reconnu a rempli sa fonction.
+ *
+ * Le risque d'un verdict erroné porte sur les chiffres, pas sur eux : un 8 pris
+ * pour un 3 change la valeur, un « s » flou ne la change pas. Les faire peser
+ * sur le score revenait à rejeter des lectures justes — c'est ce qui est arrivé
+ * à la seconde course de référence, dont le « s » à 64 masquait un « 16 » et un
+ * « 34 » lus à 95.
+ */
 const confianceDe = (zone: ZoneLue, debut: number, fin: number): number => {
   const recouverts = (zone.mots ?? []).filter((mot) => mot.debut < fin && mot.fin > debut);
   if (recouverts.length === 0) return zone.confiance;
-  return Math.min(...recouverts.map((mot) => mot.confiance));
+
+  const porteurs = recouverts.filter((mot) =>
+    CHIFFRE.test(zone.texte.slice(mot.debut, mot.fin))
+  );
+
+  const retenus = porteurs.length > 0 ? porteurs : recouverts;
+  return Math.min(...retenus.map((mot) => mot.confiance));
 };
+
+/**
+ * Le garde-fou de structure : l'exclusion des marqueurs ne vaut que si le motif
+ * a franchement reconnu la forme.
+ *
+ * Un chiffre collé au bord de la correspondance signale une forme tronquée —
+ * « 116 min » lu et reconnu comme « 16 min » donnerait une valeur fausse avec
+ * une confiance excellente. On ne tranche pas dans ce cas.
+ */
+const correspondanceTronquee = (zone: ZoneLue, debut: number, fin: number): boolean =>
+  (debut > 0 && CHIFFRE.test(zone.texte[debut - 1])) ||
+  (fin < zone.texte.length && CHIFFRE.test(zone.texte[fin]));
 
 export const lireChamp = (
   champ: ChampVerifie,
@@ -90,6 +125,7 @@ export const lireChamp = (
   }
 
   const trouvees: { valeur: number; confiance: number }[] = [];
+  let tronquee = false;
 
   for (const zone of zones) {
     forme.lastIndex = 0;
@@ -101,8 +137,18 @@ export const lireChamp = (
       const debut = trouve.index ?? 0;
       const fin = debut + trouve[0].length;
 
+      if (correspondanceTronquee(zone, debut, fin)) {
+        tronquee = true;
+        continue;
+      }
+
       trouvees.push({ valeur, confiance: confianceDe(zone, debut, fin) });
     }
+  }
+
+  /* Une forme tronquée est une structure mal reconnue : on ne conclut pas. */
+  if (tronquee && trouvees.length === 0) {
+    return { issue: "ambigue", valeur: null, confiance: null };
   }
 
   if (trouvees.length === 0) return { issue: "absente", valeur: null, confiance: null };

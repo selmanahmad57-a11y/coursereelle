@@ -137,3 +137,69 @@ test("un champ que l'on n'attendait pas ne bloque rien", () => {
 
   assert.equal(lectureConcluante(lecture, ["prixEuros"]).concluante, true);
 });
+
+/* ------------------------------------------------------------------ */
+/* La confiance porte sur les chiffres, pas sur les unites             */
+/* ------------------------------------------------------------------ */
+
+test("un marqueur d'unite mal lu ne fait plus baisser le score", () => {
+  /*
+   * Le role du « s » est structurel : il permet au motif de reconnaitre la forme
+   * et d'interpreter « 16 min 34 s » comme 16,57. Ce travail est fait au moment
+   * ou le motif correspond. Ce qui peut fausser la valeur, ce sont les chiffres.
+   */
+  const avecUniteFloue = zone("16 min 34 s", 40, [
+    { debut: 0, fin: 2, confiance: 95 },
+    { debut: 3, fin: 6, confiance: 40 },
+    { debut: 7, fin: 9, confiance: 93 },
+    { debut: 10, fin: 11, confiance: 40 },
+  ]);
+
+  const lecture = lireChamp("dureeEstimeeMinutes", [avecUniteFloue], REGLES);
+
+  assert.equal(lecture.issue, "lue");
+  assert.equal(lecture.confiance, 93, "seuls « 16 » et « 34 » comptent");
+});
+
+test("un chiffre mal lu, lui, fait hesiter — meme entoure de mots surs", () => {
+  /* Le cas reel de la seconde course de reference : « 34 » a 64. */
+  const avecChiffreFlou = zone("16 min 34 s", 64, [
+    { debut: 0, fin: 2, confiance: 97 },
+    { debut: 3, fin: 6, confiance: 95 },
+    { debut: 7, fin: 9, confiance: 64 },
+    { debut: 10, fin: 11, confiance: 64 },
+  ]);
+
+  const lecture = lireChamp("dureeEstimeeMinutes", [avecChiffreFlou], REGLES);
+
+  assert.equal(lecture.issue, "peu_sure");
+  assert.equal(lecture.confiance, 64, "un chiffre incertain change la valeur");
+});
+
+test("une forme tronquee par un chiffre voisin ne conclut rien", () => {
+  /*
+   * « 116 min » reconnu comme « 16 min » donnerait une valeur fausse avec une
+   * confiance excellente : c'est le garde-fou de structure.
+   */
+  const tronquee = zone("116 min", 95, [
+    { debut: 0, fin: 3, confiance: 95 },
+    { debut: 4, fin: 7, confiance: 95 },
+  ]);
+
+  assert.equal(lireChamp("dureeEstimeeMinutes", [tronquee], REGLES).issue, "ambigue");
+});
+
+test("un chiffre separe par une espace ne tronque rien", () => {
+  /* « 16 min 34 s 11.18 km » : la distance qui suit n'est pas une troncature. */
+  const composee = zone("16 min 34 s 11.18 km", 90, [
+    { debut: 0, fin: 2, confiance: 95 },
+    { debut: 3, fin: 6, confiance: 95 },
+    { debut: 7, fin: 9, confiance: 95 },
+    { debut: 10, fin: 11, confiance: 90 },
+    { debut: 12, fin: 17, confiance: 96 },
+    { debut: 18, fin: 20, confiance: 94 },
+  ]);
+
+  assert.equal(lireChamp("dureeEstimeeMinutes", [composee], REGLES).issue, "lue");
+  assert.equal(lireChamp("distanceKm", [composee], REGLES).valeur, 11.18);
+});
