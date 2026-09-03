@@ -16,6 +16,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { arreterLecteur, demarrerLecteur } from "../lib/ocr-tesseract.ts";
+import { reglesClassificationDepuis } from "../lib/classification-regles.ts";
 import { uniqueEnVigueur } from "../lib/periodes.ts";
 import { traiterEnAttente } from "../lib/traitement-lecture.ts";
 
@@ -55,6 +56,9 @@ const regles = {
   },
   champsFacultatifs: captures.politique_verification.declaratifs,
   champsProbants: captures.politique_verification.probants,
+  /* La classification consulte les mêmes barèmes que la page qui les affiche,
+     par la même fonction : deux consommateurs, une seule vérité. */
+  reglesClassification: (date, contexte) => reglesClassificationDepuis(baremes, date, contexte),
 };
 
 console.log("Seuils en vigueur :");
@@ -75,6 +79,14 @@ if (verdicts.length === 0) {
 
 for (const verdict of verdicts) {
   console.log(`  ${verdict.id.slice(0, 8)}  ->  ${verdict.statut}${verdict.motif ? ` (${verdict.motif})` : ""}`);
+  for (const classement of verdict.classements ?? []) {
+    console.log(
+      `      classe ${classement.categorie}` +
+        (classement.valeurBareme === null
+          ? ""
+          : ` (annonce ${classement.valeurBareme.toFixed(2)}, constate ${classement.valeurConstatee.toFixed(2)})`)
+    );
+  }
   for (const [champ, lue] of Object.entries(verdict.valeurs)) {
     const confiance = verdict.confiances[champ];
     console.log(

@@ -175,3 +175,43 @@ export const classer = (
 
   return classements;
 };
+
+/**
+ * Précision des colonnes `valeur_bareme` et `valeur_constatee` : numeric(10, 4).
+ * Comparer au-delà ferait passer pour un changement ce que la base a simplement
+ * arrondi en l'écrivant.
+ */
+const DECIMALES_EN_BASE = 4;
+
+const empreinte = (classement: Classement): string =>
+  [
+    classement.categorie,
+    classement.cleBareme ?? "",
+    classement.unite ?? "",
+    classement.valeurBareme === null ? "" : classement.valeurBareme.toFixed(DECIMALES_EN_BASE),
+    classement.valeurConstatee === null
+      ? ""
+      : classement.valeurConstatee.toFixed(DECIMALES_EN_BASE),
+  ].join("|");
+
+/**
+ * Deux classifications disent-elles la même chose ?
+ *
+ * Sert à n'écrire une nouvelle génération que lorsque quelque chose a changé.
+ * Une reclassification qui aboutit au même verdict ne doit pas laisser de trace :
+ * l'historique doit contenir des ÉVÉNEMENTS, pas des exécutions. Un journal qui
+ * grossit à chaque passage cesse d'être lisible, et ce qui n'est plus lu ne
+ * prouve plus rien.
+ */
+export const memeClassification = (
+  a: readonly Classement[],
+  b: readonly Classement[]
+): boolean => {
+  if (a.length !== b.length) return false;
+
+  const trier = (classements: readonly Classement[]) => classements.map(empreinte).sort();
+  const gauche = trier(a);
+  const droite = trier(b);
+
+  return gauche.every((valeur, index) => valeur === droite[index]);
+};

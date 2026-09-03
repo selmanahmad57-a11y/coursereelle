@@ -26,6 +26,9 @@
  * l'alias d'importation de la configuration n'existe pas.
  */
 
+import { classer, type Classement, type ReglesClassification } from "./classification.ts";
+import { enregistrerClassification } from "./classification-db.ts";
+import type { ContexteCourse } from "./classification-regles.ts";
 import { db } from "./db.ts";
 import {
   lireCapture as extraireValeurs,
@@ -47,6 +50,9 @@ export interface CourseAlire {
   id: string;
   cleR2: string;
   saisie: ValeursSaisies;
+  /** La date de la course, et non celle du jour : elle résout les barèmes datés. */
+  dateCourse: string;
+  contexte: ContexteCourse;
 }
 
 export const STATUTS_LECTURE = [
@@ -67,6 +73,8 @@ export interface Verdict {
   confiances: Record<ChampVerifie, number | null>;
   /** Ce que la capture a confirmé, champ par champ, et sinon pourquoi. */
   statutsLecture: Record<ChampVerifie, StatutLecture>;
+  /** Les catégories de conformité, vides tant que la course n'est pas validée. */
+  classements?: Classement[];
 }
 
 export interface ReglesTraitement {
@@ -80,11 +88,18 @@ export interface ReglesTraitement {
    * distance non vérifiée serait une accusation sans preuve.
    */
   champsProbants: readonly ChampVerifie[];
+  /**
+   * Les barèmes annoncés auxquels comparer une course validée, résolus à sa
+   * date. Une fonction plutôt qu'une table : chaque course a sa date, sa zone et
+   * son véhicule, et un lot de courses n'a pas de barème commun.
+   */
+  reglesClassification: (date: string, contexte: ContexteCourse) => ReglesClassification;
 }
 
 export const coursesEnAttente = async (limite: number): Promise<CourseAlire[]> => {
   const lignes = (await db()`
-    select id, capture_cle_r2, prix_paye_euros, distance_km, duree_estimee_minutes
+    select id, capture_cle_r2, prix_paye_euros, distance_km, duree_estimee_minutes,
+           date_course, plateforme, zone, vehicule
     from courses
     where statut = 'en_attente_ocr' and capture_cle_r2 is not null
     order by soumise_le
@@ -95,11 +110,24 @@ export const coursesEnAttente = async (limite: number): Promise<CourseAlire[]> =
     prix_paye_euros: string | number;
     distance_km: string | number;
     duree_estimee_minutes: string | number | null;
+    date_course: string | Date;
+    plateforme: string;
+    zone: string | null;
+    vehicule: string;
   }[];
 
   return lignes.map((ligne) => ({
     id: ligne.id,
     cleR2: ligne.capture_cle_r2,
+    dateCourse:
+      ligne.date_course instanceof Date
+        ? ligne.date_course.toISOString().slice(0, 10)
+        : String(ligne.date_course).slice(0, 10),
+    contexte: {
+      plateforme: ligne.plateforme,
+      zone: ligne.zone,
+      vehicule: ligne.vehicule,
+    },
     saisie: {
       prixEuros: Number(ligne.prix_paye_euros),
       distanceKm: Number(ligne.distance_km),
@@ -216,6 +244,30 @@ export const enregistrerVerdict = async (verdict: Verdict): Promise<void> => {
   `;
 };
 
+/**
+ * La classification est une CONSÉQUENCE du verdict, et vit donc au même endroit.
+ *
+ * Elle ne s'applique qu'à une course validée : ranger une course rejetée « sous
+ * la grille » reviendrait à tirer une conclusion d'une donnée dont on vient de
+ * dire qu'elle n'était pas vérifiée.
+ */
+export const classerCourse = (
+  course: CourseAlire,
+  verdict: Verdict,
+  regles: ReglesTraitement
+): Classement[] => {
+  if (verdict.statut !== "validee_auto") return [];
+
+  return classer(
+    {
+      prixEuros: course.saisie.prixEuros,
+      distanceKm: course.saisie.distanceKm,
+      dureeEstimeeMinutes: course.saisie.dureeEstimeeMinutes,
+    },
+    regles.reglesClassification(course.dateCourse, course.contexte)
+  );
+};
+
 export const traiterEnAttente = async (
   regles: ReglesTraitement,
   limite: number
@@ -225,7 +277,14 @@ export const traiterEnAttente = async (
   for (const course of await coursesEnAttente(limite)) {
     const verdict = await lireUneCourse(course, regles);
     await enregistrerVerdict(verdict);
-    verdicts.push(verdict);
+
+    const classements = classerCourse(course, verdict, regles);
+
+    if (classements.length > 0) {
+      await enregistrerClassification(course.id, course.dateCourse, classements);
+    }
+
+    verdicts.push({ ...verdict, classements });
   }
 
   return verdicts;

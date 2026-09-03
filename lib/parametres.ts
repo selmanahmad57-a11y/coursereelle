@@ -16,12 +16,16 @@ import provenance from "@/config/provenance.json";
 import villes from "@/config/villes.json";
 
 import { baremes, formaterNombre, formaterValeur } from "./baremes";
-import { CLES_ANNONCEES, CLES_LEGALES, CLES_SYSTEME, JETONS_TEXTE, UNITES } from "./cles";
+import { CLES_LEGALES, CLES_SYSTEME, JETONS_TEXTE, UNITES } from "./cles";
 import { uniqueEnVigueur } from "./periodes";
 import type { Limites } from "./validation/anti-fraude.ts";
 import type { ReglesAuthenticite } from "./validation/authenticite.ts";
 import type { ContraintesCapture } from "./validation/capture.ts";
 import type { ReglesClassification } from "./classification.ts";
+import {
+  reglesClassificationDepuis,
+  type ContexteCourse,
+} from "./classification-regles.ts";
 import type { Gabarit } from "./validation/gabarit.ts";
 import type { SeuilsSession } from "./validation/regles-session.ts";
 import type { Tolerances } from "./validation/ocr.ts";
@@ -286,22 +290,8 @@ export const valeursDesJetons = (date: string): Record<string, string> =>
  */
 export const reglesClassification = (
   date: string,
-  {
-    plateforme,
-    zone,
-    vehicule,
-  }: { plateforme: string; zone: string | null; vehicule: string | null }
-): ReglesClassification => ({
-  minimumParCourse: regleAnnoncee(CLES_ANNONCEES.minimumParCourse, date, { plateforme }),
-  grille: {
-    retraitFixe: regleAnnoncee(CLES_ANNONCEES.retraitFixe, date, { plateforme }),
-    parKm: regleAnnoncee(CLES_ANNONCEES.remunerationParKm, date, { plateforme, zone }),
-    remiseFixe: regleAnnoncee(CLES_ANNONCEES.remiseFixe, date, { plateforme }),
-    fraisServicePourcent: regleAnnoncee(CLES_ANNONCEES.fraisService, date, { plateforme }),
-  },
-  vitesseMaximale:
-    vehicule === null ? null : parametreSysteme(CLES_SYSTEME.vitesseMaximale, date, vehicule),
-});
+  contexte: ContexteCourse
+): ReglesClassification => reglesClassificationDepuis(baremes, date, contexte);
 
 /* ------------------------------------------------------------------ */
 /* Réglages d'affichage                                                */

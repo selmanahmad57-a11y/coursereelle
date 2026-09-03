@@ -201,3 +201,78 @@ test("chaque classement porte une unite connue, ou aucune valeur", async () => {
     }
   }
 });
+
+test("deux classifications identiques ne produisent pas de nouvelle generation", async () => {
+  const { memeClassification } = await import("../lib/classification.ts");
+
+  const course = { prixEuros: 8.08, distanceKm: 12.2, dureeEstimeeMinutes: null };
+  const a = classer(course, REGLES);
+  const b = classer(course, REGLES);
+
+  assert.equal(memeClassification(a, b), true);
+  /* L'ordre ne fait pas la difference : ce sont des ensembles. */
+  assert.equal(memeClassification(a, [...b].reverse()), true);
+});
+
+test("un ecart au-dela de la precision de la base fait une generation nouvelle", async () => {
+  const { memeClassification } = await import("../lib/classification.ts");
+
+  const avant = classer({ prixEuros: 8.08, distanceKm: 12.2, dureeEstimeeMinutes: null }, REGLES);
+  const apres = classer(
+    { prixEuros: 8.08, distanceKm: 12.2, dureeEstimeeMinutes: null },
+    { ...REGLES, grille: { ...GRILLE, parKm: 0.9 } }
+  );
+
+  assert.equal(memeClassification(avant, apres), false, "une grille corrigee doit se voir");
+});
+
+test("un ecart en deca de la precision de la base n'en fait pas une", async () => {
+  /*
+   * Les colonnes sont en numeric(10, 4) : un ecart sur la cinquieme decimale
+   * disparait a l'ecriture. Le traiter comme un changement ferait grossir
+   * l'historique d'evenements que la base n'a jamais enregistres.
+   */
+  const { memeClassification } = await import("../lib/classification.ts");
+
+  const a = [
+    {
+      categorie: "sous_grille_kilometrique",
+      cleBareme: "grille_kilometrique",
+      valeurBareme: 12.70152,
+      valeurConstatee: 8.08,
+      unite: "EUR_PAR_COURSE",
+    },
+  ];
+  const b = [{ ...a[0], valeurBareme: 12.70151 }];
+
+  assert.equal(memeClassification(a, b), true);
+});
+
+test("une course rejetee n'est jamais classee", async () => {
+  /*
+   * Ranger une course rejetee « sous la grille » reviendrait a tirer une
+   * conclusion d'une donnee dont on vient de dire qu'elle n'etait pas verifiee.
+   */
+  const { classerCourse } = await import("../lib/traitement-lecture.ts");
+
+  const course = {
+    id: "essai",
+    cleR2: "captures/essai.png",
+    dateCourse: "2026-09-01",
+    contexte: { plateforme: "uber_eats", zone: "hors_paris", vehicule: "voiture" },
+    saisie: { prixEuros: 8.08, distanceKm: 12.2, dureeEstimeeMinutes: null },
+  };
+
+  const regles = { reglesClassification: () => REGLES };
+
+  assert.deepEqual(
+    classerCourse(course, { statut: "rejetee_auto" }, regles),
+    [],
+    "un rejet ne produit aucun classement"
+  );
+
+  assert.deepEqual(
+    categoriesDe(classerCourse(course, { statut: "validee_auto" }, regles)),
+    ["sous_grille_kilometrique"]
+  );
+});

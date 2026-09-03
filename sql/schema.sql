@@ -386,3 +386,41 @@ end $$;
 
 create index if not exists lectures_capture_statut_idx
   on lectures_capture (champ, statut_lecture);
+
+-- Une classification devient une GÉNÉRATION, et non plus un état.
+--
+-- La clé primaire portait (course_id, categorie) : reclasser une course après un
+-- avenant ou une correction de grille écrasait le verdict précédent, et le site
+-- perdait la seule trace de ce qu'il avait conclu, et quand. Ajouter la date de
+-- calcul à la clé transforme l'écrasement en événement : les lignes s'empilent,
+-- la classification en vigueur est celle de la dernière date, et l'historique se
+-- relit. Conditionnel, pour ne rien casser sur une base déjà migrée.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_index i
+    join pg_attribute a on a.attrelid = i.indrelid and a.attnum = any (i.indkey)
+    where i.indrelid = 'classifications'::regclass
+      and i.indisprimary
+      and a.attname = 'calculee_le'
+  ) then
+    alter table classifications drop constraint classifications_pkey;
+    alter table classifications add primary key (course_id, categorie, calculee_le);
+  end if;
+end $$;
+
+-- Retrouver la génération en vigueur d'une course sans parcourir son historique.
+create index if not exists classifications_generation_idx
+  on classifications (course_id, calculee_le desc);
+
+-- L'unité des deux valeurs comparées. Elle change d'une catégorie à l'autre —
+-- des euros pour un manque à gagner, des kilomètres par heure pour une
+-- estimation intenable — et une valeur relue sans son unité, ou avec celle de la
+-- catégorie voisine, ne prouve plus rien. Elle accompagne donc le barème : ni
+-- l'un ni l'autre pour « conforme », les deux sinon.
+alter table classifications add column if not exists unite text;
+
+alter table classifications drop constraint if exists unite_avec_bareme;
+alter table classifications add constraint unite_avec_bareme
+  check ((cle_bareme is null) = (unite is null));

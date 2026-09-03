@@ -11,10 +11,12 @@
     "test": "node --test 'tests/**/*.test.mjs'",
     "valider:baremes": "node scripts/valider-baremes.mjs config/baremes.json config/baremes.schema.json",
     "verifier:env": "node scripts/verifier-env.mjs .env.local",
+    "schema": "node scripts/avec-env.mjs .env.local node scripts/appliquer-schema.mjs",
     "entretien": "node scripts/avec-env.mjs .env.local node scripts/entretenir.mjs",
     "calibrer": "node scripts/calibrer.mjs",
     "convertir:candidats": "node scripts/convertir-candidats.mjs",
-    "lecture": "node scripts/avec-env.mjs .env.local node scripts/lire-captures.mjs"
+    "lecture": "node scripts/avec-env.mjs .env.local node scripts/lire-captures.mjs",
+    "classer": "node scripts/avec-env.mjs .env.local node scripts/classer.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1125.0",
