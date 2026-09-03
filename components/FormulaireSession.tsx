@@ -6,6 +6,7 @@ import libelles from "@/config/libelles.json";
 import { formaterValeur } from "@/lib/baremes";
 import { calculerSession, horodatagesSession } from "@/lib/calculs-session.ts";
 import { UNITES } from "@/lib/cles.ts";
+import { remplir } from "@/lib/modeles.ts";
 import {
   abonnerStockage,
   aujourdhui,
@@ -29,6 +30,7 @@ const textes = libelles.formulaire_session;
 const motifs = libelles.motifs_session as Record<string, string>;
 
 /** Unité d'affichage de chaque anomalie de session, pour ne rien coder en dur ici. */
+
 const unitesAnomalie: Record<string, string> = {
   duree_sous_minimum: UNITES.minutes,
   duree_sur_maximum: UNITES.minutes,
@@ -79,6 +81,17 @@ export default function FormulaireSession() {
 
   const mettreEnForme = (valeur: number | null, unite: string) =>
     valeur === null ? null : formaterValeur(valeur, unite);
+
+  /* Les grandeurs telles que le livreur les a saisies, pour ecrire le calcul en
+     toutes lettres a cote de chaque resultat. */
+  const saisi = {
+    revenu: mettreEnForme(session.revenuPlateformeEuros, UNITES.euroParCourse),
+    duree: mettreEnForme(resultat.dureeConnecteeMinutes, UNITES.minutes),
+    en_course: mettreEnForme(session.minutesEnCourse, UNITES.minutes),
+    courses: session.nombreCourses === null ? null : String(session.nombreCourses),
+    connexion: connexion === "" ? null : connexion,
+    deconnexion: deconnexion === "" ? null : deconnexion,
+  };
 
   const rienACalculer = resultat.dureeConnecteeMinutes === null;
 
@@ -236,10 +249,12 @@ export default function FormulaireSession() {
               <dl className="mt-2 divide-y divide-neutral-100">
                 <Ligne
                   accent
+                  calcul={remplir(textes.resultats.calculs.taux_connecte, saisi)}
                   intitule={textes.resultats.taux_connecte}
                   valeur={mettreEnForme(resultat.tauxHoraireConnecte, UNITES.euroParHeure)}
                 />
                 <Ligne
+                  calcul={remplir(textes.resultats.calculs.duree_connectee, saisi)}
                   intitule={textes.resultats.duree_connectee}
                   valeur={mettreEnForme(resultat.dureeConnecteeMinutes, UNITES.minutes)}
                 />
@@ -251,10 +266,12 @@ export default function FormulaireSession() {
                   )}
                 />
                 <Ligne
+                  calcul={remplir(textes.resultats.calculs.part_payee, saisi)}
                   intitule={textes.resultats.part_payee}
                   valeur={mettreEnForme(resultat.partPayee, UNITES.pourcent)}
                 />
                 <Ligne
+                  calcul={remplir(textes.resultats.calculs.cadence, saisi)}
                   intitule={textes.resultats.cadence}
                   valeur={mettreEnForme(resultat.coursesParHeure, UNITES.coursesParHeure)}
                 />

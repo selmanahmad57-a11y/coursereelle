@@ -199,7 +199,16 @@
       "net": "Net estimé, après cotisations",
       "avec_pourboire": "Avec pourboire",
       "vitesse": "Vitesse moyenne",
-      "precision_pourboire": "Le chiffre principal exclut les pourboires : c'est le seul comparable aux barèmes annoncés."
+      "precision_pourboire": "Le chiffre principal exclut les pourboires : c'est le seul comparable aux barèmes annoncés.",
+      "calculs": {
+        "taux_plateforme": "{prix} en {duree_reelle}",
+        "avec_pourboire": "{prix} et {pourboire} de pourboire en {duree_reelle}",
+        "taux_plateforme_estime": "{prix} en {duree_estimee} affichées par l'application",
+        "ecart": "{estime} affichés contre {reel} réellement gagnés",
+        "net": "{reel} moins {taux} de cotisations",
+        "vitesse": "{distance} en {duree_reelle}"
+      },
+      "provenance": "Chaque chiffre affiche d'où il sort : vous devez pouvoir refaire le calcul."
     },
     "anomalies_titre": "À vérifier avant d'envoyer",
     "anomalies_introduction": "Ces contrôles ne portent que sur la cohérence physique. Le montant payé n'entre jamais en compte : une course mal payée est une preuve à publier, pas une erreur.",
@@ -335,7 +344,13 @@
       "taux_connecte": "Par heure connectée",
       "part_payee": "Part du temps réellement payée",
       "cadence": "Cadence",
-      "precision": "Le taux est calculé sur le temps CONNECTÉ, pas sur le temps « en course » estimé par l'application. C'est précisément l'écart que la garantie horaire ignore."
+      "precision": "Le taux est calculé sur le temps CONNECTÉ, pas sur le temps « en course » estimé par l'application. C'est précisément l'écart que la garantie horaire ignore.",
+      "calculs": {
+        "taux_connecte": "{revenu} pour {duree} connectées",
+        "duree_connectee": "de {connexion} à {deconnexion}",
+        "part_payee": "{en_course} en course sur {duree} connectées",
+        "cadence": "{courses} courses en {duree}"
+      }
     },
     "anomalies_titre": "À vérifier avant d'envoyer",
     "envoi": {
@@ -352,7 +367,9 @@
     "avant_seuil": "Les statistiques seront publiées à partir de {seuil}.",
     "restant": "Il en manque {restant}.",
     "pourquoi": "Avant ce seuil, publier un chiffre construit sur quelques dizaines de courses ferait plus de mal qu'un site vide : il suffirait d'un petit lot de fausses données pour le faire basculer. Le compteur, lui, ne ment pas.",
-    "base_absente": "La base de données n'est pas encore branchée : aucune course ne peut être reçue pour le moment. Ce compteur affiche donc zéro, et non une estimation."
+    "base_absente": "La base de données n'est pas encore branchée : aucune course ne peut être reçue pour le moment. Ce compteur affiche donc zéro, et non une estimation.",
+    "provenance_compteur": "{validees} validées sur {recues} reçues",
+    "provenance_seuil": "Seuil publié sur la page Méthode, comme toutes les valeurs du site."
   },
   "surveillance": {
     "titre": "Surveillance",

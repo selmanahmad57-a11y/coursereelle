@@ -36,6 +36,11 @@ export default async function PageStatistiques() {
         <p className="mt-1 font-mono text-4xl font-semibold tabular-nums text-neutral-900">
           {formaterNombre(etat.effectif)}
         </p>
+        <p className="mt-1 text-xs text-neutral-500">
+          {textes.provenance_compteur
+            .replace("{validees}", formaterNombre(etat.effectif))
+            .replace("{recues}", formaterNombre(donnees.effectifRecu))}
+        </p>
 
         <p className="mt-4 text-sm text-neutral-700">
           {etat.mode === "aucune_donnee" ? textes.aucune_donnee : null}{" "}
@@ -49,6 +54,8 @@ export default async function PageStatistiques() {
               )
             : null}
         </p>
+
+        <p className="mt-1 text-xs text-neutral-500">{textes.provenance_seuil}</p>
 
         {donnees.requetesDisponibles ? null : (
           <p className="mt-3 border-t border-neutral-200 pt-3 text-xs text-neutral-600">

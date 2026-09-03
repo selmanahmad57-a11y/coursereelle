@@ -91,10 +91,9 @@ export default function FormulaireCourse() {
     [prixPaye, pourboire, distance, dureeReelle, dureeEstimee]
   );
 
-  const resultat = useMemo(
-    () => calculer(course, dateCourse === "" ? null : tauxCotisations(dateCourse)),
-    [course, dateCourse]
-  );
+  const taux = dateCourse === "" ? null : tauxCotisations(dateCourse);
+
+  const resultat = useMemo(() => calculer(course, taux), [course, taux]);
 
   const anomalies = useMemo(() => {
     if (dateCourse === "") return [];
@@ -346,7 +345,12 @@ export default function FormulaireCourse() {
         </section>
       )}
 
-      <CalculEnDirect anomalies={anomalies} resultat={resultat} />
+      <CalculEnDirect
+        anomalies={anomalies}
+        course={course}
+        resultat={resultat}
+        tauxCotisations={taux}
+      />
 
       <section>
         {cleTurnstile ? (

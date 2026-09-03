@@ -1,10 +1,14 @@
 import libelles from "@/config/libelles.json";
 import { formaterValeur } from "@/lib/baremes";
-import { UNITES } from "@/lib/cles";
-import type { Resultat } from "@/lib/calculs";
-import type { Anomalie } from "@/lib/validation/regles-physiques";
+import { UNITES } from "@/lib/cles.ts";
+import { remplir } from "@/lib/modeles.ts";
+import type { Course, Resultat } from "@/lib/calculs.ts";
+import type { Anomalie } from "@/lib/validation/regles-physiques.ts";
+
+import { Ligne } from "./Champ";
 
 const textes = libelles.formulaire.resultats;
+const modeles = textes.calculs;
 
 const tablesAnomalies = libelles.anomalies as Record<string, { unite: string; message: string }>;
 
@@ -18,36 +22,16 @@ const messageAnomalie = (anomalie: Anomalie): string => {
     .replace("{limite}", formaterValeur(anomalie.limite, modele.unite));
 };
 
-function Ligne({
-  intitule,
-  valeur,
-  accent = false,
-}: {
-  intitule: string;
-  valeur: string | null;
-  accent?: boolean;
-}) {
-  if (valeur === null) return null;
-
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-1.5">
-      <dt className="text-sm text-neutral-600">{intitule}</dt>
-      <dd
-        className={`font-mono tabular-nums ${
-          accent ? "text-xl font-semibold text-neutral-900" : "text-sm text-neutral-800"
-        }`}
-      >
-        {valeur}
-      </dd>
-    </div>
-  );
-}
 
 export default function CalculEnDirect({
+  course,
   resultat,
+  tauxCotisations,
   anomalies,
 }: {
+  course: Course;
   resultat: Resultat;
+  tauxCotisations: number | null;
   anomalies: Anomalie[];
 }) {
   const mettreEnForme = (valeur: number | null, unite: string) =>
@@ -61,6 +45,22 @@ export default function CalculEnDirect({
     resultat.tauxPlateforme !== null &&
     resultat.tauxAvecPourboire !== resultat.tauxPlateforme;
 
+  /*
+   * Les grandeurs telles que le livreur les a saisies. Elles servent à écrire le
+   * calcul en toutes lettres : un chiffre qui ne montre pas d'où il sort se lit
+   * comme une erreur, ce qu'un premier test réel a confirmé.
+   */
+  const saisi = {
+    prix: mettreEnForme(course.prixPaye, UNITES.euroParCourse),
+    pourboire: mettreEnForme(course.pourboire, UNITES.euroParCourse),
+    distance: mettreEnForme(course.distanceKm, UNITES.kilometre),
+    duree_reelle: mettreEnForme(course.dureeReelleMinutes, UNITES.minutes),
+    duree_estimee: mettreEnForme(course.dureeEstimeeMinutes, UNITES.minutes),
+    reel: mettreEnForme(resultat.tauxPlateforme, UNITES.euroParHeure),
+    estime: mettreEnForme(resultat.tauxPlateformeEstime, UNITES.euroParHeure),
+    taux: mettreEnForme(tauxCotisations, UNITES.pourcent),
+  };
+
   return (
     <div className="space-y-4">
       <section
@@ -72,47 +72,54 @@ export default function CalculEnDirect({
         {rienACalculer ? (
           <p className="mt-2 text-sm text-neutral-600">{textes.attente}</p>
         ) : (
-          <dl className="mt-2 divide-y divide-neutral-100">
-            <Ligne
-              accent
-              intitule={textes.taux_plateforme}
-              valeur={mettreEnForme(resultat.tauxPlateforme, UNITES.euroParHeure)}
-            />
-            <Ligne
-              intitule={textes.avec_pourboire}
-              valeur={
-                avecPourboireDiffere
-                  ? mettreEnForme(resultat.tauxAvecPourboire, UNITES.euroParHeure)
-                  : null
-              }
-            />
-            <Ligne
-              intitule={textes.taux_plateforme_estime}
-              valeur={mettreEnForme(resultat.tauxPlateformeEstime, UNITES.euroParHeure)}
-            />
-            <Ligne
-              intitule={textes.ecart}
-              valeur={
-                resultat.ecartRelatif === null
-                  ? null
-                  : `+ ${formaterValeur(resultat.ecartRelatif, UNITES.pourcent)}`
-              }
-            />
-            <Ligne
-              intitule={textes.net}
-              valeur={mettreEnForme(resultat.tauxPlateformeNet, UNITES.euroParHeure)}
-            />
-            <Ligne
-              intitule={textes.vitesse}
-              valeur={mettreEnForme(resultat.vitesseMoyenne, UNITES.kilometreParHeure)}
-            />
-          </dl>
-        )}
+          <>
+            <dl className="mt-2 divide-y divide-neutral-100">
+              <Ligne
+                accent
+                calcul={remplir(modeles.taux_plateforme, saisi)}
+                intitule={textes.taux_plateforme}
+                valeur={mettreEnForme(resultat.tauxPlateforme, UNITES.euroParHeure)}
+              />
+              <Ligne
+                calcul={remplir(modeles.avec_pourboire, saisi)}
+                intitule={textes.avec_pourboire}
+                valeur={
+                  avecPourboireDiffere
+                    ? mettreEnForme(resultat.tauxAvecPourboire, UNITES.euroParHeure)
+                    : null
+                }
+              />
+              <Ligne
+                calcul={remplir(modeles.taux_plateforme_estime, saisi)}
+                intitule={textes.taux_plateforme_estime}
+                valeur={mettreEnForme(resultat.tauxPlateformeEstime, UNITES.euroParHeure)}
+              />
+              <Ligne
+                calcul={remplir(modeles.ecart, saisi)}
+                intitule={textes.ecart}
+                valeur={
+                  resultat.ecartRelatif === null
+                    ? null
+                    : `+ ${formaterValeur(resultat.ecartRelatif, UNITES.pourcent)}`
+                }
+              />
+              <Ligne
+                calcul={remplir(modeles.net, saisi)}
+                intitule={textes.net}
+                valeur={mettreEnForme(resultat.tauxPlateformeNet, UNITES.euroParHeure)}
+              />
+              <Ligne
+                calcul={remplir(modeles.vitesse, saisi)}
+                intitule={textes.vitesse}
+                valeur={mettreEnForme(resultat.vitesseMoyenne, UNITES.kilometreParHeure)}
+              />
+            </dl>
 
-        {rienACalculer ? null : (
-          <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
-            {textes.precision_pourboire}
-          </p>
+            <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
+              {textes.precision_pourboire}
+            </p>
+            <p className="mt-1 text-xs text-neutral-500">{textes.provenance}</p>
+          </>
         )}
       </section>
 

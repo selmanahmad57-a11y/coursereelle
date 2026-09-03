@@ -18,6 +18,8 @@ export interface DonneesPubliques {
   requetesDisponibles: boolean;
   /** Taux horaires plateforme, hors pourboires, des courses validées. */
   tauxHorairesPlateforme: number[];
+  /** Toutes les courses reçues, quel que soit leur statut : la provenance du compteur. */
+  effectifRecu: number;
 }
 
 /** La base est-elle au moins configurée ? Sert à expliquer l'état, jamais à inventer. */
@@ -30,18 +32,28 @@ export const baseConfiguree = (): boolean =>
  * public affiche donc zéro, ce qui est la vérité, et non une estimation.
  */
 export const lireDonneesPubliques = async (): Promise<DonneesPubliques> => {
-  if (!baseConfiguree()) return { requetesDisponibles: false, tauxHorairesPlateforme: [] };
+  if (!baseConfiguree()) {
+    return { requetesDisponibles: false, tauxHorairesPlateforme: [], effectifRecu: 0 };
+  }
 
   const { db } = await import("./db.ts");
 
-  const lignes = (await db()`
-    select prix_paye_euros / (duree_reelle_minutes / 60.0) as taux
-    from courses
-    where statut = 'validee_auto' and duree_reelle_minutes > 0
-  `) as { taux: string | number }[];
+  const sql = db();
+
+  const [lignes, recues] = await Promise.all([
+    sql`
+      select prix_paye_euros / (duree_reelle_minutes / 60.0) as taux
+      from courses
+      where statut = 'validee_auto' and duree_reelle_minutes > 0
+    `,
+    sql`select count(*)::int as nombre from courses`,
+  ]);
 
   return {
     requetesDisponibles: true,
-    tauxHorairesPlateforme: lignes.map((ligne) => Number(ligne.taux)),
+    tauxHorairesPlateforme: (lignes as { taux: string | number }[]).map((ligne) =>
+      Number(ligne.taux)
+    ),
+    effectifRecu: Number((recues as { nombre: number }[])[0].nombre),
   };
 };

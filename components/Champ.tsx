@@ -31,22 +31,36 @@ export function Champ({
   );
 }
 
+/**
+ * Une ligne de résultat, avec le calcul qui l'a produite.
+ *
+ * Règle du projet, apprise d'un test réel : un chiffre affiché seul se lit comme
+ * une affirmation, et une affirmation surprenante se lit comme une erreur. Un
+ * livreur qui saisit 8,08 € pour 30 minutes et voit « 16,16 €/h » croit que son
+ * prix a été doublé. Montrer « 8,08 € en 30 min » à côté lève le doute sans
+ * qu'il ait à demander.
+ */
 export function Ligne({
   intitule,
   valeur,
+  calcul,
   accent = false,
 }: {
   intitule: string;
   valeur: string | null;
+  calcul?: string | null;
   accent?: boolean;
 }) {
   if (valeur === null) return null;
 
   return (
-    <div className="flex items-baseline justify-between gap-4 py-1.5">
-      <dt className="text-sm text-neutral-600">{intitule}</dt>
+    <div className="flex items-baseline justify-between gap-4 py-2">
+      <div className="min-w-0">
+        <dt className="text-sm text-neutral-700">{intitule}</dt>
+        {calcul ? <dd className="text-xs text-neutral-500">{calcul}</dd> : null}
+      </div>
       <dd
-        className={`font-mono tabular-nums ${
+        className={`shrink-0 font-mono tabular-nums ${
           accent ? "text-xl font-semibold text-neutral-900" : "text-sm text-neutral-800"
         }`}
       >
