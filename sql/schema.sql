@@ -77,7 +77,12 @@ create table if not exists courses (
   ocr_distance_km         numeric(6, 2),
   ocr_duree_estimee_minutes integer,
 
-  statut                  text not null check (statut in ('validee_auto', 'rejetee_auto', 'hors_distribution')),
+  -- « en_attente_ocr » : la course a passé les filtres branchés, mais la lecture
+  -- automatique de la capture ne l'a pas encore confirmée. Elle n'est donc PAS
+  -- validée, et n'entre dans aucune statistique publique. Dire « validée » avant
+  -- que la preuve ait été vérifiée reviendrait à revendiquer une vérification
+  -- qui n'a pas eu lieu.
+  statut                  text not null check (statut in ('validee_auto', 'en_attente_ocr', 'rejetee_auto', 'hors_distribution')),
   -- Renseigné si et seulement si la course est rejetée.
   motif_rejet             text,
   -- Quel filtre a rejeté : 1 physique, 2 OCR, 3 anti-fraude, 4 hors distribution.

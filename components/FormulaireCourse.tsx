@@ -1,5 +1,6 @@
 "use client";
 
+import Script from "next/script";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
 import libelles from "@/config/libelles.json";
@@ -35,6 +36,10 @@ import ChampCapture from "./ChampCapture";
 
 const textes = libelles.formulaire;
 
+/* Publique par nature : le prefixe NEXT_PUBLIC_ est ce qui autorise son passage
+   au navigateur. La cle secrete, elle, ne quitte jamais le serveur. */
+const cleTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
 const MILLISECONDES_PAR_JOUR = 86_400_000;
 
 const joursEcoules = (date: string, reference: string): number | null => {
@@ -57,6 +62,12 @@ export default function FormulaireCourse() {
   const [pourboire, setPourboire] = useState("");
   const [dureeEstimee, setDureeEstimee] = useState("");
   const [dureeReelle, setDureeReelle] = useState("");
+
+  const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
+  const [retourEnvoi, setRetourEnvoi] = useState<{
+    reussite: boolean;
+    message: string;
+  } | null>(null);
 
   const contexte = contexteSaisi ?? decoder(memoire);
   const dateCourse = dateSaisie ?? dateDuJour;
@@ -93,13 +104,48 @@ export default function FormulaireCourse() {
     );
   }, [course, dateCourse, contexte.vehicule]);
 
+  const envoyer = async (evenement: React.FormEvent<HTMLFormElement>) => {
+    evenement.preventDefault();
+
+    const formulaire = new FormData(evenement.currentTarget);
+
+    /* Le contrôle du navigateur ne protège rien : celui du serveur fait foi.
+       Celui-ci n'existe que pour éviter un aller-retour inutile. */
+    const capture = formulaire.get("capture");
+    if (!(capture instanceof File) || capture.size === 0) {
+      setRetourEnvoi({ reussite: false, message: textes.envoi.capture_requise });
+      return;
+    }
+
+    setEnvoi("en_cours");
+    setRetourEnvoi(null);
+
+    try {
+      const reponse = await fetch("/api/courses", { method: "POST", body: formulaire });
+      const corps = (await reponse.json()) as { statut?: string; motif?: string };
+
+      const reussite = reponse.ok && corps.statut !== "rejetee_auto";
+
+      setRetourEnvoi({
+        reussite,
+        message: reussite
+          ? textes.envoi.reussite
+          : `${textes.envoi.rejet} ${corps.motif ?? ""}`.trim(),
+      });
+    } catch {
+      setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
+    } finally {
+      setEnvoi("repos");
+    }
+  };
+
   const limiteAnciennete = dateDuJour === "" ? null : ancienneteMaximale(dateDuJour);
   const anciennete = joursEcoules(dateCourse, dateDuJour);
   const tropAncienne =
     limiteAnciennete !== null && anciennete !== null && anciennete > limiteAnciennete;
 
   return (
-    <div className="space-y-8">
+    <form className="space-y-8" onSubmit={envoyer}>
       <section className="space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-neutral-900">{textes.section_contexte}</h2>
@@ -110,6 +156,7 @@ export default function FormulaireCourse() {
           <select
             className={classesSaisie}
             id="ville"
+            name="ville"
             onChange={(evenement) => majContexte("ville", evenement.target.value)}
             value={contexte.ville}
           >
@@ -128,6 +175,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="autre-ville"
+            name="ville_libre"
               onChange={(evenement) => setAutreVille(evenement.target.value)}
               type="text"
               value={autreVille}
@@ -147,6 +195,7 @@ export default function FormulaireCourse() {
           <select
             className={classesSaisie}
             id="plateforme"
+            name="plateforme"
             onChange={(evenement) => majContexte("plateforme", evenement.target.value)}
             value={contexte.plateforme}
           >
@@ -163,6 +212,7 @@ export default function FormulaireCourse() {
           <select
             className={classesSaisie}
             id="vehicule"
+            name="vehicule"
             onChange={(evenement) => majContexte("vehicule", evenement.target.value)}
             value={contexte.vehicule}
           >
@@ -183,6 +233,7 @@ export default function FormulaireCourse() {
           <input
             className={classesSaisie}
             id="date-course"
+            name="date_course"
             max={dateDuJour}
             onChange={(evenement) => setDateSaisie(evenement.target.value)}
             type="date"
@@ -204,6 +255,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="distance"
+            name="distance_km"
               inputMode="decimal"
               onChange={(evenement) => setDistance(evenement.target.value)}
               type="text"
@@ -215,6 +267,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="prix-paye"
+            name="prix_paye_euros"
               inputMode="decimal"
               onChange={(evenement) => setPrixPaye(evenement.target.value)}
               type="text"
@@ -226,6 +279,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="duree-estimee"
+            name="duree_estimee_minutes"
               inputMode="numeric"
               onChange={(evenement) => setDureeEstimee(evenement.target.value)}
               type="text"
@@ -241,6 +295,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="duree-reelle"
+            name="duree_reelle_minutes"
               inputMode="numeric"
               onChange={(evenement) => setDureeReelle(evenement.target.value)}
               type="text"
@@ -257,6 +312,7 @@ export default function FormulaireCourse() {
           <input
             className={classesSaisie}
             id="pourboire"
+            name="pourboire_euros"
             inputMode="decimal"
             onChange={(evenement) => setPourboire(evenement.target.value)}
             type="text"
@@ -274,15 +330,41 @@ export default function FormulaireCourse() {
       <CalculEnDirect anomalies={anomalies} resultat={resultat} />
 
       <section>
+        {cleTurnstile ? (
+          <>
+            <p className="text-xs text-neutral-600">{textes.envoi.verification}</p>
+            <div className="cf-turnstile mt-2" data-sitekey={cleTurnstile} />
+            <Script
+              src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+              strategy="afterInteractive"
+            />
+          </>
+        ) : (
+          <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {textes.envoi.turnstile_absent}
+          </p>
+        )}
+
         <button
-          className="w-full rounded-md bg-neutral-300 px-4 py-3 text-base font-medium text-neutral-600"
-          disabled
-          type="button"
+          className="mt-4 w-full rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white disabled:bg-neutral-300 disabled:text-neutral-600"
+          disabled={!cleTurnstile || envoi === "en_cours"}
+          type="submit"
         >
-          {textes.envoi.bouton}
+          {envoi === "en_cours" ? textes.envoi.en_cours : textes.envoi.bouton}
         </button>
-        <p className="mt-2 text-xs text-neutral-600">{textes.envoi.indisponible}</p>
+
+        {retourEnvoi ? (
+          <p
+            className={`mt-3 rounded-md border px-3 py-2 text-sm ${
+              retourEnvoi.reussite
+                ? "border-emerald-300 bg-emerald-50 text-emerald-900"
+                : "border-amber-300 bg-amber-50 text-amber-900"
+            }`}
+          >
+            {retourEnvoi.message}
+          </p>
+        ) : null}
       </section>
-    </div>
+    </form>
   );
 }

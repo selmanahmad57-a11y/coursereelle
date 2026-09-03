@@ -17,6 +17,7 @@ import villes from "@/config/villes.json";
 import { baremes, formaterValeur } from "./baremes";
 import { CLES_LEGALES, CLES_SYSTEME, UNITES } from "./cles";
 import { uniqueEnVigueur } from "./periodes";
+import type { Limites } from "./validation/anti-fraude.ts";
 import type { ReglesAuthenticite } from "./validation/authenticite.ts";
 import type { ContraintesCapture } from "./validation/capture.ts";
 import type { Gabarit } from "./validation/gabarit.ts";
@@ -228,3 +229,17 @@ export const seuilsStatistiques = (
   ecartsTypes: parametreSysteme(CLES_SYSTEME.seuilOutliers, date),
   effectifMinimal: parametreSysteme(CLES_SYSTEME.seuilPublication, date),
 });
+
+/* ------------------------------------------------------------------ */
+/* Anti-fraude                                                         */
+/* ------------------------------------------------------------------ */
+
+export const limitesAntiFraude = (date: string): Limites => ({
+  soumissionsMaxParHeure: parametreSysteme(CLES_SYSTEME.soumissionsParHeure, date),
+  soumissionsMaxParJour: parametreSysteme(CLES_SYSTEME.soumissionsParJour, date),
+  echecsOcrAvantPause: parametreSysteme(CLES_SYSTEME.echecsOcrAvantPause, date),
+  dureePauseHeures: parametreSysteme(CLES_SYSTEME.dureePauseApresEchecs, date),
+});
+
+export const retentionEmpreintesJours = (date: string): number | null =>
+  parametreSysteme(CLES_SYSTEME.retentionEmpreintes, date);

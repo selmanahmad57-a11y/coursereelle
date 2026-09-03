@@ -24,7 +24,24 @@ export interface DonneesPubliques {
 export const baseConfiguree = (): boolean =>
   typeof process.env.DATABASE_URL === "string" && process.env.DATABASE_URL !== "";
 
-export const lireDonneesPubliques = async (): Promise<DonneesPubliques> => ({
-  requetesDisponibles: false,
-  tauxHorairesPlateforme: [],
-});
+/*
+ * Seules les courses VALIDÉES entrent ici. Tant que la lecture automatique de la
+ * capture n'est pas branchée, aucune course n'atteint ce statut : le compteur
+ * public affiche donc zéro, ce qui est la vérité, et non une estimation.
+ */
+export const lireDonneesPubliques = async (): Promise<DonneesPubliques> => {
+  if (!baseConfiguree()) return { requetesDisponibles: false, tauxHorairesPlateforme: [] };
+
+  const { db } = await import("./db.ts");
+
+  const lignes = (await db()`
+    select prix_paye_euros / (duree_reelle_minutes / 60.0) as taux
+    from courses
+    where statut = 'validee_auto' and duree_reelle_minutes > 0
+  `) as { taux: string | number }[];
+
+  return {
+    requetesDisponibles: true,
+    tauxHorairesPlateforme: lignes.map((ligne) => Number(ligne.taux)),
+  };
+};

@@ -147,19 +147,23 @@
   "anomalies": {
     "distance_sous_minimum": {
       "unite": "KM",
-      "message": "Distance de {valeur}, sous le minimum de {limite} : il s'agit très probablement d'une erreur de saisie."
+      "message": "Distance de {valeur}, sous le minimum de {limite} : il s'agit très probablement d'une erreur de saisie.",
+      "libelle": "Distance sous le minimum"
     },
     "distance_sur_maximum": {
       "unite": "KM",
-      "message": "Distance de {valeur}, au-delà du maximum de {limite} : ce n'est plus de la livraison de repas."
+      "message": "Distance de {valeur}, au-delà du maximum de {limite} : ce n'est plus de la livraison de repas.",
+      "libelle": "Distance au-delà du maximum"
     },
     "vitesse_sous_minimum": {
       "unite": "KM_PAR_HEURE",
-      "message": "Vitesse moyenne de {valeur}, sous le minimum de {limite} : la distance ou la durée saisie est probablement fausse."
+      "message": "Vitesse moyenne de {valeur}, sous le minimum de {limite} : la distance ou la durée saisie est probablement fausse.",
+      "libelle": "Vitesse moyenne sous le minimum"
     },
     "vitesse_sur_maximum": {
       "unite": "KM_PAR_HEURE",
-      "message": "Vitesse moyenne de {valeur}, au-delà de {limite} pour ce véhicule : la course est physiquement impossible telle qu'elle est saisie."
+      "message": "Vitesse moyenne de {valeur}, au-delà de {limite} pour ce véhicule : la course est physiquement impossible telle qu'elle est saisie.",
+      "libelle": "Vitesse impossible pour le véhicule"
     }
   },
   "formulaire": {
@@ -203,7 +207,13 @@
     "section_course": "La course",
     "envoi": {
       "bouton": "Envoyer la course",
-      "indisponible": "L'envoi n'est pas encore branché : il attend la base de données et le dépôt de la capture d'écran, qui viennent à la même étape. Le calcul ci-dessous fonctionne déjà."
+      "en_cours": "Envoi…",
+      "verification": "Vérification anti-robot",
+      "turnstile_absent": "La clé Turnstile n'est pas configurée : l'envoi est fermé.",
+      "capture_requise": "Joignez la capture du récapitulatif avant d'envoyer.",
+      "reussite": "Course reçue. Elle attend la lecture automatique de la capture avant d'entrer dans les statistiques — le filtre de lecture n'est pas encore branché.",
+      "rejet": "Course refusée par les filtres.",
+      "erreur_reseau": "L'envoi n'a pas abouti. Réessayez."
     },
     "anciennete_depassee": "Cette course a plus de {limite}. Le site n'accepte que les courses assez récentes pour que la capture reste vérifiable et le temps réel encore en mémoire.",
     "capture": {
@@ -249,6 +259,7 @@
   },
   "statuts": {
     "validee_auto": "Validée automatiquement",
+    "en_attente_ocr": "En attente de lecture de la capture",
     "rejetee_auto": "Rejetée automatiquement",
     "hors_distribution": "Hors distribution"
   },
@@ -349,9 +360,17 @@
       "rejets": "Rejets par motif",
       "signalements": "Signalements, sans effet sur les soumissions",
       "villes_libres": "Saisies « Autre ville » à normaliser",
-      "anti_fraude": "Compteurs anti-fraude agrégés"
+      "anti_fraude": "Compteurs anti-fraude agrégés",
+      "statuts": "Courses reçues, par statut"
     },
     "vide": "Aucune donnée.",
-    "anti_fraude_note": "Agrégés par empreinte salée, jamais par adresse. Les empreintes plus anciennes que la fenêtre de rétention ont disparu avec leur sel."
+    "anti_fraude_note": "Agrégés par empreinte salée, jamais par adresse. Les empreintes plus anciennes que la fenêtre de rétention ont disparu avec leur sel.",
+    "anti_fraude_compteurs": {
+      "empreintes_suivies": "Empreintes actuellement suivies",
+      "soumissions_24h": "Soumissions sur vingt-quatre heures",
+      "appareils_en_pause": "Appareils en pause"
+    },
+    "aucun_rejet": "Aucun rejet enregistré.",
+    "aucun_signalement": "Aucun signalement."
   }
 }

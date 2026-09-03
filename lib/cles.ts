@@ -30,6 +30,11 @@ export const CLES_SYSTEME = {
   cadenceMaximaleCourses: "cadence_maximale_courses",
   seuilPublication: "seuil_publication_statistiques",
   seuilOutliers: "seuil_outliers_ecarts_types",
+  retentionEmpreintes: "retention_empreintes",
+  soumissionsParHeure: "soumissions_maximales_par_heure",
+  soumissionsParJour: "soumissions_maximales_par_jour",
+  echecsOcrAvantPause: "echecs_ocr_avant_pause",
+  dureePauseApresEchecs: "duree_pause_apres_echecs",
 } as const;
 
 export const CLES_LEGALES = {

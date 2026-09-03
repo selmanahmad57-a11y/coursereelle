@@ -27,6 +27,7 @@ import { calculer } from "../lib/calculs.ts";
 import { MOTIFS_REFUS } from "../lib/validation/anti-fraude.ts";
 import { CHAMPS_VERIFIES, MOTIFS_OCR } from "../lib/validation/ocr.ts";
 import { MOTIFS_CAPTURE } from "../lib/validation/capture.ts";
+import { endpointR2, juridictionValide } from "../lib/r2-endpoint.ts";
 import { CODES_SIGNALEMENT, MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
@@ -274,14 +275,25 @@ const listesCheck = (colonne) =>
     [...trouve[1].matchAll(/'([^']+)'/g)].map((valeur) => valeur[1]).sort()
   );
 
-test("les statuts de la base et leurs libelles sont la meme liste", () => {
+test("les statuts de la base sont tous connus, et tous les libelles servent", () => {
   const listes = listesCheck("statut");
+  const connus = Object.keys(libelles.statuts).sort();
 
   assert.ok(listes.length >= 1, "aucune contrainte de statut trouvee dans sql/schema.sql");
 
+  /* Courses et sessions n'ont pas le meme cycle de vie : une session ne porte pas
+     de capture, donc jamais d'attente de lecture. Chaque table declare donc un
+     sous-ensemble, et l'union doit couvrir exactement les libelles. */
+  const union = new Set();
+
   for (const liste of listes) {
-    assert.deepEqual(liste, Object.keys(libelles.statuts).sort());
+    for (const statut of liste) {
+      assert.ok(connus.includes(statut), `statut sans libelle : ${statut}`);
+      union.add(statut);
+    }
   }
+
+  assert.deepEqual([...union].sort(), connus, "un libelle de statut n'est utilise nulle part");
 });
 
 test("les categories de classification et leurs libelles sont la meme liste", () => {
@@ -507,4 +519,35 @@ test("aucun seuil d'usage surveillance ne peut ecarter une course", () => {
       `${parametre.cle} : un seuil de surveillance doit dire pourquoi il peut etre large`
     );
   }
+});
+
+/* ------------------------------------------------------------------ */
+/* Endpoint R2 selon la juridiction                                     */
+/* ------------------------------------------------------------------ */
+
+test("un bucket en juridiction n'a pas la meme adresse qu'un bucket ordinaire", () => {
+  const compte = "0123456789abcdef0123456789abcdef";
+
+  assert.equal(
+    endpointR2(compte, "default"),
+    `https://${compte}.r2.cloudflarestorage.com`
+  );
+  assert.equal(
+    endpointR2(compte, "eu"),
+    `https://${compte}.eu.r2.cloudflarestorage.com`,
+    "se tromper ici renvoie un Access Denied qui ressemble a un probleme de droits"
+  );
+});
+
+test("une juridiction inconnue ou absente retombe sur l'adresse ordinaire", () => {
+  assert.equal(juridictionValide(undefined), "default");
+  assert.equal(juridictionValide(""), "default");
+  assert.equal(juridictionValide("europe"), "default");
+  assert.equal(juridictionValide("eu"), "eu");
+});
+
+test("la juridiction est documentee dans .env.example", async () => {
+  const exemple = await readFile(new URL("../.env.example", import.meta.url), "utf8");
+
+  assert.match(exemple, /^R2_JURIDICTION=/m, "une variable non documentee est une variable oubliee");
 });

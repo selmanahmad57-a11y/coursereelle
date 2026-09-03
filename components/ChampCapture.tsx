@@ -93,6 +93,7 @@ export default function ChampCapture({
         accept={description.typesMime}
         className="sr-only"
         id="capture"
+        name="capture"
         onChange={(evenement) => choisir(evenement.target.files?.[0] ?? null)}
         type="file"
       />

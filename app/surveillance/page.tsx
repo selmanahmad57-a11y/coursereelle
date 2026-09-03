@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 
 import libelles from "@/config/libelles.json";
-import { baseConfiguree } from "@/lib/donnees.ts";
+import { formaterNombre } from "@/lib/baremes";
+import { lireSurveillance, type EtatSurveillance } from "@/lib/surveillance-db.ts";
 import { accesAutorise, jetonAcces, NOM_COOKIE } from "@/lib/surveillance.ts";
 
 import { ouvrirSurveillance } from "./actions";
@@ -14,23 +15,85 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const groupes = [
-  { cle: "rejets", tables: ["motifs_capture", "motifs_ocr", "motifs_authenticite", "motifs_session"] },
-  { cle: "signalements", tables: ["signalements"] },
-  { cle: "anti_fraude", tables: ["motifs_anti_fraude"] },
-] as const;
+const compteurs = (etat: EtatSurveillance) =>
+  [
+    { cle: "statuts", entrees: etat.statuts, table: "statuts", vide: textes.vide },
+    { cle: "rejets", entrees: etat.rejets, table: "motifsRejet", vide: textes.aucun_rejet },
+    {
+      cle: "signalements",
+      entrees: etat.signalements,
+      table: "signalements",
+      vide: textes.aucun_signalement,
+    },
+    {
+      cle: "anti_fraude",
+      entrees: etat.antiFraude,
+      table: "anti_fraude_compteurs",
+      vide: textes.vide,
+    },
+  ] as const;
 
-const tables = libelles as unknown as Record<string, Record<string, string>>;
+const tables = libelles as unknown as Record<string, Record<string, unknown>>;
 
-function Compteurs({ table }: { table: string }) {
-  const entrees = Object.entries(tables[table] ?? {});
+/*
+ * Un motif de rejet peut venir de n'importe quel filtre. Le tableau lit donc
+ * toutes les familles : un code affiche sans libelle serait un motif orphelin,
+ * et c'est exactement ce que la surveillance doit rendre visible.
+ */
+const FAMILLES_MOTIFS = [
+  "anomalies",
+  "motifs_capture",
+  "motifs_ocr",
+  "motifs_authenticite",
+  "motifs_session",
+  "motifs_anti_fraude",
+];
+
+const enTexte = (valeur: unknown): string | null => {
+  if (typeof valeur === "string") return valeur;
+  if (valeur && typeof valeur === "object" && "libelle" in valeur) {
+    return String((valeur as { libelle: unknown }).libelle);
+  }
+  return null;
+};
+
+const libelleMotifRejet = (code: string): string => {
+  for (const famille of FAMILLES_MOTIFS) {
+    const trouve = enTexte(tables[famille]?.[code]);
+    if (trouve) return trouve;
+  }
+  return code;
+};
+
+const intituler = (table: string, code: string): string => {
+  if (table === "motifsRejet") return libelleMotifRejet(code);
+  if (table === "anti_fraude_compteurs") {
+    return enTexte(textes.anti_fraude_compteurs[code as keyof typeof textes.anti_fraude_compteurs]) ?? code;
+  }
+  return enTexte(tables[table]?.[code]) ?? code;
+};
+
+function Compteurs({
+  table,
+  entrees,
+  vide,
+}: {
+  table: string;
+  entrees: readonly { cle: string; nombre: number }[];
+  vide: string;
+}) {
+  if (entrees.length === 0) {
+    return <p className="text-sm text-neutral-600">{vide}</p>;
+  }
 
   return (
-    <ul className="mt-2 divide-y divide-neutral-100">
-      {entrees.map(([code, intitule]) => (
-        <li key={code} className="flex items-baseline justify-between gap-4 py-1.5">
-          <span className="text-sm text-neutral-700">{intitule}</span>
-          <span className="font-mono text-sm tabular-nums text-neutral-500">0</span>
+    <ul className="divide-y divide-neutral-100">
+      {entrees.map((entree) => (
+        <li key={entree.cle} className="flex items-baseline justify-between gap-4 py-1.5">
+          <span className="text-sm text-neutral-700">{intituler(table, entree.cle)}</span>
+          <span className="font-mono text-sm font-medium tabular-nums text-neutral-900">
+            {formaterNombre(entree.nombre)}
+          </span>
         </li>
       ))}
     </ul>
@@ -87,26 +150,26 @@ export default async function PageSurveillance({
     );
   }
 
+  const etat = await lireSurveillance();
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-2xl font-semibold text-neutral-900">{textes.titre}</h1>
       <p className="mt-2 max-w-2xl text-sm text-neutral-700">{textes.sous_titre}</p>
 
-      {baseConfiguree() ? null : (
+      {etat.base ? null : (
         <p className="mt-4 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700">
           {textes.base_absente}
         </p>
       )}
 
-      {groupes.map((groupe) => (
+      {compteurs(etat).map((groupe) => (
         <section key={groupe.cle} className="mt-8">
           <h2 className="text-sm font-semibold text-neutral-900">
             {textes.sections[groupe.cle]}
           </h2>
           <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
-            {groupe.tables.map((table) => (
-              <Compteurs key={table} table={table} />
-            ))}
+            <Compteurs entrees={groupe.entrees} table={groupe.table} vide={groupe.vide} />
             {groupe.cle === "anti_fraude" ? (
               <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
                 {textes.anti_fraude_note}
@@ -121,7 +184,23 @@ export default async function PageSurveillance({
           {textes.sections.villes_libres}
         </h2>
         <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
-          <p className="text-sm text-neutral-600">{textes.vide}</p>
+          {etat.villesLibres.length === 0 ? (
+            <p className="text-sm text-neutral-600">{textes.vide}</p>
+          ) : (
+            <ul className="divide-y divide-neutral-100">
+              {etat.villesLibres.map((ville) => (
+                <li
+                  key={ville.saisie}
+                  className="flex items-baseline justify-between gap-4 py-1.5"
+                >
+                  <span className="text-sm text-neutral-700">{ville.saisie}</span>
+                  <span className="font-mono text-sm tabular-nums text-neutral-900">
+                    {formaterNombre(ville.nombre)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </section>
     </main>
