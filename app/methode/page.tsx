@@ -257,6 +257,20 @@ export default function PageMethode() {
 
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <h3 className="text-sm font-medium text-neutral-900">
+              {libelles.methode.captures.titre}
+            </h3>
+            <p className="mt-2 text-sm text-neutral-700">{libelles.methode.captures.texte}</p>
+            <p className="mt-2 text-sm font-medium text-neutral-900">
+              {libelles.methode.captures.regle}
+            </p>
+            <p className="mt-2 text-sm text-neutral-700">{libelles.methode.captures.reste}</p>
+            <p className="mt-2 border-t border-neutral-200 pt-2 text-xs text-neutral-600">
+              {libelles.methode.captures.controle}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-neutral-900">
               {libelles.methode.anti_fraude.titre}
             </h3>
             <p className="mt-2 text-sm text-neutral-700">

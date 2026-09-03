@@ -32,6 +32,12 @@ const compteurs = (etat: EtatSurveillance) =>
       vide: textes.vide,
     },
     {
+      cle: "captures",
+      entrees: etat.captures,
+      table: "captures_compteurs",
+      vide: textes.vide,
+    },
+    {
       cle: "anti_fraude",
       entrees: etat.antiFraude,
       table: "anti_fraude_compteurs",
@@ -73,6 +79,11 @@ const libelleMotifRejet = (code: string): string => {
 
 const intituler = (table: string, code: string): string => {
   if (table === "motifsRejet") return libelleMotifRejet(code);
+  if (table === "captures_compteurs") {
+    return (
+      enTexte(textes.captures_compteurs[code as keyof typeof textes.captures_compteurs]) ?? code
+    );
+  }
   if (table === "anti_fraude_compteurs") {
     return enTexte(textes.anti_fraude_compteurs[code as keyof typeof textes.anti_fraude_compteurs]) ?? code;
   }
@@ -176,6 +187,11 @@ export default async function PageSurveillance({
           </h2>
           <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
             <Compteurs entrees={groupe.entrees} table={groupe.table} vide={groupe.vide} />
+            {groupe.cle === "captures" ? (
+              <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
+                {textes.captures_note}
+              </p>
+            ) : null}
             {groupe.cle === "anti_fraude" ? (
               <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
                 {textes.anti_fraude_note}

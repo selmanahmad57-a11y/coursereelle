@@ -756,3 +756,85 @@ test("le formulaire et le serveur lisent les nombres de la meme facon", async ()
     "le formulaire doit reexporter la lecture du serveur, pas la reimplementer"
   );
 });
+
+/* ------------------------------------------------------------------ */
+/* Le texte lu sur une capture ne doit exister nulle part               */
+/* ------------------------------------------------------------------ */
+
+test("aucune colonne ne peut recevoir le texte lu sur une capture", () => {
+  /*
+   * La lecture d'une capture reelle a rendu des adresses completes — restaurant
+   * et livraison. Le produit de la lecture contient donc exactement ce que le
+   * site promet de ne jamais detenir. Aucune colonne ne doit pouvoir l'accueillir.
+   */
+  const proscrits = [
+    "texte_ocr",
+    "ocr_texte",
+    "texte_brut",
+    "texte_lu",
+    "contenu_capture",
+    "lecture_brute",
+    "adresse",
+  ];
+
+  const sansCommentaires = sql
+    .split("\n")
+    .filter((ligne) => !ligne.trimStart().startsWith("--"))
+    .join("\n")
+    .toLowerCase();
+
+  for (const terme of proscrits) {
+    assert.ok(
+      !sansCommentaires.includes(terme),
+      `sql/schema.sql declare « ${terme} » : le texte d'une capture ne doit jamais etre stocke`
+    );
+  }
+});
+
+test("le contrat OCR ne transporte que les champs cibles", async () => {
+  /*
+   * C'est la garde structurelle : la seule porte par laquelle une lecture entre
+   * dans le pipeline est ValeursCapture, qui n'a que des nombres. Ajouter le
+   * texte integral demanderait de modifier ce contrat, donc de le decider.
+   */
+  const ocr = await readFile(new URL("../lib/validation/ocr.ts", import.meta.url), "utf8");
+
+  const declaration = ocr.match(
+    /export type ValeursCapture = ([^;]+);/
+  )?.[1];
+
+  assert.ok(declaration, "la declaration de ValeursCapture doit rester lisible");
+  assert.match(
+    declaration,
+    /Record<ChampVerifie, number \| null>/,
+    "ValeursCapture ne doit contenir que des nombres, jamais de texte"
+  );
+
+  for (const terme of ["texte", "text", "brut", "raw"]) {
+    assert.ok(
+      !declaration.toLowerCase().includes(terme),
+      `ValeursCapture mentionne « ${terme} » : une lecture brute pourrait entrer`
+    );
+  }
+});
+
+test("la page Methode annonce la duree de vie d'une capture", () => {
+  const section = libelles.methode.captures;
+
+  for (const partie of ["texte", "regle", "reste", "controle"]) {
+    assert.ok(section[partie]?.length > 0, `${partie} manquant`);
+  }
+
+  assert.match(section.regle, /supprim/i, "la regle doit dire que la capture est supprimee");
+  assert.match(section.reste, /jamais enregistr/i, "et que le texte lu n'est pas conserve");
+});
+
+test("le delai de suppression protege sans jamais ecarter une course", () => {
+  const delai = baremes.parametres_systeme.find(
+    (e) => e.cle === "delai_suppression_capture"
+  );
+
+  assert.ok(delai, "le delai de suppression doit exister");
+  assert.equal(delai.usage, "confidentialite");
+  assert.notEqual(delai.usage, "rejet", "protéger une donnée ne doit jamais rejeter une course");
+});

@@ -244,3 +244,10 @@ export const limitesAntiFraude = (date: string): Limites => ({
 
 export const retentionEmpreintesJours = (date: string): number | null =>
   parametreSysteme(CLES_SYSTEME.retentionEmpreintes, date);
+
+/* ------------------------------------------------------------------ */
+/* Cycle de vie des captures                                           */
+/* ------------------------------------------------------------------ */
+
+export const delaiSuppressionCaptureHeures = (date: string): number | null =>
+  parametreSysteme(CLES_SYSTEME.delaiSuppressionCapture, date);

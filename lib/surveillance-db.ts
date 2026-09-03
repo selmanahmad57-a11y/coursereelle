@@ -10,7 +10,9 @@
  * règle le système.
  */
 
+import { repartitionCaptures, type CaptureSuivie } from "./cycle-capture.ts";
 import { baseDisponible, db } from "./db.ts";
+import { delaiSuppressionCaptureHeures } from "./parametres";
 
 export interface Compte {
   cle: string;
@@ -30,6 +32,7 @@ export interface EtatSurveillance {
   villesLibres: SaisieLibre[];
   antiFraude: Compte[];
   typesCapture: Compte[];
+  captures: Compte[];
 }
 
 const VIDE: EtatSurveillance = {
@@ -40,6 +43,7 @@ const VIDE: EtatSurveillance = {
   villesLibres: [],
   antiFraude: [],
   typesCapture: [],
+  captures: [],
 };
 
 /** Un motif de rejet peut en contenir plusieurs, séparés par des virgules. */
@@ -63,7 +67,7 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
 
   const sql = db();
 
-  const [statuts, rejets, signalements, villesLibres, empreintes, soumissions, pauses, types] =
+  const [statuts, rejets, signalements, villesLibres, empreintes, soumissions, pauses, suivies, types] =
     await Promise.all([
       sql`select statut, count(*)::int as nombre from courses group by statut order by statut`,
       sql`select motif_rejet as motif, count(*)::int as nombre from courses where statut = 'rejetee_auto' group by motif_rejet`,
@@ -79,6 +83,11 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
       sql`select count(distinct empreinte)::int as nombre from soumissions_horaires`,
       sql`select coalesce(sum(compteur), 0)::int as nombre from soumissions_horaires where heure >= now() - interval '24 hours'`,
       sql`select count(*)::int as nombre from activite_appareil where pause_jusqu_a > now()`,
+      sql`
+        select id, capture_cle_r2, verdict_le, capture_supprimee_le
+        from courses
+        where capture_cle_r2 is not null or capture_supprimee_le is not null
+      `,
       sql`
         select coalesce(type_capture, 'non_reconnu') as type, count(*)::int as nombre
         from courses
@@ -107,6 +116,27 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
       cle: ligne.type,
       nombre: Number(ligne.nombre),
     })),
+    captures: Object.entries(
+      repartitionCaptures(
+        (
+          suivies as {
+            id: string;
+            capture_cle_r2: string | null;
+            verdict_le: string | Date | null;
+            capture_supprimee_le: string | Date | null;
+          }[]
+        ).map<CaptureSuivie>((ligne) => ({
+          id: ligne.id,
+          cleR2: ligne.capture_cle_r2,
+          verdictLe: ligne.verdict_le ? new Date(ligne.verdict_le).toISOString() : null,
+          supprimeeLe: ligne.capture_supprimee_le
+            ? new Date(ligne.capture_supprimee_le).toISOString()
+            : null,
+        })),
+        new Date().toISOString(),
+        delaiSuppressionCaptureHeures(new Date().toISOString().slice(0, 10))
+      )
+    ).map(([cle, nombre]) => ({ cle, nombre })),
     antiFraude: [
       { cle: "empreintes_suivies", nombre: Number((empreintes as { nombre: number }[])[0].nombre) },
       { cle: "soumissions_24h", nombre: Number((soumissions as { nombre: number }[])[0].nombre) },

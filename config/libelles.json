@@ -120,7 +120,8 @@
     "statistique": "Filtre statistique",
     "affichage": "Règle d'affichage",
     "anti_fraude": "Anti-fraude",
-    "surveillance": "Journalisé pour surveillance — n'écarte jamais une course"
+    "surveillance": "Journalisé pour surveillance — n'écarte jamais une course",
+    "confidentialite": "Protège une donnée personnelle — n'écarte jamais une course"
   },
   "etats_source": {
     "verifiee": "Source vérifiée",
@@ -283,6 +284,13 @@
       "titre": "Les chiffres qui ne portent pas sur tout le monde",
       "texte": "Deux champs sont facultatifs, parce que tous les livreurs n'y ont pas accès : la durée affichée par l'application, et le temps passé en course sur une session. Les statistiques qui en dérivent — l'écart entre durée affichée et durée vécue, la part du temps réellement payée — ne portent donc que sur les soumissions qui les renseignent, jamais sur l'ensemble.",
       "consequence": "Ce n'est pas un détail de méthode : un sous-échantillon qui se choisit lui-même n'est pas l'échantillon complet, et ceux qui notent ces chiffres ne sont probablement pas exactement comme les autres. Chaque statistique concernée affichera donc son effectif propre, et nous le disons ici plutôt que d'attendre qu'un lecteur attentif le remarque."
+    },
+    "captures": {
+      "titre": "Combien de temps nous gardons votre capture",
+      "texte": "Une capture d'écran de course contient bien plus que des chiffres : l'adresse du restaurant, celle de la livraison, l'horaire exact. Le site promet que la ville est la granularité maximale de ce qu'il conserve — une capture gardée indéfiniment démentirait cette promesse.",
+      "regle": "La capture sert à vérifier vos chiffres, puis elle est supprimée. Définitivement, quarante-huit heures après le verdict rendu sur la course. Pas caviardée : supprimée. Caviarder supposerait de repérer les zones sensibles sur chaque variante d'écran, donc une détection de plus qui peut se tromper, et une image conservée reste une surface de fuite. Ce qui n'existe plus ne peut pas fuiter.",
+      "reste": "Ce qui subsiste après suppression : les chiffres vérifiés, l'empreinte de l'image qui permet de refuser un doublon, et le verdict. Rien d'autre. Le texte lu sur la capture n'est jamais enregistré, nulle part — ni en base, ni dans un journal, ni dans un message d'erreur : il contient précisément ce que nous promettons de ne pas détenir.",
+      "controle": "Le tableau de surveillance compte en permanence les captures qui dépassent leur délai. Ce compteur doit rester à zéro ; s'il ne l'est pas, c'est visible."
     }
   },
   "statuts": {
@@ -399,7 +407,8 @@
       "villes_libres": "Saisies « Autre ville » à normaliser",
       "anti_fraude": "Compteurs anti-fraude agrégés",
       "statuts": "Courses reçues, par statut",
-      "types_capture": "Types de capture reconnus"
+      "types_capture": "Types de capture reconnus",
+      "captures": "Cycle de vie des captures"
     },
     "vide": "Aucune donnée.",
     "anti_fraude_note": "Agrégés par empreinte salée, jamais par adresse. Les empreintes plus anciennes que la fenêtre de rétention ont disparu avec leur sel.",
@@ -409,7 +418,14 @@
       "appareils_en_pause": "Appareils en pause"
     },
     "aucun_rejet": "Aucun rejet enregistré.",
-    "aucun_signalement": "Aucun signalement."
+    "aucun_signalement": "Aucun signalement.",
+    "captures_compteurs": {
+      "en_attente_verdict": "Captures conservées, course en attente de verdict",
+      "dans_le_delai": "Captures conservées, dans le délai après verdict",
+      "echues": "Captures à supprimer sans délai",
+      "supprimees": "Captures déjà supprimées"
+    },
+    "captures_note": "Une capture est supprimée définitivement après son délai. « À supprimer sans délai » doit rester à zéro : toute autre valeur signale que l'entretien ne tourne plus."
   },
   "types_capture": {
     "recapitulatif_details": "Récapitulatif « Détails » d'après course",

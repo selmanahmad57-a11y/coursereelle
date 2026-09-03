@@ -194,12 +194,12 @@ export async function POST(requete: Request) {
         date_course, ville_slug, zone, plateforme, vehicule,
         distance_km, prix_paye_euros, pourboire_euros,
         duree_estimee_minutes, duree_reelle_minutes,
-        statut, motif_rejet, filtre_rejet
+        statut, motif_rejet, filtre_rejet, verdict_le
       ) values (
         ${course.dateCourse}, ${course.villeSlug}, ${zone}, ${course.plateforme}, ${course.vehicule},
         ${course.distanceKm}, ${course.prixPayeEuros}, ${course.pourboireEuros},
         ${course.dureeEstimeeMinutes}, ${course.dureeReelleMinutes},
-        'rejetee_auto', ${motif}, ${filtre}
+        'rejetee_auto', ${motif}, ${filtre}, now()
       ) returning id
     `) as { id: string }[];
 

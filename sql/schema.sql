@@ -94,6 +94,10 @@ create table if not exists courses (
   -- que la preuve ait été vérifiée reviendrait à revendiquer une vérification
   -- qui n'a pas eu lieu.
   statut                  text not null check (statut in ('validee_auto', 'en_attente_ocr', 'rejetee_auto', 'hors_distribution')),
+  -- Quand la course a reçu un verdict définitif. C'est de cette date que court
+  -- le délai de suppression de la capture : tant qu'il n'y a pas de verdict, la
+  -- preuve sert encore.
+  verdict_le              timestamptz,
   -- Renseigné si et seulement si la course est rejetée.
   motif_rejet             text,
   -- Quel filtre a rejeté : 1 physique, 2 OCR, 3 anti-fraude, 4 hors distribution.
@@ -328,3 +332,10 @@ alter table courses add constraint duree_estimee_positive
 alter table signalements drop constraint if exists signalements_code_check;
 alter table signalements add constraint signalements_code_check
   check (code in ('similarite_perceptuelle', 'empreinte_sans_relief'));
+
+alter table courses add column if not exists verdict_le timestamptz;
+
+-- Retrouver vite les captures dont le délai est écoulé.
+create index if not exists courses_capture_a_purger_idx
+  on courses (verdict_le)
+  where capture_cle_r2 is not null and capture_supprimee_le is null;
