@@ -179,18 +179,13 @@ const GABARIT = {
   plateforme: "uber_eats",
   description: "fixture de test, ne represente aucune capture reelle",
   champs: [
-    {
-      cle: "total",
-      libelles: ["Total", "Montant total"],
-      zone: { x: 0.6, y: 0.1, largeur: 0.3, hauteur: 0.1 },
-    },
-    {
-      cle: "distance",
-      libelles: ["Distance"],
-      zone: { x: 0.1, y: 0.4, largeur: 0.3, hauteur: 0.1 },
-    },
+    { cle: "total", libelles: ["Total", "Montant total"], x: 0.7 },
+    { cle: "distance", libelles: ["Distance"], x: 0.2 },
   ],
+  relations: [{ type: "au_dessus", champ: "total", autre: "distance" }],
 };
+
+const TOLERANCES_GABARIT = { x: 0.05, ligne: 0.02 };
 
 const TEXTES_CONFORMES = [
   { texte: "Total", x: 0.7, y: 0.15 },
@@ -198,62 +193,67 @@ const TEXTES_CONFORMES = [
 ];
 
 test("sans gabarit connu pour la plateforme, rien n'est rejete", () => {
-  const verdict = controlerGabarit("uber_eats", TEXTES_CONFORMES, [], 0.05);
+  const verdict = controlerGabarit("uber_eats", TEXTES_CONFORMES, [], TOLERANCES_GABARIT);
 
   assert.equal(verdict.conforme, true);
   assert.equal(verdict.reconnu, null, "on ne rejette pas ce qu'on n'a pas appris a reconnaitre");
 });
 
 test("une capture conforme au gabarit est reconnue", () => {
-  const verdict = controlerGabarit("uber_eats", TEXTES_CONFORMES, [GABARIT], 0.05);
+  const verdict = controlerGabarit("uber_eats", TEXTES_CONFORMES, [GABARIT], TOLERANCES_GABARIT);
 
   assert.equal(verdict.conforme, true);
   assert.equal(verdict.reconnu.id, GABARIT.id);
 });
 
-test("un libelle attendu et introuvable fait echouer, en nommant le champ", () => {
+test("un libelle vraiment absent est du hors-champ, pas une anomalie", () => {
+  /*
+   * Ce test affirmait l'inverse avant que le modele ne devienne relatif. Une
+   * capture defilee coupe le haut ou le bas de l'ecran : un libelle absent de
+   * l'image n'a rien de suspect, et le rejeter reviendrait a exiger un cadrage
+   * que personne ne fait naturellement.
+   */
   const verdict = controlerGabarit(
     "uber_eats",
     [{ texte: "Total", x: 0.7, y: 0.15 }],
-    [GABARIT],
-    0.05
-  );
+    [GABARIT], TOLERANCES_GABARIT);
 
-  assert.equal(verdict.conforme, false);
+  assert.equal(verdict.conforme, true);
   assert.deepEqual(verdict.manquants, ["distance"]);
+  assert.deepEqual(verdict.colonnesDeplacees, []);
 });
 
-test("un libelle correct mais au mauvais endroit fait echouer", () => {
+test("un libelle present mais dans la mauvaise colonne fait echouer", () => {
+  /* Present sur la capture, absent de sa colonne : c'est une mise en page
+     deplacee, pas du hors-champ. La distinction est ce qui empeche une
+     permutation de se faire passer pour un defilement. */
   const verdict = controlerGabarit(
     "uber_eats",
     [
       { texte: "Total", x: 0.05, y: 0.9 },
       { texte: "Distance", x: 0.2, y: 0.45 },
     ],
-    [GABARIT],
-    0.05
-  );
+    [GABARIT], TOLERANCES_GABARIT);
 
   assert.equal(verdict.conforme, false);
-  assert.deepEqual(verdict.manquants, ["total"]);
+  assert.deepEqual(verdict.colonnesDeplacees, ["total"]);
+  assert.deepEqual(verdict.manquants, []);
 });
 
 test("la tolerance absorbe un leger decalage, et la casse et les accents sont ignores", () => {
   const verdict = controlerGabarit(
     "uber_eats",
     [
-      { texte: "TOTAL", x: 0.58, y: 0.08 },
-      { texte: "DISTANCE", x: 0.09, y: 0.38 },
+      { texte: "TOTAL", x: 0.67, y: 0.08 },
+      { texte: "DISTANCE", x: 0.23, y: 0.38 },
     ],
-    [GABARIT],
-    0.05
-  );
+    [GABARIT], TOLERANCES_GABARIT);
 
   assert.equal(verdict.conforme, true);
 });
 
 test("un gabarit d'une autre plateforme ne s'applique pas", () => {
-  const verdict = controlerGabarit("deliveroo", [], [GABARIT], 0.05);
+  const verdict = controlerGabarit("deliveroo", [], [GABARIT], TOLERANCES_GABARIT);
 
   assert.equal(verdict.conforme, true);
   assert.equal(verdict.reconnu, null);
@@ -319,7 +319,7 @@ test("au-dela de la bande de surveillance, plus rien n'est retenu", () => {
 const REGLES = {
   provenance: REGLES_PROVENANCE,
   gabarits: [GABARIT],
-  toleranceGabarit: 0.05,
+  tolerancesGabarit: TOLERANCES_GABARIT,
   distancesPerceptuelles: SEUILS_DISTANCE,
   reliefMinimal: 8,
 };
@@ -435,27 +435,18 @@ test("les accents sont vraiment neutralises des deux cotes", () => {
     id: "test-accents",
     plateforme: "uber_eats",
     description: "fixture",
-    champs: [
-      {
-        cle: "remuneration",
-        libelles: ["Rémunération"],
-        zone: { x: 0.1, y: 0.1, largeur: 0.3, hauteur: 0.1 },
-      },
-    ],
+    champs: [{ cle: "remuneration", libelles: ["Rémunération"], x: 0.2 }],
+    relations: [],
   };
 
   const sansAccent = controlerGabarit(
     "uber_eats",
     [{ texte: "REMUNERATION DE LA COURSE", x: 0.2, y: 0.15 }],
-    [gabaritAccentue],
-    0.05
-  );
+    [gabaritAccentue], TOLERANCES_GABARIT);
   const avecAccent = controlerGabarit(
     "uber_eats",
     [{ texte: "rémunération de la course", x: 0.2, y: 0.15 }],
-    [gabaritAccentue],
-    0.05
-  );
+    [gabaritAccentue], TOLERANCES_GABARIT);
 
   assert.equal(sansAccent.conforme, true, "l'OCR rend souvent le texte sans accents");
   assert.equal(avecAccent.conforme, true);

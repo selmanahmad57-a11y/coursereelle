@@ -185,7 +185,8 @@ export const decisionGabarits = gabarits.decision;
 const POURCENT_EN_FRACTION = 100;
 
 export const reglesAuthenticite = (date: string): ReglesAuthenticite => {
-  const tolerance = parametreSysteme(CLES_SYSTEME.toleranceGabarit, date);
+  const enX = parametreSysteme(CLES_SYSTEME.toleranceGabarit, date);
+  const ligne = parametreSysteme(CLES_SYSTEME.toleranceMemeLigne, date);
 
   return {
     provenance: {
@@ -193,7 +194,10 @@ export const reglesAuthenticite = (date: string): ReglesAuthenticite => {
       logicielsGeneratifs: provenance.logiciels_generatifs,
     },
     gabarits: gabarits.gabarits as Gabarit[],
-    toleranceGabarit: tolerance === null ? null : tolerance / POURCENT_EN_FRACTION,
+    tolerancesGabarit:
+      enX === null || ligne === null
+        ? null
+        : { x: enX / POURCENT_EN_FRACTION, ligne: ligne / POURCENT_EN_FRACTION },
     distancesPerceptuelles: {
       rejet: parametreSysteme(CLES_SYSTEME.distancePerceptuelleRejet, date),
       surveillance: parametreSysteme(CLES_SYSTEME.distancePerceptuelleSurveillance, date),

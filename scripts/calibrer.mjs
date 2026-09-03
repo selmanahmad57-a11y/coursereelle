@@ -68,6 +68,13 @@ const regles = {
   confianceMinimale: interfaceUber.confiance_minimale,
 };
 
+/* La tolerance d'alignement vient de la configuration datee, comme le reste. */
+const baremes = await lireJson(path.join(racine, "config", "baremes.json"));
+const toleranceLigne =
+  (baremes.parametres_systeme.find(
+    (entree) => entree.cle === "tolerance_meme_ligne" && entree.valable_au === null
+  )?.valeur ?? 2) / 100;
+
 /** Assemble les mots d'une même ligne : un montant est souvent coupé en deux. */
 const lignesEtMots = (tsv, largeur, hauteur) => {
   const mots = [];
@@ -267,7 +274,8 @@ for (const nom of fichiers) {
               plateforme: qui.plateforme,
               description: `${qui.type} — ${qui.description}`,
             },
-            ancrages
+            ancrages,
+            toleranceLigne
           ),
           null,
           2

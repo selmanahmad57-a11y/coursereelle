@@ -28,6 +28,7 @@ import {
   controlerGabarit,
   type Gabarit,
   type TexteDetecte,
+  type TolerancesGabarit,
   type VerdictGabarit,
 } from "./gabarit.ts";
 import {
@@ -68,7 +69,9 @@ export interface CaptureAControler {
 export interface ReglesAuthenticite {
   provenance: ReglesProvenance;
   gabarits: readonly Gabarit[];
-  toleranceGabarit: number | null;
+  tolerancesGabarit: TolerancesGabarit | null;
+  /** Motifs de forme, pour les zones qu'aucun libellé ne nomme. */
+  motifsGabarit?: Readonly<Record<string, string>>;
   distancesPerceptuelles: { rejet: number | null; surveillance: number | null };
   reliefMinimal: number | null;
 }
@@ -150,7 +153,8 @@ export const controlerAuthenticite = (
     capture.plateforme,
     capture.textes,
     regles.gabarits,
-    regles.toleranceGabarit
+    regles.tolerancesGabarit,
+    regles.motifsGabarit ?? {}
   );
 
   if (!gabarit.conforme) {

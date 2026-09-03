@@ -14,6 +14,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { enChamps, gabaritCandidat, reperer } from "../lib/calibration.ts";
+import { TYPES_RELATION } from "../lib/validation/gabarit.ts";
+
+/* Tolerance d'alignement du gabarit de test. En production elle vient du bareme
+   date `tolerance_meme_ligne` ; ici c'est une donnee de fixture, choisie assez
+   large pour que les mots poses a la meme hauteur forment bien une ligne. */
+const TOLERANCE_LIGNE = 0.02;
 
 const REGLES = {
   libellesAttendus: ["Durée", "Distance", "Accepter"],
@@ -83,10 +89,22 @@ test("aucune chaine issue de l'image ne sort de l'outil", () => {
 test("le gabarit candidat ecrit ne contient aucun texte lu non plus", () => {
   const gabarit = gabaritCandidat(
     { id: "essai", plateforme: "uber_eats", description: "specimen de test" },
-    reperer(LECTURE_PIEGEE, REGLES)
+    reperer(LECTURE_PIEGEE, REGLES),
+    TOLERANCE_LIGNE
   );
 
-  const attendues = new Set([...AUTORISE, "essai", "uber_eats", "specimen de test"]);
+  /*
+   * Les relations ajoutent leur propre vocabulaire a la sortie. Il vient de
+   * TYPES_RELATION, une liste fermee du modele : l'autoriser ici ne perce pas la
+   * garantie, puisqu'un type issu de l'image ne s'y trouverait pas.
+   */
+  const attendues = new Set([
+    ...AUTORISE,
+    ...TYPES_RELATION,
+    "essai",
+    "uber_eats",
+    "specimen de test",
+  ]);
 
   for (const chaine of chainesDe(gabarit)) {
     assert.ok(attendues.has(chaine), `chaine non autorisee dans le gabarit : « ${chaine} »`);
@@ -99,7 +117,8 @@ test("aucune suite de chiffres ne subsiste dans la sortie", () => {
      des chaines. */
   const gabarit = gabaritCandidat(
     { id: "essai", plateforme: "uber_eats", description: "specimen" },
-    reperer(LECTURE_PIEGEE, REGLES)
+    reperer(LECTURE_PIEGEE, REGLES),
+    TOLERANCE_LIGNE
   );
 
   for (const chaine of chainesDe(gabarit)) {
@@ -138,8 +157,32 @@ test("les champs produits sont utilisables tels quels par le controle de gabarit
   for (const champ of champs) {
     assert.ok(champ.cle.length > 0);
     assert.ok(Array.isArray(champ.libelles));
-    assert.ok(champ.zone.largeur > 0 && champ.zone.hauteur > 0);
+    /* Une colonne, et rien d'autre : la hauteur mesuree ne fait plus partie du
+       gabarit, parce qu'elle depend de l'endroit ou le livreur a defile. */
+    assert.equal(champ.zone, undefined, "un champ ne transporte plus de zone");
+    assert.ok(champ.x > 0 && champ.x < 1, "la colonne est une fraction de la largeur");
     assert.ok(champ.libelles.length > 0 || champ.motif !== undefined, "un champ doit s'ancrer");
+  }
+});
+
+test("chaque relation ne relie que des champs que le gabarit declare", () => {
+  /* Une relation qui nommerait un champ absent du gabarit ne serait jamais
+     evaluee : elle passerait pour tenue sans que rien ne l'ait verifiee. */
+  const gabarit = gabaritCandidat(
+    { id: "essai", plateforme: "uber_eats", description: "specimen" },
+    reperer(LECTURE_PIEGEE, REGLES),
+    TOLERANCE_LIGNE
+  );
+
+  const cles = new Set(gabarit.champs.map((champ) => champ.cle));
+
+  assert.ok(gabarit.relations.length > 0, "un specimen a plusieurs ancrages a un agencement");
+
+  for (const relation of gabarit.relations) {
+    assert.ok(TYPES_RELATION.includes(relation.type), `type inconnu : ${relation.type}`);
+    assert.ok(cles.has(relation.champ), `champ inconnu : ${relation.champ}`);
+    assert.ok(cles.has(relation.autre), `champ inconnu : ${relation.autre}`);
+    assert.notEqual(relation.champ, relation.autre, "un champ ne se relie pas a lui-meme");
   }
 });
 

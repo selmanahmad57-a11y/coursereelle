@@ -28,6 +28,7 @@ export const CLES_SYSTEME = {
   delaiSuppressionCapture: "delai_suppression_capture",
   confianceMinimaleLecture: "confiance_minimale_lecture",
   toleranceGabarit: "tolerance_position_gabarit",
+  toleranceMemeLigne: "tolerance_meme_ligne",
   dureeSessionMinimale: "duree_session_minimale",
   dureeSessionMaximale: "duree_session_maximale",
   cadenceMaximaleCourses: "cadence_maximale_courses",

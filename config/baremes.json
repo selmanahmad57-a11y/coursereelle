@@ -472,6 +472,16 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Une lecture hésitante ne doit produire aucun des deux verdicts. Ni une validation, qui reviendrait à confirmer une course au bénéfice du doute ; ni une divergence, qui reviendrait à reprocher au livreur un écart que le lecteur a peut-être inventé. Elle produit donc un échec de lecture, et le livreur renvoie une capture plus nette. Mesuré sur deux captures réelles : 86 sur un récapitulatif, 67 sur un écran d'acceptation chargé — d'où un seuil placé juste au-dessus du second, à recalibrer en semaine 5 quand le tableau de surveillance aura compté les échecs."
+    },
+    {
+      "cle": "tolerance_meme_ligne",
+      "libelle": "Écart vertical en deçà duquel deux champs d'un gabarit sont tenus pour alignés",
+      "valeur": 2,
+      "unite": "POURCENT",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Mesuré sur huit spécimens réels : l'écart entre « Durée » et « Distance », affichés côte à côte, ne dépasse jamais 0,0004 de la hauteur. Deux points de pourcentage laissent cinquante fois cette marge — largement du côté permissif, ce qui est le bon sens pour un seuil dont le déclenchement écarte une course. Il sera resserré si la mesure sur un parc plus large le permet, jamais élargi pour faire passer un cas."
     }
   ]
 }

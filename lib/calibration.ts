@@ -20,7 +20,15 @@
  * Module pur : la liste blanche et les motifs arrivent en paramètre.
  */
 
-import type { ChampGabarit, Zone } from "./validation/gabarit.ts";
+import type { ChampGabarit, Relation } from "./validation/gabarit.ts";
+
+/** Boîte d'un mot lu, en fractions de l'image. */
+export interface Zone {
+  x: number;
+  y: number;
+  largeur: number;
+  hauteur: number;
+}
 
 export interface MotDetecte {
   /** Le texte lu. Il entre ici, et il n'en ressort jamais. */
@@ -118,22 +126,74 @@ export const reperer = (
   return ancrages;
 };
 
+const centreX = (zone: Zone) => zone.x + zone.largeur / 2;
+const centreY = (zone: Zone) => zone.y + zone.hauteur / 2;
+
 export const enChamps = (ancrages: readonly Ancrage[]): ChampGabarit[] =>
   ancrages.map((ancrage) => ({
     cle: ancrage.cle,
     libelles: ancrage.libelle === undefined ? [] : [ancrage.libelle],
     ...(ancrage.motif === undefined ? {} : { motif: ancrage.motif }),
-    zone: ancrage.zone,
+    x: centreX(ancrage.zone),
   }));
+
+/**
+ * Les relations verticales observées, et elles seules.
+ *
+ * On ne consigne pas la position de chaque champ — elle dépend du défilement —
+ * mais leur agencement : qui est aligné avec qui, et qui est au-dessus de qui.
+ * Le défilement translate le bloc entier sans jamais en changer l'ordre.
+ */
+export const enRelations = (
+  ancrages: readonly Ancrage[],
+  toleranceLigne: number
+): Relation[] => {
+  const tries = [...ancrages].sort((a, b) => centreY(a.zone) - centreY(b.zone));
+
+  const lignes: Ancrage[][] = [];
+  for (const ancrage of tries) {
+    const derniere = lignes[lignes.length - 1];
+    const meme =
+      derniere !== undefined &&
+      Math.abs(centreY(ancrage.zone) - centreY(derniere[0].zone)) <= toleranceLigne;
+
+    if (meme) derniere.push(ancrage);
+    else lignes.push([ancrage]);
+  }
+
+  const relations: Relation[] = [];
+
+  for (const ligne of lignes) {
+    for (const autre of ligne.slice(1)) {
+      relations.push({ type: "meme_ligne", champ: ligne[0].cle, autre: autre.cle });
+    }
+  }
+
+  for (let index = 0; index < lignes.length - 1; index += 1) {
+    relations.push({
+      type: "au_dessus",
+      champ: lignes[index][0].cle,
+      autre: lignes[index + 1][0].cle,
+    });
+  }
+
+  return relations;
+};
 
 export interface GabaritCandidat {
   id: string;
   plateforme: string;
   description: string;
   champs: ChampGabarit[];
+  relations: Relation[];
 }
 
 export const gabaritCandidat = (
   identite: { id: string; plateforme: string; description: string },
-  ancrages: readonly Ancrage[]
-): GabaritCandidat => ({ ...identite, champs: enChamps(ancrages) });
+  ancrages: readonly Ancrage[],
+  toleranceLigne: number
+): GabaritCandidat => ({
+  ...identite,
+  champs: enChamps(ancrages),
+  relations: enRelations(ancrages, toleranceLigne),
+});
