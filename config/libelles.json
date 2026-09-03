@@ -176,13 +176,14 @@
       "distance_km": "Distance parcourue",
       "prix_paye": "Prix payé par la plateforme",
       "pourboire": "Pourboire",
-      "duree_estimee": "Temps estimé par l'application",
+      "duree_estimee": "Durée affichée par l'application",
       "duree_reelle": "Temps réel, de l'acceptation à la remise",
       "date_course": "Date de la course"
     },
     "aides": {
       "pourboire": "Laissez vide s'il n'y en a pas eu.",
-      "duree_reelle": "Le temps que vous avez vraiment passé, pas celui affiché par l'application."
+      "duree_reelle": "Le temps que vous avez vraiment passé, pas celui affiché par l'application.",
+      "duree_estimee": "La ligne « Durée » de l'écran Détails de la course. Laissez vide si vous ne l'avez pas notée : le reste du calcul fonctionne sans."
     },
     "choisir": "Choisir…",
     "autre_ville": "Autre ville",
@@ -213,12 +214,14 @@
       "capture_requise": "Joignez la capture du récapitulatif avant d'envoyer.",
       "reussite": "Course reçue. Elle attend la lecture automatique de la capture avant d'entrer dans les statistiques — le filtre de lecture n'est pas encore branché.",
       "rejet": "Course refusée par les filtres.",
-      "erreur_reseau": "L'envoi n'a pas abouti. Réessayez."
+      "erreur_reseau": "L'envoi n'a pas abouti. Réessayez.",
+      "verification_aide": "Elle se fait le plus souvent toute seule, sans rien afficher. Une case n'apparaît que si Cloudflare juge utile de vous poser la question.",
+      "turnstile_sans_jeton": "La vérification anti-robot ne s'est pas exécutée. Un bloqueur de contenu ou une coupure réseau l'empêche de se charger — rechargez la page, et désactivez le bloqueur pour ce site si besoin."
     },
     "anciennete_depassee": "Cette course a plus de {limite}. Le site n'accepte que les courses assez récentes pour que la capture reste vérifiable et le temps réel encore en mémoire.",
     "capture": {
-      "intitule": "Capture du récapitulatif de la course",
-      "aide": "Elle sert uniquement à vérifier vos chiffres automatiquement. Elle n'est jamais publiée, et elle est supprimée ou caviardée après vérification.",
+      "intitule": "Capture d'écran de la course",
+      "aide": "De préférence l'écran « Détails » d'après course, qui prouve aussi la durée. L'écran d'acceptation est accepté également. La capture sert uniquement à vérifier vos chiffres : elle n'est jamais publiée, et elle est supprimée ou caviardée après vérification.",
       "bouton": "Choisir une capture",
       "remplacer": "Choisir une autre capture",
       "retirer": "Retirer",
@@ -255,6 +258,11 @@
       "titre": "Deux données qu'aucune capture ne montre",
       "texte": "Le temps réel d'une course — de l'acceptation à la remise — et le temps passé connecté sans course ne figurent sur aucun récapitulatif. C'est précisément ce que les plateformes ne montrent pas, et c'est précisément ce que ce site existe pour mesurer. Aucune vérification par lecture d'image ne peut donc les confirmer, et nous ne prétendons pas le contraire.",
       "defense": "Ces deux données relèvent de la même défense : la fiabilisation par la masse. Les valeurs qui s'écartent de plus de trois écarts-types sortent des statistiques, les chiffres publiés sont des médianes, et rien n'est publié avant que la ville atteigne son seuil de courses. Une exagération isolée est donc sans effet, et une exagération systématique se verrait dans la distribution."
+    },
+    "sous_echantillons": {
+      "titre": "Les chiffres qui ne portent pas sur tout le monde",
+      "texte": "Deux champs sont facultatifs, parce que tous les livreurs n'y ont pas accès : la durée affichée par l'application, et le temps passé en course sur une session. Les statistiques qui en dérivent — l'écart entre durée affichée et durée vécue, la part du temps réellement payée — ne portent donc que sur les soumissions qui les renseignent, jamais sur l'ensemble.",
+      "consequence": "Ce n'est pas un détail de méthode : un sous-échantillon qui se choisit lui-même n'est pas l'échantillon complet, et ceux qui notent ces chiffres ne sont probablement pas exactement comme les autres. Chaque statistique concernée affichera donc son effectif propre, et nous le disons ici plutôt que d'attendre qu'un lecteur attentif le remarque."
     }
   },
   "statuts": {
@@ -361,7 +369,8 @@
       "signalements": "Signalements, sans effet sur les soumissions",
       "villes_libres": "Saisies « Autre ville » à normaliser",
       "anti_fraude": "Compteurs anti-fraude agrégés",
-      "statuts": "Courses reçues, par statut"
+      "statuts": "Courses reçues, par statut",
+      "types_capture": "Types de capture reconnus"
     },
     "vide": "Aucune donnée.",
     "anti_fraude_note": "Agrégés par empreinte salée, jamais par adresse. Les empreintes plus anciennes que la fenêtre de rétention ont disparu avec leur sel.",
@@ -372,5 +381,10 @@
     },
     "aucun_rejet": "Aucun rejet enregistré.",
     "aucun_signalement": "Aucun signalement."
+  },
+  "types_capture": {
+    "recapitulatif_details": "Récapitulatif « Détails » d'après course",
+    "ecran_acceptation": "Écran d'acceptation de la course",
+    "non_reconnu": "Non reconnu (lecture automatique pas encore branchée)"
   }
 }

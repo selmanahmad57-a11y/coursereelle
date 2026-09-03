@@ -159,3 +159,25 @@ export const verifierCapture = (
     motif: resumerMotif(divergences),
   };
 };
+
+/**
+ * Neutralise la vérification des champs facultatifs qui n'ont pas été saisis.
+ *
+ * Sans cela, une course dont le livreur n'a pas noté la durée serait rejetée
+ * pour « valeur lue mais absente du formulaire » — un rejet parfaitement injuste,
+ * puisque le champ est facultatif. La règle est donc : l'OCR ne vérifie un champ
+ * facultatif que s'il est à la fois saisi ET présent sur la capture.
+ */
+export const tolerancesEffectives = (
+  tolerances: Tolerances,
+  saisie: ValeursSaisies,
+  champsFacultatifs: readonly ChampVerifie[]
+): Tolerances => {
+  const effectives = { ...tolerances };
+
+  for (const champ of champsFacultatifs) {
+    if (saisie[champ] === null) effectives[champ] = null;
+  }
+
+  return effectives;
+};

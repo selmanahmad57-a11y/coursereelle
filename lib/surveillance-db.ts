@@ -29,6 +29,7 @@ export interface EtatSurveillance {
   signalements: Compte[];
   villesLibres: SaisieLibre[];
   antiFraude: Compte[];
+  typesCapture: Compte[];
 }
 
 const VIDE: EtatSurveillance = {
@@ -38,6 +39,7 @@ const VIDE: EtatSurveillance = {
   signalements: [],
   villesLibres: [],
   antiFraude: [],
+  typesCapture: [],
 };
 
 /** Un motif de rejet peut en contenir plusieurs, séparés par des virgules. */
@@ -61,7 +63,7 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
 
   const sql = db();
 
-  const [statuts, rejets, signalements, villesLibres, empreintes, soumissions, pauses] =
+  const [statuts, rejets, signalements, villesLibres, empreintes, soumissions, pauses, types] =
     await Promise.all([
       sql`select statut, count(*)::int as nombre from courses group by statut order by statut`,
       sql`select motif_rejet as motif, count(*)::int as nombre from courses where statut = 'rejetee_auto' group by motif_rejet`,
@@ -77,6 +79,13 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
       sql`select count(distinct empreinte)::int as nombre from soumissions_horaires`,
       sql`select coalesce(sum(compteur), 0)::int as nombre from soumissions_horaires where heure >= now() - interval '24 hours'`,
       sql`select count(*)::int as nombre from activite_appareil where pause_jusqu_a > now()`,
+      sql`
+        select coalesce(type_capture, 'non_reconnu') as type, count(*)::int as nombre
+        from courses
+        where capture_hash is not null
+        group by 1
+        order by nombre desc
+      `,
     ]);
 
   return {
@@ -92,6 +101,10 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
     })),
     villesLibres: (villesLibres as { saisie: string; nombre: number }[]).map((ligne) => ({
       saisie: ligne.saisie,
+      nombre: Number(ligne.nombre),
+    })),
+    typesCapture: (types as { type: string; nombre: number }[]).map((ligne) => ({
+      cle: ligne.type,
       nombre: Number(ligne.nombre),
     })),
     antiFraude: [

@@ -7,19 +7,26 @@
   "formats_acceptes": [
     {
       "type_mime": "image/png",
-      "extensions": [".png"],
+      "extensions": [
+        ".png"
+      ],
       "libelle": "PNG",
       "note": "Format natif des captures d'écran Android et iOS."
     },
     {
       "type_mime": "image/jpeg",
-      "extensions": [".jpg", ".jpeg"],
+      "extensions": [
+        ".jpg",
+        ".jpeg"
+      ],
       "libelle": "JPEG",
       "note": "Produit par beaucoup de téléphones quand la capture passe par la galerie ou une compression."
     },
     {
       "type_mime": "image/webp",
-      "extensions": [".webp"],
+      "extensions": [
+        ".webp"
+      ],
       "libelle": "WebP",
       "note": "Produit par certains Android récents et par la plupart des partages via applications."
     }
@@ -27,9 +34,33 @@
   "formats_refuses": [
     {
       "type_mime": "image/heic",
-      "extensions": [".heic", ".heif"],
+      "extensions": [
+        ".heic",
+        ".heif"
+      ],
       "libelle": "HEIC",
       "cle_explication": "heic"
     }
-  ]
+  ],
+  "types": {
+    "note": "Les deux écrans sont acceptés comme preuve, mais ils ne prouvent pas la même chose. Le gabarit reconnu détermine donc quels champs l'OCR peut vérifier : demander une durée à un écran qui ne l'affiche pas produirait un rejet injuste.",
+    "prefere": "recapitulatif_details",
+    "liste": [
+      {
+        "cle": "recapitulatif_details",
+        "champs_prouves": [
+          "prixEuros",
+          "distanceKm",
+          "dureeEstimeeMinutes"
+        ]
+      },
+      {
+        "cle": "ecran_acceptation",
+        "champs_prouves": [
+          "prixEuros",
+          "distanceKm"
+        ]
+      }
+    ]
+  }
 }

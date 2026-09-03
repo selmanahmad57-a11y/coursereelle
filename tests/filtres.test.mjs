@@ -29,6 +29,7 @@ import {
   CHAMPS_VERIFIES,
   comparerCapture,
   resumerMotif,
+  tolerancesEffectives,
   verifierCapture,
 } from "../lib/validation/ocr.ts";
 
@@ -415,4 +416,44 @@ test("le controle de capture ne regarde jamais ce qui est ecrit dessus", () => {
   /* Le contenant, jamais le contenu : aucun montant ne peut motiver un refus ici. */
   assert.equal(controlerCapture(fichier({}), { ...CONTRAINTES }), null);
   assert.deepEqual(Object.keys(fichier({})).sort(), ["nom", "taille", "type"]);
+});
+
+/* ------------------------------------------------------------------ */
+/* Champs facultatifs : ne pas rejeter ce qui n'a pas ete demande       */
+/* ------------------------------------------------------------------ */
+
+test("un champ facultatif non saisi n'est pas verifie par l'OCR", () => {
+  const saisie = { prixEuros: 8.08, distanceKm: 12.2, dureeEstimeeMinutes: null };
+
+  const effectives = tolerancesEffectives(TOLERANCES, saisie, ["dureeEstimeeMinutes"]);
+  assert.equal(effectives.dureeEstimeeMinutes, null);
+
+  /* Sans cette neutralisation, la capture qui affiche une duree ferait rejeter
+     une course dont le livreur n'a simplement pas note ce champ facultatif. */
+  const sansNeutralisation = verifierCapture(saisie, { ...SAISIE }, TOLERANCES);
+  assert.equal(sansNeutralisation.motif, "valeur_non_saisie:dureeEstimeeMinutes");
+
+  const avecNeutralisation = verifierCapture(saisie, { ...SAISIE }, effectives);
+  assert.equal(avecNeutralisation.accepte, true);
+});
+
+test("un champ facultatif saisi reste verifie normalement", () => {
+  const effectives = tolerancesEffectives(TOLERANCES, SAISIE, ["dureeEstimeeMinutes"]);
+
+  assert.equal(effectives.dureeEstimeeMinutes, TOLERANCES.dureeEstimeeMinutes);
+  assert.equal(
+    verifierCapture(SAISIE, { ...SAISIE, dureeEstimeeMinutes: 40 }, effectives).motif,
+    "valeur_divergente:dureeEstimeeMinutes"
+  );
+});
+
+test("neutraliser un champ facultatif ne touche jamais au prix", () => {
+  const saisie = { prixEuros: null, distanceKm: 12.2, dureeEstimeeMinutes: null };
+  const effectives = tolerancesEffectives(TOLERANCES, saisie, ["dureeEstimeeMinutes"]);
+
+  assert.equal(
+    effectives.prixEuros,
+    TOLERANCES.prixEuros,
+    "le prix est la valeur probante : il reste verifie quoi qu'il arrive"
+  );
 });

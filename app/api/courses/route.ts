@@ -275,13 +275,13 @@ export async function POST(requete: Request) {
         distance_km, prix_paye_euros, pourboire_euros,
         duree_estimee_minutes, duree_reelle_minutes,
         capture_cle_r2, capture_hash, capture_phash,
-        provenance_indice, statut
+        type_capture, provenance_indice, statut
       ) values (
         ${course.dateCourse}, ${course.villeSlug}, ${zone}, ${course.plateforme}, ${course.vehicule},
         ${course.distanceKm}, ${course.prixPayeEuros}, ${course.pourboireEuros},
         ${course.dureeEstimeeMinutes}, ${course.dureeReelleMinutes},
         ${cleR2}, ${hashExact}, ${phash},
-        ${null}, 'en_attente_ocr'
+        ${null}, ${null}, 'en_attente_ocr'
       ) returning id
     `) as { id: string }[];
 

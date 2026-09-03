@@ -117,20 +117,39 @@ export default function FormulaireCourse() {
       return;
     }
 
+    /*
+     * Le jeton anti-robot est produit par un script tiers. S'il manque, c'est
+     * que le script ne s'est pas exécuté — un bloqueur, une coupure — et non que
+     * la vérification a échoué. Le dire ici évite de laisser croire à un refus.
+     */
+    const jeton = formulaire.get("cf-turnstile-response");
+    if (typeof jeton !== "string" || jeton === "") {
+      setRetourEnvoi({ reussite: false, message: textes.envoi.turnstile_sans_jeton });
+      return;
+    }
+
     setEnvoi("en_cours");
     setRetourEnvoi(null);
 
     try {
       const reponse = await fetch("/api/courses", { method: "POST", body: formulaire });
-      const corps = (await reponse.json()) as { statut?: string; motif?: string };
+      const corps = (await reponse.json()) as {
+        statut?: string;
+        motif?: string;
+        details?: unknown;
+      };
 
       const reussite = reponse.ok && corps.statut !== "rejetee_auto";
+
+      /* Le motif est normalisé : l'afficher tel quel permet de dire précisément
+         quel filtre a parlé, plutôt qu'un « échec » sans information. */
+      const precision = Array.isArray(corps.details) ? ` (${corps.details.join(", ")})` : "";
 
       setRetourEnvoi({
         reussite,
         message: reussite
           ? textes.envoi.reussite
-          : `${textes.envoi.rejet} ${corps.motif ?? ""}`.trim(),
+          : `${textes.envoi.rejet} ${corps.motif ?? ""}${precision}`.trim(),
       });
     } catch {
       setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
@@ -332,7 +351,10 @@ export default function FormulaireCourse() {
       <section>
         {cleTurnstile ? (
           <>
-            <p className="text-xs text-neutral-600">{textes.envoi.verification}</p>
+            <p className="text-xs font-medium text-neutral-700">
+              {textes.envoi.verification}
+            </p>
+            <p className="text-xs text-neutral-600">{textes.envoi.verification_aide}</p>
             <div className="cf-turnstile mt-2" data-sitekey={cleTurnstile} />
             <Script
               src="https://challenges.cloudflare.com/turnstile/v0/api.js"

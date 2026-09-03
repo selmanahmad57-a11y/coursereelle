@@ -28,6 +28,11 @@ import { MOTIFS_REFUS } from "../lib/validation/anti-fraude.ts";
 import { CHAMPS_VERIFIES, MOTIFS_OCR } from "../lib/validation/ocr.ts";
 import { MOTIFS_CAPTURE } from "../lib/validation/capture.ts";
 import { endpointR2, juridictionValide } from "../lib/r2-endpoint.ts";
+import {
+  analyserSoumissionCourse,
+  CHAMPS_FACULTATIFS,
+  CHAMPS_REQUIS,
+} from "../lib/validation/soumission.ts";
 import { CODES_SIGNALEMENT, MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
@@ -550,4 +555,114 @@ test("la juridiction est documentee dans .env.example", async () => {
   const exemple = await readFile(new URL("../.env.example", import.meta.url), "utf8");
 
   assert.match(exemple, /^R2_JURIDICTION=/m, "une variable non documentee est une variable oubliee");
+});
+
+/* ------------------------------------------------------------------ */
+/* Champs facultatifs et types de capture                               */
+/* ------------------------------------------------------------------ */
+
+test("aucun champ ne peut etre a la fois requis et facultatif", () => {
+  for (const champ of CHAMPS_FACULTATIFS) {
+    assert.ok(
+      !CHAMPS_REQUIS.includes(champ),
+      `${champ} est declare facultatif ET requis : la soumission serait incoherente`
+    );
+  }
+});
+
+test("une course sans duree affichee reste acceptable", async () => {
+  const villes = await lireJson(
+    process.env.VILLES_FICHIER ?? new URL("../config/villes.json", import.meta.url)
+  );
+
+  const { course, erreurs } = analyserSoumissionCourse(
+    {
+      date_course: "2026-09-03",
+      plateforme: "uber_eats",
+      vehicule: "velo",
+      ville: "angers",
+      distance_km: "12,2",
+      prix_paye_euros: "8,08",
+      duree_reelle_minutes: "32",
+    },
+    {
+      plateformes: schema.$defs.plateforme.enum,
+      vehicules: schema.$defs.vehicule.enum,
+      villes: villes.villes.map((v) => v.slug),
+      villeAutre: "autre",
+    }
+  );
+
+  assert.deepEqual(erreurs, [], "l'ecran d'acceptation n'affiche pas la duree");
+  assert.equal(course.dureeEstimeeMinutes, null);
+  assert.equal(course.prixPayeEuros, 8.08);
+});
+
+test("le prix, lui, reste obligatoire", () => {
+  const { course, erreurs } = analyserSoumissionCourse(
+    {
+      date_course: "2026-09-03",
+      plateforme: "uber_eats",
+      vehicule: "velo",
+      ville: "angers",
+      distance_km: "12,2",
+      duree_reelle_minutes: "32",
+    },
+    { plateformes: ["uber_eats"], vehicules: ["velo"], villes: ["angers"], villeAutre: "autre" }
+  );
+
+  assert.equal(course, null);
+  assert.ok(erreurs.some((e) => e.champ === "prix_paye_euros"));
+});
+
+test("chaque type de capture ne promet que des champs que l'OCR sait verifier", async () => {
+  const captures = await lireJson(
+    process.env.CAPTURES_FICHIER ?? new URL("../config/captures.json", import.meta.url)
+  );
+
+  const cles = captures.types.liste.map((type) => type.cle);
+
+  assert.ok(
+    cles.includes(captures.types.prefere),
+    "le type prefere doit exister dans la liste"
+  );
+
+  for (const type of captures.types.liste) {
+    assert.ok(libelles.types_capture[type.cle], `${type.cle} : libelle manquant`);
+    assert.ok(type.champs_prouves.length > 0, `${type.cle} : ne prouve rien`);
+
+    for (const champ of type.champs_prouves) {
+      assert.ok(
+        CHAMPS_VERIFIES.includes(champ),
+        `${type.cle} promet « ${champ} », que l'OCR ne verifie pas`
+      );
+    }
+  }
+});
+
+test("l'ecran d'acceptation ne promet pas la duree, le recapitulatif si", async () => {
+  /* La distinction est la raison d'etre des deux gabarits : demander une duree a
+     un ecran qui ne l'affiche pas produirait un rejet injuste. */
+  const captures = await lireJson(
+    process.env.CAPTURES_FICHIER ?? new URL("../config/captures.json", import.meta.url)
+  );
+
+  const par = Object.fromEntries(
+    captures.types.liste.map((type) => [type.cle, type.champs_prouves])
+  );
+
+  assert.ok(
+    par.recapitulatif_details.includes("dureeEstimeeMinutes"),
+    "le recapitulatif Details affiche la duree"
+  );
+  assert.ok(
+    !par.ecran_acceptation.includes("dureeEstimeeMinutes"),
+    "l'ecran d'acceptation ne l'affiche pas"
+  );
+
+  /* Ce que les deux prouvent en commun, c'est ce qui compte le plus. */
+  for (const cle of Object.keys(par)) {
+    assert.ok(par[cle].includes("prixEuros"), `${cle} doit prouver le prix`);
+    assert.ok(par[cle].includes("distanceKm"), `${cle} doit prouver la distance`);
+  }
 });

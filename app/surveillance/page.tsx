@@ -26,6 +26,12 @@ const compteurs = (etat: EtatSurveillance) =>
       vide: textes.aucun_signalement,
     },
     {
+      cle: "types_capture",
+      entrees: etat.typesCapture,
+      table: "types_capture",
+      vide: textes.vide,
+    },
+    {
       cle: "anti_fraude",
       entrees: etat.antiFraude,
       table: "anti_fraude_compteurs",

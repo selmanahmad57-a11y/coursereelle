@@ -17,9 +17,15 @@ export const CHAMPS_REQUIS = [
   "vehicule",
   "distance_km",
   "prix_paye_euros",
-  "duree_estimee_minutes",
   "duree_reelle_minutes",
 ] as const;
+
+/*
+ * La durée affichée par l'application est facultative : l'écran d'acceptation ne
+ * la montre pas, et un livreur ne la note pas toujours. Mieux vaut une course
+ * sans comparateur qu'une course perdue.
+ */
+export const CHAMPS_FACULTATIFS = ["duree_estimee_minutes", "pourboire_euros"] as const;
 
 export const MOTIFS_SOUMISSION = [
   "champ_absent",
@@ -53,7 +59,7 @@ export interface CourseSoumise {
   distanceKm: number;
   prixPayeEuros: number;
   pourboireEuros: number | null;
-  dureeEstimeeMinutes: number;
+  dureeEstimeeMinutes: number | null;
   dureeReelleMinutes: number;
 }
 
@@ -151,7 +157,7 @@ export const analyserSoumissionCourse = (
       distanceKm: nombres.distance_km as number,
       prixPayeEuros: nombres.prix_paye_euros as number,
       pourboireEuros: pourboire,
-      dureeEstimeeMinutes: nombres.duree_estimee_minutes as number,
+      dureeEstimeeMinutes: nombres.duree_estimee_minutes,
       dureeReelleMinutes: nombres.duree_reelle_minutes as number,
     },
     erreurs: [],

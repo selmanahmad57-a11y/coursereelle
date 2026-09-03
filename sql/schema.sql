@@ -51,7 +51,10 @@ create table if not exists courses (
   prix_paye_euros         numeric(7, 2) not null,
   -- Donnée source unique : les deux taux horaires en sont dérivés, jamais stockés.
   pourboire_euros         numeric(7, 2),
-  duree_estimee_minutes   integer not null,
+  -- Facultative : l'écran d'acceptation ne l'affiche pas, et un livreur ne la
+  -- note pas toujours. Les statistiques d'écart ne portent donc que sur les
+  -- courses qui la renseignent, ce que la page Méthode annonce.
+  duree_estimee_minutes   integer,
   duree_reelle_minutes    integer not null,
 
   -- Capture d'écran : preuve de vérification, jamais publiée.
@@ -64,6 +67,12 @@ create table if not exists courses (
   -- contrainte d'unicité ici.
   capture_phash           text,
   capture_supprimee_le    timestamptz,
+
+  -- Quel écran a servi de preuve. Les deux sont acceptés mais ne prouvent pas la
+  -- même chose : le récapitulatif « Détails » porte aussi la durée, l'écran
+  -- d'acceptation non. Renseigné par la reconnaissance de gabarit, donc NULL
+  -- tant que celle-ci n'est pas calibrée.
+  type_capture            text,
 
   -- Traces des contrôles d'authenticité, pour le tableau de surveillance :
   -- d'où venait l'indice de génération automatique, et quel gabarit a été
@@ -92,7 +101,7 @@ create table if not exists courses (
   constraint motif_si_rejet
     check ((statut = 'rejetee_auto') = (motif_rejet is not null)),
   constraint duree_reelle_positive check (duree_reelle_minutes > 0),
-  constraint duree_estimee_positive check (duree_estimee_minutes > 0),
+  constraint duree_estimee_positive check (duree_estimee_minutes is null or duree_estimee_minutes > 0),
   constraint distance_positive check (distance_km > 0),
   constraint capture_hash_unique unique (capture_hash)
 );
@@ -292,3 +301,19 @@ create table if not exists activite_appareil (
 --   delete from sels_journaliers      where jour  < current_date - $1::integer;
 --   delete from activite_appareil     where jour  < current_date - $1::integer;
 --   delete from soumissions_horaires  where heure < now() - make_interval(days => $1);
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Ajustements des bases déjà créées
+-- ─────────────────────────────────────────────────────────────────────────────
+--
+-- `create table if not exists` ne touche pas une table existante : les colonnes
+-- et contraintes apparues après coup doivent être appliquées explicitement. Ces
+-- instructions sont sans effet sur une base neuve, et rejouables sans risque.
+
+alter table courses alter column duree_estimee_minutes drop not null;
+alter table courses add column if not exists type_capture text;
+
+alter table courses drop constraint if exists duree_estimee_positive;
+alter table courses add constraint duree_estimee_positive
+  check (duree_estimee_minutes is null or duree_estimee_minutes > 0);
