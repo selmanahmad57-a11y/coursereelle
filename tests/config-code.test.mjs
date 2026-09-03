@@ -32,6 +32,7 @@ import {
   analyserSoumissionCourse,
   CHAMPS_FACULTATIFS,
   CHAMPS_REQUIS,
+  MOTIFS_SOUMISSION,
 } from "../lib/validation/soumission.ts";
 import { CODES_SIGNALEMENT, MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
@@ -706,5 +707,52 @@ test("les motifs techniques distinguent les deux ecritures", () => {
   assert.ok(
     !("ecriture_impossible" in libelles.motifs_technique),
     "l'ancien motif indistinct ne doit pas revenir"
+  );
+});
+
+/* ------------------------------------------------------------------ */
+/* Aucun champ ni motif de soumission ne peut s'afficher en jargon      */
+/* ------------------------------------------------------------------ */
+
+test("chaque champ que le serveur peut incriminer a un libelle", () => {
+  /*
+   * Le formulaire affiche les erreurs de champ renvoyees par le serveur. Un
+   * champ sans libelle afficherait « duree_estimee_minutes » a un livreur, au
+   * moment ou il cherche quoi corriger.
+   */
+  const champs = new Set([
+    ...CHAMPS_REQUIS,
+    ...CHAMPS_FACULTATIFS,
+    "ville",
+    "ville_libre",
+  ]);
+
+  for (const champ of champs) {
+    assert.ok(
+      libelles.champs_soumission[champ],
+      `champ sans libelle, il s'afficherait tel quel : ${champ}`
+    );
+  }
+});
+
+test("chaque motif de soumission a un libelle", () => {
+  assert.deepEqual(
+    [...MOTIFS_SOUMISSION].sort(),
+    Object.keys(libelles.motifs_soumission).sort()
+  );
+});
+
+test("le formulaire et le serveur lisent les nombres de la meme facon", async () => {
+  /* Deux lectures differentes produiraient un calcul a l'ecran qui ne
+     correspond pas a ce qui est enregistre — le pire des deux mondes. */
+  const contexte = await readFile(
+    new URL("../lib/contexte-livreur.ts", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(
+    contexte,
+    /export \{ analyserNombre as enNombre \} from "\.\/nombre\.ts"/,
+    "le formulaire doit reexporter la lecture du serveur, pas la reimplementer"
   );
 });

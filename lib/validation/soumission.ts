@@ -12,6 +12,7 @@
  */
 
 import { analyserDuree, arrondirDuree } from "../duree.ts";
+import { analyserNombre } from "../nombre.ts";
 
 export const CHAMPS_REQUIS = [
   "date_course",
@@ -73,13 +74,9 @@ export interface Analyse {
 
 const FORMAT_DATE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
-const enNombre = (brut: string | undefined): number | null => {
-  if (brut === undefined) return null;
-  const nettoye = brut.replace(",", ".").trim();
-  if (nettoye === "") return null;
-  const valeur = Number(nettoye);
-  return Number.isFinite(valeur) ? valeur : null;
-};
+/* La lecture tolérante vit dans son propre module, partagée avec le formulaire :
+   les deux côtés doivent comprendre exactement la même chose. */
+const enNombre = analyserNombre;
 
 export const analyserSoumissionCourse = (
   champs: Record<string, string | undefined>,

@@ -65,10 +65,8 @@ export const decoder = (brut: string | null): Contexte => {
 export const sansAbonnement = () => () => {};
 export const dateAuRendu = (): string => "";
 
-/** Les livreurs saisissent « 12,2 » aussi souvent que « 12.2 ». */
-export const enNombre = (saisie: string): number | null => {
-  const nettoye = saisie.replace(",", ".").trim();
-  if (nettoye === "") return null;
-  const valeur = Number(nettoye);
-  return Number.isFinite(valeur) ? valeur : null;
-};
+/*
+ * Le formulaire lit exactement comme le serveur : deux lectures differentes
+ * produiraient un calcul a l'ecran qui ne correspond pas a ce qui est enregistre.
+ */
+export { analyserNombre as enNombre } from "./nombre.ts";

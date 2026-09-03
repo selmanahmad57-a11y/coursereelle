@@ -424,5 +424,17 @@
     "date_invalide": "Date invalide",
     "valeur_hors_vocabulaire": "Valeur inattendue",
     "ville_absente": "Ville non renseignée"
+  },
+  "champs_soumission": {
+    "date_course": "Date de la course",
+    "ville": "Ville",
+    "ville_libre": "Nom de la ville",
+    "plateforme": "Plateforme",
+    "vehicule": "Véhicule",
+    "distance_km": "Distance parcourue",
+    "prix_paye_euros": "Prix payé par la plateforme",
+    "pourboire_euros": "Pourboire",
+    "duree_estimee_minutes": "Durée affichée par l'application",
+    "duree_reelle_minutes": "Temps réel"
   }
 }

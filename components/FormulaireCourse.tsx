@@ -39,6 +39,20 @@ const textes = libelles.formulaire;
 
 /* Les motifs renvoyes par le serveur sont normalises : on les traduit ici plutot
    que d'afficher un identifiant technique a un livreur. */
+const champs: Record<string, string> = libelles.champs_soumission;
+
+/** Un detail est soit un code normalise, soit une erreur de champ. */
+const decrireDetail = (detail: unknown): string => {
+  if (typeof detail === "string") return motifs[detail] ?? detail;
+
+  if (detail && typeof detail === "object" && "champ" in detail && "motif" in detail) {
+    const { champ, motif } = detail as { champ: string; motif: string };
+    return `${champs[champ] ?? champ} : ${motifsSoumission[motif] ?? motif}`;
+  }
+
+  return String(detail);
+};
+
 const motifs: Record<string, string> = {
   ...libelles.motifs_technique,
   ...libelles.motifs_capture,
@@ -46,6 +60,8 @@ const motifs: Record<string, string> = {
   ...libelles.motifs_authenticite,
   ...libelles.motifs_ocr,
 };
+
+const motifsSoumission: Record<string, string> = libelles.motifs_soumission;
 
 /*
  * Le script Turnstile expose un objet global. On ne declare que ce qu'on utilise
@@ -175,9 +191,15 @@ export default function FormulaireCourse() {
 
       const reussite = reponse.ok && corps.statut !== "rejetee_auto";
 
-      /* Le motif est normalisé : l'afficher tel quel permet de dire précisément
-         quel filtre a parlé, plutôt qu'un « échec » sans information. */
-      const precision = Array.isArray(corps.details) ? ` (${corps.details.join(", ")})` : "";
+      /*
+       * Le motif est normalisé : l'afficher permet de dire quel filtre a parlé.
+       * Les détails peuvent être des codes ou des erreurs de champ ; les deux
+       * sont traduits, car « [object Object] » à l'écran n'aide personne — et
+       * cachait précisément le champ fautif.
+       */
+      const precision = Array.isArray(corps.details)
+        ? ` — ${corps.details.map(decrireDetail).join(" ; ")}`
+        : "";
 
       setRetourEnvoi({
         reussite,
