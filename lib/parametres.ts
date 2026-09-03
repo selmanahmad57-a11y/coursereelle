@@ -20,6 +20,7 @@ import { uniqueEnVigueur } from "./periodes";
 import type { ReglesAuthenticite } from "./validation/authenticite.ts";
 import type { ContraintesCapture } from "./validation/capture.ts";
 import type { Gabarit } from "./validation/gabarit.ts";
+import type { SeuilsSession } from "./validation/regles-session.ts";
 import type { Tolerances } from "./validation/ocr.ts";
 import type { SeuilsPhysiques } from "./validation/regles-physiques.ts";
 
@@ -198,3 +199,32 @@ export const reglesAuthenticite = (date: string): ReglesAuthenticite => {
     },
   };
 };
+
+/* ------------------------------------------------------------------ */
+/* Sessions                                                            */
+/* ------------------------------------------------------------------ */
+
+/* La durée maximale vit en heures dans la configuration, parce que c'est ainsi
+   qu'elle se lit sur la page Méthode ; le contrôle, lui, raisonne en minutes. */
+const MINUTES_PAR_HEURE = 60;
+
+export const seuilsSession = (date: string): SeuilsSession => {
+  const maximumHeures = parametreSysteme(CLES_SYSTEME.dureeSessionMaximale, date);
+
+  return {
+    dureeMinimaleMinutes: parametreSysteme(CLES_SYSTEME.dureeSessionMinimale, date),
+    dureeMaximaleMinutes: maximumHeures === null ? null : maximumHeures * MINUTES_PAR_HEURE,
+    cadenceMaximaleParHeure: parametreSysteme(CLES_SYSTEME.cadenceMaximaleCourses, date),
+  };
+};
+
+/* ------------------------------------------------------------------ */
+/* Publication                                                         */
+/* ------------------------------------------------------------------ */
+
+export const seuilsStatistiques = (
+  date: string
+): { ecartsTypes: number | null; effectifMinimal: number | null } => ({
+  ecartsTypes: parametreSysteme(CLES_SYSTEME.seuilOutliers, date),
+  effectifMinimal: parametreSysteme(CLES_SYSTEME.seuilPublication, date),
+});

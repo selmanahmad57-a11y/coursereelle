@@ -6,6 +6,19 @@ import libelles from "@/config/libelles.json";
 import { formaterValeur } from "@/lib/baremes";
 import { calculer } from "@/lib/calculs.ts";
 import { UNITES } from "@/lib/cles.ts";
+import {
+  abonnerStockage,
+  aujourdhui,
+  dateAuRendu,
+  decoder,
+  ecrireStockage,
+  enNombre,
+  lireStockage,
+  sansAbonnement,
+  stockageAuRendu,
+  VILLE_AUTRE,
+  type Contexte,
+} from "@/lib/contexte-livreur.ts";
 import { plateformes, vehicules, libelleZone } from "@/lib/enumerations";
 import {
   ancienneteMaximale,
@@ -16,79 +29,11 @@ import {
 } from "@/lib/parametres";
 import { controlerCoherencePhysique } from "@/lib/validation/regles-physiques.ts";
 
+import { Champ, classesSaisie } from "./Champ";
 import CalculEnDirect from "./CalculEnDirect";
 import ChampCapture from "./ChampCapture";
 
 const textes = libelles.formulaire;
-
-/** Ce que l'appareil retient d'une visite à l'autre : les champs qui ne changent pas. */
-const CLE_MEMOIRE = "coursereelle.contexte";
-const VILLE_AUTRE = "autre";
-
-interface Contexte {
-  ville: string;
-  plateforme: string;
-  vehicule: string;
-}
-
-const CONTEXTE_VIDE: Contexte = { ville: "", plateforme: "", vehicule: "" };
-
-const aujourdhui = (): string => new Date().toISOString().slice(0, 10);
-
-/* ------------------------------------------------------------------ */
-/* Sources extérieures à React : le stockage local et l'horloge         */
-/* ------------------------------------------------------------------ */
-
-/*
- * On s'abonne à ces deux sources plutôt que de les recopier dans un état depuis
- * un effet : le rendu serveur ne connaît ni la mémoire ni la date du visiteur,
- * et une recopie après montage provoquerait un rendu en cascade.
- */
-
-const abonnerStockage = (rappel: () => void) => {
-  window.addEventListener("storage", rappel);
-  return () => window.removeEventListener("storage", rappel);
-};
-
-const lireStockage = (): string | null => {
-  try {
-    return window.localStorage.getItem(CLE_MEMOIRE);
-  } catch {
-    return null;
-  }
-};
-
-const stockageAuRendu = (): string | null => null;
-
-const ecrireStockage = (contexte: Contexte) => {
-  try {
-    window.localStorage.setItem(CLE_MEMOIRE, JSON.stringify(contexte));
-  } catch {
-    /* Écriture refusée (navigation privée, réglage du navigateur) : sans conséquence. */
-  }
-};
-
-const decoder = (brut: string | null): Contexte => {
-  if (!brut) return CONTEXTE_VIDE;
-  try {
-    return { ...CONTEXTE_VIDE, ...(JSON.parse(brut) as Partial<Contexte>) };
-  } catch {
-    return CONTEXTE_VIDE;
-  }
-};
-
-const sansAbonnement = () => () => {};
-const dateAuRendu = (): string => "";
-
-/* ------------------------------------------------------------------ */
-
-/** Les livreurs saisissent « 12,2 » aussi souvent que « 12.2 ». */
-const enNombre = (saisie: string): number | null => {
-  const nettoye = saisie.replace(",", ".").trim();
-  if (nettoye === "") return null;
-  const valeur = Number(nettoye);
-  return Number.isFinite(valeur) ? valeur : null;
-};
 
 const MILLISECONDES_PAR_JOUR = 86_400_000;
 
@@ -98,31 +43,6 @@ const joursEcoules = (date: string, reference: string): number | null => {
   if (Number.isNaN(depart) || Number.isNaN(arrivee)) return null;
   return Math.round((arrivee - depart) / MILLISECONDES_PAR_JOUR);
 };
-
-function Champ({
-  identifiant,
-  intitule,
-  aide,
-  children,
-}: {
-  identifiant: string;
-  intitule: string;
-  aide?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-neutral-800" htmlFor={identifiant}>
-        {intitule}
-      </label>
-      {children}
-      {aide ? <p className="mt-1 text-xs text-neutral-600">{aide}</p> : null}
-    </div>
-  );
-}
-
-const classesSaisie =
-  "mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus:border-neutral-900 focus:outline-none";
 
 export default function FormulaireCourse() {
   const memoire = useSyncExternalStore(abonnerStockage, lireStockage, stockageAuRendu);

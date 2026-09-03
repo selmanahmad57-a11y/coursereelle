@@ -85,6 +85,10 @@ export const formaterValeur = (valeur: number, unite: string): string => {
   return `${nombre} ${definition.symbole}`;
 };
 
+/** Un nombre nu, dans la locale de la configuration. Pour les compteurs. */
+export const formaterNombre = (valeur: number): string =>
+  new Intl.NumberFormat(libelles.locale).format(valeur);
+
 const formaterDate = (date: string): string => {
   const jour = new Date(`${date}T00:00:00Z`);
   const texte = new Intl.DateTimeFormat(libelles.locale, {

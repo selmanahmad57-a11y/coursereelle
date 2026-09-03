@@ -25,6 +25,11 @@ export const CLES_SYSTEME = {
   distancePerceptuelleRejet: "distance_perceptuelle_rejet",
   distancePerceptuelleSurveillance: "distance_perceptuelle_surveillance",
   toleranceGabarit: "tolerance_position_gabarit",
+  dureeSessionMinimale: "duree_session_minimale",
+  dureeSessionMaximale: "duree_session_maximale",
+  cadenceMaximaleCourses: "cadence_maximale_courses",
+  seuilPublication: "seuil_publication_statistiques",
+  seuilOutliers: "seuil_outliers_ecarts_types",
 } as const;
 
 export const CLES_LEGALES = {
@@ -51,4 +56,6 @@ export const UNITES = {
   kilooctets: "KILOOCTETS",
   megaoctets: "MEGAOCTETS",
   bits: "BITS",
+  coursesParHeure: "COURSES_PAR_HEURE",
+  courses: "COURSES",
 } as const;

@@ -193,6 +193,20 @@ export default function PageMethode() {
 
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-neutral-900">
+          {libelles.methode.donnees_invisibles.titre}
+        </h2>
+        <div className="mt-4 rounded-lg border border-neutral-200 bg-white p-4">
+          <p className="text-sm text-neutral-700">
+            {libelles.methode.donnees_invisibles.texte}
+          </p>
+          <p className="mt-3 text-sm text-neutral-700">
+            {libelles.methode.donnees_invisibles.defense}
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-neutral-900">
           {libelles.methode.authenticite.titre}
         </h2>
         <div className="mt-4 rounded-lg border border-neutral-300 bg-white p-4">

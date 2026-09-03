@@ -37,6 +37,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/publier">
               Publier une course
             </Link>
+            <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/session">
+              Publier une session
+            </Link>
+            <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/statistiques">
+              Statistiques
+            </Link>
             <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/methode">
               Méthode
             </Link>

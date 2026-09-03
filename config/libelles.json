@@ -106,6 +106,11 @@
       "symbole": "bits",
       "decimales_min": 0,
       "decimales_max": 0
+    },
+    "COURSES_PAR_HEURE": {
+      "symbole": "courses/h",
+      "decimales_min": 0,
+      "decimales_max": 1
     }
   },
   "usages": {
@@ -235,6 +240,11 @@
     "calibrage": {
       "titre": "Comment nous réglons nos seuils",
       "texte": "Un seuil qui écarte une course se règle au plus près du cas certain, et ne s'élargit que sur mesure : un rejet à tort coûte une course légitime et un livreur découragé, ce qui est le pire échec possible pour un site qui vit de la participation. Un seuil qui se contente de signaler peut au contraire être large dès le départ, puisqu'il ne change rien pour celui qui envoie sa course. C'est pourquoi certains contrôles de cette page ne rejettent rien aujourd'hui : ils observent, et le seuil de rejet ne bougera que quand les données réelles diront où le placer."
+    },
+    "donnees_invisibles": {
+      "titre": "Deux données qu'aucune capture ne montre",
+      "texte": "Le temps réel d'une course — de l'acceptation à la remise — et le temps passé connecté sans course ne figurent sur aucun récapitulatif. C'est précisément ce que les plateformes ne montrent pas, et c'est précisément ce que ce site existe pour mesurer. Aucune vérification par lecture d'image ne peut donc les confirmer, et nous ne prétendons pas le contraire.",
+      "defense": "Ces deux données relèvent de la même défense : la fiabilisation par la masse. Les valeurs qui s'écartent de plus de trois écarts-types sortent des statistiques, les chiffres publiés sont des médianes, et rien n'est publié avant que la ville atteigne son seuil de courses. Une exagération isolée est donc sans effet, et une exagération systématique se verrait dans la distribution."
     }
   },
   "statuts": {
@@ -272,5 +282,76 @@
   },
   "signalements": {
     "similarite_perceptuelle": "Capture ressemblante à une capture déjà reçue, sans certitude"
+  },
+  "motifs_session": {
+    "duree_sous_minimum": "Session trop courte pour être une session de travail",
+    "duree_sur_maximum": "Session trop longue : l'horaire de déconnexion est probablement mal saisi",
+    "cadence_impossible": "Trop de courses pour la durée déclarée",
+    "temps_paye_superieur_au_connecte": "Le temps en course dépasse le temps connecté"
+  },
+  "formulaire_session": {
+    "titre": "Publier une session",
+    "introduction": "La donnée que l'accord ignore : le temps passé connecté sans course. C'est elle qui donnera le rapport entre temps payé et temps réellement disponible, ville par ville.",
+    "section_contexte": "Vous",
+    "section_contexte_aide": "Retenu sur cet appareil, à ne remplir qu'une fois.",
+    "section_session": "La session",
+    "champs": {
+      "date_session": "Date de la session",
+      "connexion": "Heure de connexion",
+      "deconnexion": "Heure de déconnexion",
+      "nombre_courses": "Nombre de courses effectuées",
+      "revenu_plateforme": "Revenu versé par la plateforme",
+      "minutes_en_course": "Temps passé en course"
+    },
+    "aides": {
+      "deconnexion": "Si vous avez fini après minuit, indiquez simplement l'heure : la nuit est prise en compte.",
+      "revenu_plateforme": "Hors pourboires, comme partout sur le site : c'est ce que la plateforme a versé.",
+      "minutes_en_course": "En minutes, et seulement si votre application vous le donne. Laissez vide sinon."
+    },
+    "resultats": {
+      "titre": "Ce que cela représente",
+      "attente": "Renseignez les horaires et le revenu versé pour voir votre taux horaire connecté.",
+      "duree_connectee": "Temps connecté",
+      "revenu": "Revenu plateforme",
+      "taux_connecte": "Par heure connectée",
+      "part_payee": "Part du temps réellement payée",
+      "cadence": "Cadence",
+      "precision": "Le taux est calculé sur le temps CONNECTÉ, pas sur le temps « en course » estimé par l'application. C'est précisément l'écart que la garantie horaire ignore."
+    },
+    "anomalies_titre": "À vérifier avant d'envoyer",
+    "envoi": {
+      "bouton": "Envoyer la session",
+      "indisponible": "L'envoi n'est pas encore branché : il attend la base de données. Le calcul ci-dessous fonctionne déjà."
+    },
+    "sans_capture": "Une session ne demande aucune capture d'écran : le temps connecté n'apparaît sur aucun récapitulatif."
+  },
+  "statistiques": {
+    "titre": "Statistiques",
+    "introduction": "Les chiffres publiés ici sont des médianes, jamais des moyennes : sur un grand nombre de courses, une médiane ne bouge pas sous quelques soumissions fabriquées, alors qu'une moyenne se déplace. C'est la protection qui ne dépend d'aucune détection.",
+    "compteur_intitule": "Courses vérifiées",
+    "aucune_donnee": "Aucune course vérifiée pour l'instant.",
+    "avant_seuil": "Les statistiques seront publiées à partir de {seuil}.",
+    "restant": "Il en manque {restant}.",
+    "pourquoi": "Avant ce seuil, publier un chiffre construit sur quelques dizaines de courses ferait plus de mal qu'un site vide : il suffirait d'un petit lot de fausses données pour le faire basculer. Le compteur, lui, ne ment pas.",
+    "base_absente": "La base de données n'est pas encore branchée : aucune course ne peut être reçue pour le moment. Ce compteur affiche donc zéro, et non une estimation."
+  },
+  "surveillance": {
+    "titre": "Surveillance",
+    "sous_titre": "Lecture seule. Ce tableau ne permet aucune action sur les courses : il sert à régler le système, jamais à juger une soumission.",
+    "acces": {
+      "intitule": "Mot de passe",
+      "bouton": "Ouvrir",
+      "refus": "Mot de passe incorrect.",
+      "non_configure": "Aucun mot de passe n'est configuré sur ce déploiement : l'accès reste fermé. Renseignez SURVEILLANCE_PASSWORD."
+    },
+    "base_absente": "La base n'est pas branchée. Les sections ci-dessous montrent ce qui sera suivi, avec des compteurs à zéro — jamais des exemples.",
+    "sections": {
+      "rejets": "Rejets par motif",
+      "signalements": "Signalements, sans effet sur les soumissions",
+      "villes_libres": "Saisies « Autre ville » à normaliser",
+      "anti_fraude": "Compteurs anti-fraude agrégés"
+    },
+    "vide": "Aucune donnée.",
+    "anti_fraude_note": "Agrégés par empreinte salée, jamais par adresse. Les empreintes plus anciennes que la fenêtre de rétention ont disparu avec leur sel."
   }
 }

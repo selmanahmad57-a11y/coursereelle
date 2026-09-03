@@ -412,6 +412,36 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Entre le seuil de rejet et celui-ci, la similarité est signalée sans aucun effet sur la soumission : la course est acceptée normalement. Ce seuil peut être large sans risque, puisqu'il ne coûte rien au livreur légitime. C'est lui qui donnera, en semaine 5, la distribution réelle des distances entre captures légitimes d'un même gabarit — et c'est sur cette mesure, pas sur une hypothèse, que le seuil de rejet montera ou descendra."
+    },
+    {
+      "cle": "duree_session_minimale",
+      "libelle": "Durée minimale d'une session de connexion",
+      "valeur": 15,
+      "unite": "MINUTES",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "En deçà d'un quart d'heure, la saisie relève plus probablement de l'erreur ou de l'essai que d'une session de travail."
+    },
+    {
+      "cle": "duree_session_maximale",
+      "libelle": "Durée maximale d'une session de connexion",
+      "valeur": 16,
+      "unite": "HEURES",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Personne ne livre dix-sept heures d'affilée. Au-delà, c'est une erreur de saisie d'horaire, le plus souvent une déconnexion notée le lendemain."
+    },
+    {
+      "cle": "cadence_maximale_courses",
+      "libelle": "Nombre de courses par heure connectée au-delà duquel la session est physiquement suspecte",
+      "valeur": 6,
+      "unite": "COURSES_PAR_HEURE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Une course toutes les dix minutes, sans interruption, sur toute la durée de connexion : au-delà, la saisie ne décrit plus une journée possible. Seuil de cohérence physique, jamais de jugement sur la rémunération."
     }
   ]
 }
