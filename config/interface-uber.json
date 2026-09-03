@@ -14,7 +14,11 @@
     "Livraison",
     "Pourboire",
     "Trajet",
-    "Course"
+    "Course",
+    "Détails de la course",
+    "Plus d'informations",
+    "L'estimation pour cette course",
+    "Prix total du trajet (net de frais)"
   ],
   "motifs": {
     "note": "Ancrages de forme, pour les zones sans libellé — l'écran d'acceptation affiche un montant sans rien pour le nommer. Ils ne sont PAS ancrés aux extrémités du texte, parce que le récapitulatif met durée et distance sur une même ligne : « 16 min 34 s 11.18 km ». Un motif exigeant que la ligne entière lui corresponde n'y reconnaîtrait rien. Seuls le nom du motif et la position sortent, jamais la valeur.",
@@ -29,5 +33,6 @@
     "distanceKm": "distance_km",
     "dureeEstimeeMinutes": "duree_min_sec",
     "indispensable": "prixEuros"
-  }
+  },
+  "note_libelles": "Relevés sur des captures réelles, iOS et Android. « Détails de la course » est le titre Android ; iOS affiche « Détails ». Ces chaînes sont génériques : elles ne désignent personne, et ce sont les seules que l'outil de calibration a le droit d'écrire."
 }
