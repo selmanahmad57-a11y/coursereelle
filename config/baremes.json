@@ -1,6 +1,26 @@
 {
   "version_schema": 1,
-  "regles_annoncees": [],
+  "regles_annoncees": [
+    {
+      "cle": "garantie_horaire_brute",
+      "libelle": "Revenu minimal garanti par heure d'activité, hors pourboires",
+      "plateformes": [
+        "uber_eats",
+        "deliveroo"
+      ],
+      "valeur": 19,
+      "unite": "EUR_PAR_HEURE",
+      "usage": "comparaison",
+      "valable_du": "2026-09-01",
+      "valable_au": null,
+      "source": {
+        "libelle": "Avenant à l'accord ARPE signé par les plateformes (Uber Eats, Deliveroo) et les syndicats Union-Indépendants et FNAE",
+        "url": null,
+        "consultee_le": null
+      },
+      "note": "Calculée par semaine, sur le seul temps « en course » estimé par la plateforme — ni sur le temps connecté, ni sur le temps vécu. C'est exactement l'écart que le site mesure. Montant brut : cotisations et frais de véhicule restent à la charge du livreur."
+    }
+  ],
   "parametres_systeme": [
     {
       "cle": "seuil_outliers_ecarts_types",
