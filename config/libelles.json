@@ -625,5 +625,44 @@
       ],
       "mention": "Site indépendant, sans publicité et sans financement de plateforme. Code public sous licence AGPL."
     }
+  },
+  "accueil": {
+    "titre": "Ce que les plateformes annoncent, et ce qu'elles paient",
+    "chapeau": "Course Réelle publie les courses réelles des livreurs, vérifiées automatiquement par la capture qui les accompagne. Aucun humain ne valide, aucune règle n'est cachée : elles sont toutes publiées, avec leur date d'entrée en vigueur et leur source.",
+    "vitrine": {
+      "titre": "La dernière course vérifiée",
+      "selection": "La dernière, et non la pire. Retenir la course la moins bien payée donnerait un chiffre plus frappant, mais la règle de sélection serait alors une thèse déguisée en observation.",
+      "preuve": "Ces chiffres ne sont pas déclarés : ils ont été lus sur la capture du récapitulatif et comparés à la saisie du livreur. La capture, elle, a été supprimée.",
+      "intitule_taux": "Payé par la plateforme, ramené à l'heure",
+      "provenance_taux": "{prix} pour {duree} de course, hors pourboire",
+      "intitule_garantie": "Garantie annoncée pour la même heure",
+      "provenance_garantie": "Barème annoncé par la plateforme, en vigueur à la date de la course",
+      "intitule_ecart": "Écart",
+      "provenance_distance": "Distance parcourue : {distance}",
+      "sans_garantie": "Aucune garantie horaire annoncée n'est en vigueur à la date de cette course : le site ne compare donc rien, plutôt que de comparer à un chiffre d'une autre période.",
+      "aucune": "Aucune course n'a encore été vérifiée. Cette place restera vide jusqu'à la première : un exemple inventé, même pour montrer la mise en page, ferait de ce site exactement ce qu'il reproche aux autres.",
+      "provenance_ecart": "La garantie annoncée dépasse de {ecart} ce que cette course a réellement payé à l'heure."
+    },
+    "compteur": {
+      "intitule": "Courses vérifiées",
+      "lien": "Voir les statistiques"
+    },
+    "actions": [
+      {
+        "href": "/publier",
+        "libelle": "Publier une course",
+        "description": "Vos chiffres et votre capture. La vérification est automatique, et la capture est supprimée après."
+      },
+      {
+        "href": "/session",
+        "libelle": "Publier une session",
+        "description": "Le temps connecté et ce qu'il a rapporté — la donnée que les accords ignorent, parce qu'elle compte le temps d'attente."
+      },
+      {
+        "href": "/methode",
+        "libelle": "Lire la méthode",
+        "description": "Toutes les règles de validation et toutes les valeurs employées, publiées intégralement. C'est la même configuration que celle que le code applique."
+      }
+    ]
   }
 }

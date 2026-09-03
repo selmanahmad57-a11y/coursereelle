@@ -149,3 +149,39 @@ test("un jeton inconnu reste visible plutot que de disparaitre", () => {
   assert.equal(remplacer("{a} et {a}", { a: "48" }), "48 et 48");
   assert.deepEqual(jetonsDe("{a} puis {b} puis {a}"), ["a", "b"]);
 });
+
+test("tout lien interne annonce dans la configuration mene a une page qui existe", async () => {
+  /*
+   * Un lien vers une page absente ne casse rien a la construction : il rend un
+   * 404 au visiteur, et seulement a lui. C'est le genre de defaut qu'un site
+   * decouvre par ses lecteurs, ce qui est la mauvaise facon de l'apprendre.
+   */
+  const { access } = await import("node:fs/promises");
+
+  const hrefs = new Set(
+    [libelles, mentions]
+      .flatMap((source) => chainesDe(source))
+      .filter((chaine) => /^\/[a-z0-9-]*$/.test(chaine))
+  );
+
+  assert.ok(hrefs.size > 0, "la configuration doit declarer des liens internes");
+
+  for (const href of hrefs) {
+    const chemin = href === "/" ? "app/page.tsx" : `app${href}/page.tsx`;
+
+    await assert.doesNotReject(
+      access(chemin),
+      `lien vers une page inexistante : ${href} (attendu ${chemin})`
+    );
+  }
+});
+
+test("l'accueil annonce des actions completes", () => {
+  assert.ok(libelles.accueil.actions.length > 0);
+
+  for (const action of libelles.accueil.actions) {
+    assert.match(action.href, /^\//);
+    assert.ok(action.libelle.length > 0, `${action.href} : action sans libelle`);
+    assert.ok(action.description.length > 0, `${action.href} : action sans description`);
+  }
+});
