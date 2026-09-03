@@ -53,7 +53,13 @@ export default function CalculEnDirect({
   const mettreEnForme = (valeur: number | null, unite: string) =>
     valeur === null ? null : formaterValeur(valeur, unite);
 
-  const rienACalculer = resultat.tauxHoraireReel === null;
+  const rienACalculer = resultat.tauxPlateforme === null;
+
+  /* Le taux avec pourboire ne s'affiche que s'il dit quelque chose de plus. */
+  const avecPourboireDiffere =
+    resultat.tauxAvecPourboire !== null &&
+    resultat.tauxPlateforme !== null &&
+    resultat.tauxAvecPourboire !== resultat.tauxPlateforme;
 
   return (
     <div className="space-y-4">
@@ -69,12 +75,20 @@ export default function CalculEnDirect({
           <dl className="mt-2 divide-y divide-neutral-100">
             <Ligne
               accent
-              intitule={textes.taux_reel}
-              valeur={mettreEnForme(resultat.tauxHoraireReel, UNITES.euroParHeure)}
+              intitule={textes.taux_plateforme}
+              valeur={mettreEnForme(resultat.tauxPlateforme, UNITES.euroParHeure)}
             />
             <Ligne
-              intitule={textes.taux_estime}
-              valeur={mettreEnForme(resultat.tauxHoraireEstime, UNITES.euroParHeure)}
+              intitule={textes.avec_pourboire}
+              valeur={
+                avecPourboireDiffere
+                  ? mettreEnForme(resultat.tauxAvecPourboire, UNITES.euroParHeure)
+                  : null
+              }
+            />
+            <Ligne
+              intitule={textes.taux_plateforme_estime}
+              valeur={mettreEnForme(resultat.tauxPlateformeEstime, UNITES.euroParHeure)}
             />
             <Ligne
               intitule={textes.ecart}
@@ -86,13 +100,19 @@ export default function CalculEnDirect({
             />
             <Ligne
               intitule={textes.net}
-              valeur={mettreEnForme(resultat.tauxHoraireNetEstime, UNITES.euroParHeure)}
+              valeur={mettreEnForme(resultat.tauxPlateformeNet, UNITES.euroParHeure)}
             />
             <Ligne
               intitule={textes.vitesse}
               valeur={mettreEnForme(resultat.vitesseMoyenne, UNITES.kilometreParHeure)}
             />
           </dl>
+        )}
+
+        {rienACalculer ? null : (
+          <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
+            {textes.precision_pourboire}
+          </p>
         )}
       </section>
 

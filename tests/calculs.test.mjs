@@ -55,17 +55,35 @@ test("une estimation deux fois trop courte gonfle le taux affiche de 100 %", () 
   proche(ecartRelatif(tauxHoraire(8.08, 32), tauxHoraire(8.08, 16)), 100);
 });
 
-test("le pourboire entre dans la remuneration quand il est renseigne", () => {
+test("le pourboire ne touche jamais au chiffre principal", () => {
   const avec = calculer({ ...COURSE_DU_DOSSIER, pourboire: 2 }, null);
   const sans = calculer(COURSE_DU_DOSSIER, null);
 
-  proche(avec.tauxHoraireReel, tauxHoraire(10.08, 32));
-  assert.ok(avec.tauxHoraireReel > sans.tauxHoraireReel);
+  assert.equal(
+    avec.tauxPlateforme,
+    sans.tauxPlateforme,
+    "le site mesure ce que la plateforme paie : un pourboire ne peut pas ameliorer ce chiffre"
+  );
+  assert.equal(avec.tauxPlateformeEstime, sans.tauxPlateformeEstime);
+  assert.equal(avec.ecartRelatif, sans.ecartRelatif);
+  assert.equal(avec.tauxPlateformeNet, sans.tauxPlateformeNet);
+});
+
+test("le taux avec pourboire est calcule a part, et affiche ce que le livreur encaisse", () => {
+  const avec = calculer({ ...COURSE_DU_DOSSIER, pourboire: 2 }, null);
+
+  proche(avec.tauxAvecPourboire, tauxHoraire(10.08, 32));
+  assert.ok(avec.tauxAvecPourboire > avec.tauxPlateforme);
+});
+
+test("sans pourboire, les deux taux coincident", () => {
+  const resultat = calculer(COURSE_DU_DOSSIER, null);
+  assert.equal(resultat.tauxAvecPourboire, resultat.tauxPlateforme);
 });
 
 test("les cotisations sont retirees en points de pourcentage, comme dans la config", () => {
   proche(apresCotisations(100, 21.2), 78.8);
-  proche(calculer(COURSE_DU_DOSSIER, 21.2).tauxHoraireNetEstime, 15.15 * 0.788, 0.02);
+  proche(calculer(COURSE_DU_DOSSIER, 21.2).tauxPlateformeNet, 15.15 * 0.788, 0.02);
 });
 
 test("la vitesse moyenne se deduit de la distance et du temps reel", () => {
@@ -96,18 +114,19 @@ test("un formulaire vide ne calcule rien plutot que d'afficher zero", () => {
 
   assert.deepEqual(
     [
-      resultat.tauxHoraireReel,
-      resultat.tauxHoraireEstime,
+      resultat.tauxPlateforme,
+      resultat.tauxPlateformeEstime,
       resultat.ecartRelatif,
-      resultat.tauxHoraireNetEstime,
+      resultat.tauxPlateformeNet,
+      resultat.tauxAvecPourboire,
       resultat.vitesseMoyenne,
     ],
-    [null, null, null, null, null]
+    [null, null, null, null, null, null]
   );
 });
 
 test("sans taux de cotisations connu, le net n'est pas invente", () => {
-  assert.equal(calculer(COURSE_DU_DOSSIER, null).tauxHoraireNetEstime, null);
+  assert.equal(calculer(COURSE_DU_DOSSIER, null).tauxPlateformeNet, null);
 });
 
 /* ------------------------------------------------------------------ */

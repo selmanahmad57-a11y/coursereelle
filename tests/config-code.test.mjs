@@ -169,10 +169,15 @@ test("la course du dossier, jugee avec la configuration reelle, donne les chiffr
       `attendu ${attendu} (+/- ${tolerance}), obtenu ${obtenu}`
     );
 
-  proche(resultat.tauxHoraireReel, 15.15);
-  proche(resultat.tauxHoraireEstime, 30.3);
+  proche(resultat.tauxPlateforme, 15.15);
+  proche(resultat.tauxPlateformeEstime, 30.3);
   proche(resultat.ecartRelatif, 100);
-  proche(resultat.tauxHoraireNetEstime, 11.94, 0.02);
+  proche(resultat.tauxPlateformeNet, 11.94, 0.02);
+
+  /* Le meme calcul avec 3 € de pourboire : le chiffre comparable aux baremes ne bouge pas. */
+  const avecPourboire = calculer({ ...course, pourboire: 3 }, cotisations.valeur);
+  proche(avecPourboire.tauxPlateforme, 15.15);
+  proche(avecPourboire.tauxAvecPourboire, 20.78, 0.02);
 
   const valeurSysteme = (cle, vehicule = null) => {
     const [entree] = applicable(

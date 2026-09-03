@@ -166,12 +166,14 @@
     "zone_inconnue": "Zone inconnue pour cette ville : la course sera publiée sans comparaison à la grille kilométrique.",
     "resultats": {
       "titre": "Ce que cela représente",
-      "attente": "Renseignez le prix payé et le temps réel pour voir votre taux horaire.",
-      "taux_reel": "Votre taux horaire réel",
-      "taux_estime": "Ce que l'application laisse croire",
+      "attente": "Renseignez le prix payé par la plateforme et le temps réel pour voir votre taux horaire.",
+      "taux_plateforme": "Payé par la plateforme",
+      "taux_plateforme_estime": "Ce que l'application laisse croire",
       "ecart": "Écart introduit par l'estimation",
       "net": "Net estimé, après cotisations",
-      "vitesse": "Vitesse moyenne"
+      "avec_pourboire": "Avec pourboire",
+      "vitesse": "Vitesse moyenne",
+      "precision_pourboire": "Le chiffre principal exclut les pourboires : c'est le seul comparable aux barèmes annoncés."
     },
     "anomalies_titre": "À vérifier avant d'envoyer",
     "anomalies_introduction": "Ces contrôles ne portent que sur la cohérence physique. Le montant payé n'entre jamais en compte : une course mal payée est une preuve à publier, pas une erreur.",
@@ -183,5 +185,12 @@
       "indisponible": "L'envoi n'est pas encore branché : il attend la base de données et le dépôt de la capture d'écran, qui viennent à la même étape. Le calcul ci-dessous fonctionne déjà."
     },
     "anciennete_depassee": "Cette course a plus de {limite}. Le site n'accepte que les courses assez récentes pour que la capture reste vérifiable et le temps réel encore en mémoire."
+  },
+  "methode": {
+    "pourboire": {
+      "titre": "Pourquoi le chiffre principal exclut les pourboires",
+      "texte": "Le site mesure ce que la plateforme paie, pas ce que le livreur reçoit. Depuis l'avenant, la garantie horaire est elle-même calculée pourboires exclus, précisément pour qu'un pourboire reste un geste du client et ne devienne pas un moyen d'atteindre le minimum à la place de la plateforme. Toutes les comparaisons du site — grille kilométrique, minimum par course, garantie horaire — portent sur des montants versés par la plateforme ; le pourboire est le seul flux qui n'en vient pas. L'inclure dans le chiffre principal laisserait la générosité des clients masquer le niveau de paiement de la plateforme, c'est-à-dire exactement ce que ce site existe pour rendre visible.",
+      "contrepartie": "Le taux avec pourboire est calculé et affiché juste en dessous, clairement étiqueté. C'est une information réelle pour le livreur, et la publier montre que le site ne gonfle pas l'écart en passant sous silence ce qui est réellement encaissé."
+    }
   }
 }

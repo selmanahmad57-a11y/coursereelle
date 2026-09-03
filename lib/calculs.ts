@@ -1,6 +1,13 @@
 /**
  * Calculs de rémunération.
  *
+ * Règle qui gouverne tout ce module : le site mesure ce que la PLATEFORME PAIE,
+ * pas ce que le livreur reçoit. Le pourboire vient du client ; l'inclure dans le
+ * chiffre principal laisserait la générosité des clients masquer le niveau de
+ * paiement de la plateforme — exactement le biais que le site existe pour
+ * dissiper. Le taux avec pourboire est calculé et affiché, mais en second, et
+ * n'est jamais comparé à un barème annoncé.
+ *
  * Module volontairement pur : aucune valeur n'y est écrite en dur, tous les
  * barèmes arrivent en paramètre. Le seul nombre présent est la conversion
  * minutes vers heures, qui est une unité, pas un réglage.
@@ -24,14 +31,24 @@ export interface Course {
 }
 
 export interface Resultat {
-  /** Chiffre d'affaires brut ramené à l'heure, sur le temps réellement passé. */
-  tauxHoraireReel: number | null;
+  /**
+   * Chiffre principal : ce que la plateforme a payé, ramené à l'heure sur le
+   * temps réellement passé. Hors pourboire, donc seul comparable aux barèmes
+   * annoncés — la garantie horaire est elle aussi calculée pourboires exclus.
+   */
+  tauxPlateforme: number | null;
   /** Le même montant ramené à l'heure sur le temps que l'application a estimé. */
-  tauxHoraireEstime: number | null;
-  /** De combien l'estimation de l'application gonfle le taux horaire affiché. */
+  tauxPlateformeEstime: number | null;
+  /** De combien l'estimation de l'application gonfle le taux affiché. */
   ecartRelatif: number | null;
-  /** Chiffre d'affaires horaire après cotisations, avant frais de véhicule et impôt. */
-  tauxHoraireNetEstime: number | null;
+  /** Le taux plateforme après cotisations, avant frais de véhicule et impôt. */
+  tauxPlateformeNet: number | null;
+  /**
+   * Ce que le livreur a réellement encaissé, pourboire compris. Information
+   * utile pour lui, jamais comparée à un barème : le pourboire ne vient pas de
+   * la plateforme.
+   */
+  tauxAvecPourboire: number | null;
   vitesseMoyenne: number | null;
 }
 
@@ -77,17 +94,19 @@ export const apresCotisations = (
 };
 
 export const calculer = (course: Course, tauxCotisationsPourcent: number | null): Resultat => {
-  const remuneration =
+  /* Le montant de la plateforme seul : c'est lui qui porte toutes les comparaisons. */
+  const tauxPlateforme = tauxHoraire(course.prixPaye, course.dureeReelleMinutes);
+  const tauxPlateformeEstime = tauxHoraire(course.prixPaye, course.dureeEstimeeMinutes);
+
+  const encaisse =
     course.prixPaye === null ? null : course.prixPaye + (course.pourboire ?? 0);
 
-  const reel = tauxHoraire(remuneration, course.dureeReelleMinutes);
-  const estime = tauxHoraire(remuneration, course.dureeEstimeeMinutes);
-
   return {
-    tauxHoraireReel: reel,
-    tauxHoraireEstime: estime,
-    ecartRelatif: ecartRelatif(reel, estime),
-    tauxHoraireNetEstime: apresCotisations(reel, tauxCotisationsPourcent),
+    tauxPlateforme,
+    tauxPlateformeEstime,
+    ecartRelatif: ecartRelatif(tauxPlateforme, tauxPlateformeEstime),
+    tauxPlateformeNet: apresCotisations(tauxPlateforme, tauxCotisationsPourcent),
+    tauxAvecPourboire: tauxHoraire(encaisse, course.dureeReelleMinutes),
     vitesseMoyenne: vitesseMoyenne(course.distanceKm, course.dureeReelleMinutes),
   };
 };

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import libelles from "@/config/libelles.json";
+
 import {
   granulariteMaximale,
   interpretationZone,
@@ -151,6 +153,16 @@ export default function PageMethode() {
         le dit explicitement plutôt que d&apos;afficher une date fausse. Une course est toujours
         jugée selon les règles en vigueur à sa date, jamais selon les règles d&apos;aujourd&apos;hui.
       </p>
+
+      <section className="mt-10 rounded-lg border border-neutral-200 bg-white p-4">
+        <h2 className="text-sm font-medium text-neutral-900">
+          {libelles.methode.pourboire.titre}
+        </h2>
+        <p className="mt-2 text-sm text-neutral-700">{libelles.methode.pourboire.texte}</p>
+        <p className="mt-2 text-sm text-neutral-600">
+          {libelles.methode.pourboire.contrepartie}
+        </p>
+      </section>
 
       <Section
         titre={familles.regles_annoncees.titre}
