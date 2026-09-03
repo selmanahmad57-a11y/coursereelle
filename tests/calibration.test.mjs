@@ -13,13 +13,36 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { enChamps, gabaritCandidat, reperer } from "../lib/calibration.ts";
+import { deduireType, enChamps, gabaritCandidat, reperer } from "../lib/calibration.ts";
 import { TYPES_RELATION } from "../lib/validation/gabarit.ts";
 
 /* Tolerance d'alignement du gabarit de test. En production elle vient du bareme
    date `tolerance_meme_ligne` ; ici c'est une donnee de fixture, choisie assez
    large pour que les mots poses a la meme hauteur forment bien une ligne. */
 const TOLERANCE_LIGNE = 0.02;
+
+/* Ce que chaque ecran prouve, et par quel motif chaque champ se lit. En
+   production ces deux tables viennent de config/captures.json et de
+   config/interface-uber.json. */
+const REGLES_TYPE = {
+  motifsParChamp: {
+    prixEuros: "montant_euro",
+    distanceKm: "distance_km",
+    dureeEstimeeMinutes: "duree_min_sec",
+  },
+  champsProuves: {
+    recapitulatif_details: ["prixEuros", "distanceKm", "dureeEstimeeMinutes"],
+    ecran_acceptation: ["prixEuros", "distanceKm"],
+  },
+};
+
+/* Un ancrage de forme reduit a ce dont la deduction se sert. */
+const ancrageDe = (motif) => ({
+  cle: motif,
+  motif,
+  zone: { x: 0.2, y: 0.3, largeur: 0.1, hauteur: 0.02 },
+  confiance: 90,
+});
 
 const REGLES = {
   libellesAttendus: ["Durée", "Distance", "Accepter"],
@@ -90,7 +113,8 @@ test("le gabarit candidat ecrit ne contient aucun texte lu non plus", () => {
   const gabarit = gabaritCandidat(
     { id: "essai", plateforme: "uber_eats", description: "specimen de test" },
     reperer(LECTURE_PIEGEE, REGLES),
-    TOLERANCE_LIGNE
+    TOLERANCE_LIGNE,
+    REGLES_TYPE
   );
 
   /*
@@ -101,6 +125,10 @@ test("le gabarit candidat ecrit ne contient aucun texte lu non plus", () => {
   const attendues = new Set([
     ...AUTORISE,
     ...TYPES_RELATION,
+    /* Le type deduit et les champs ancres sont eux aussi du vocabulaire ferme :
+       ils viennent des tables de configuration, jamais de l'image. */
+    ...Object.keys(REGLES_TYPE.champsProuves),
+    ...Object.keys(REGLES_TYPE.motifsParChamp),
     "essai",
     "uber_eats",
     "specimen de test",
@@ -118,7 +146,8 @@ test("aucune suite de chiffres ne subsiste dans la sortie", () => {
   const gabarit = gabaritCandidat(
     { id: "essai", plateforme: "uber_eats", description: "specimen" },
     reperer(LECTURE_PIEGEE, REGLES),
-    TOLERANCE_LIGNE
+    TOLERANCE_LIGNE,
+    REGLES_TYPE
   );
 
   for (const chaine of chainesDe(gabarit)) {
@@ -171,7 +200,8 @@ test("chaque relation ne relie que des champs que le gabarit declare", () => {
   const gabarit = gabaritCandidat(
     { id: "essai", plateforme: "uber_eats", description: "specimen" },
     reperer(LECTURE_PIEGEE, REGLES),
-    TOLERANCE_LIGNE
+    TOLERANCE_LIGNE,
+    REGLES_TYPE
   );
 
   const cles = new Set(gabarit.champs.map((champ) => champ.cle));
@@ -199,4 +229,61 @@ test("un motif reconnait une grandeur au milieu d'une ligne partagee", () => {
   for (const chaine of chainesDe(ancrages)) {
     assert.ok(AUTORISE.has(chaine), `chaine non autorisee : « ${chaine} »`);
   }
+});
+
+test("le type se deduit de ce que la capture porte", () => {
+  const recapitulatif = deduireType(
+    ["montant_euro", "distance_km", "duree_min_sec"].map(ancrageDe),
+    REGLES_TYPE
+  );
+
+  /* Les deux types sont satisfaits, mais le plus exigeant l'emporte : ce qu'il
+     prouve en plus a bien ete vu. */
+  assert.deepEqual(recapitulatif.possibles.sort(), ["ecran_acceptation", "recapitulatif_details"]);
+  assert.equal(recapitulatif.type, "recapitulatif_details");
+});
+
+test("sans duree, la capture ne prouve que ce qu'un ecran d'acceptation prouve", () => {
+  const verdict = deduireType(["montant_euro", "distance_km"].map(ancrageDe), REGLES_TYPE);
+
+  assert.equal(verdict.type, "ecran_acceptation");
+  assert.deepEqual(verdict.champsAncres, ["prixEuros", "distanceKm"]);
+});
+
+test("une capture qui ne porte pas de quoi prouver un type n'en recoit aucun", () => {
+  /* Un prix seul ne suffit a aucun des deux ecrans. Lui coller le type le plus
+     probable serait une etiquette inventee, et elle se propagerait au gabarit. */
+  const verdict = deduireType([ancrageDe("montant_euro")], REGLES_TYPE);
+
+  assert.equal(verdict.type, null);
+  assert.deepEqual(verdict.possibles, []);
+  assert.deepEqual(verdict.champsAncres, ["prixEuros"]);
+
+  assert.equal(deduireType([], REGLES_TYPE).type, null);
+});
+
+test("la limite de la deduction est consignee, pas masquee", () => {
+  /*
+   * Un recapitulatif defile au-dela de sa duree ne porte plus que prix et
+   * distance : il sera classe comme ecran d'acceptation. C'est une erreur
+   * possible, et c'est pourquoi le candidat consigne les champs ancres — le
+   * classement se relit sans avoir a redemander la capture.
+   */
+  const gabarit = gabaritCandidat(
+    { id: "essai", plateforme: "uber_eats", description: "specimen" },
+    reperer(LECTURE_PIEGEE, REGLES),
+    TOLERANCE_LIGNE,
+    REGLES_TYPE
+  );
+
+  assert.equal(gabarit.typeCapture, "ecran_acceptation");
+  assert.deepEqual(gabarit.champsAncres, ["prixEuros", "distanceKm"]);
+});
+
+test("un champ ancre par libelle seul ne prouve rien", () => {
+  /* La deduction ne s'appuie que sur les motifs de forme : un libelle « Duree »
+     dit qu'un ecran nomme la duree, pas qu'il en affiche une lisible. */
+  const parLibelle = reperer([mot("Durée", 0.1, 0.4), mot("Distance", 0.5, 0.4)], REGLES);
+
+  assert.deepEqual(deduireType(parLibelle, REGLES_TYPE).champsAncres, []);
 });

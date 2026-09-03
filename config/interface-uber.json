@@ -1,5 +1,6 @@
 {
   "note": "Ce que l'outil de calibration a le DROIT d'afficher. Les libellés ci-dessous sont des chaînes génériques de l'interface, identiques sur tous les téléphones : elles ne désignent personne. Tout le reste du texte lu sur une capture — adresses, noms de restaurants, horaires — ne sort jamais de l'outil, sous aucune forme.",
+  "plateforme": "uber_eats",
   "regle_de_sortie": "L'outil n'écrit jamais le texte qu'il a lu. Quand un libellé de cette liste est reconnu, c'est l'entrée de la liste qui est écrite, pas la lecture. Une zone qui contient du texte variable n'est décrite que par sa position.",
   "libelles_attendus": [
     "Détails",

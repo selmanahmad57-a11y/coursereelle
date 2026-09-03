@@ -180,10 +180,80 @@ export const enRelations = (
   return relations;
 };
 
+/**
+ * Ce qu'un écran doit porter pour prouver un champ, et ce qu'il prouve.
+ *
+ * Les deux tables viennent de la configuration : `champs_verifiables` dit quel
+ * motif de forme lit quel champ, `champs_prouves` dit quels champs chaque écran
+ * démontre.
+ */
+export interface ReglesType {
+  motifsParChamp: Readonly<Record<string, string>>;
+  champsProuves: Readonly<Record<string, readonly string[]>>;
+}
+
+export interface VerdictType {
+  /** null quand aucun type ne convient, ou que plusieurs conviennent également. */
+  type: string | null;
+  possibles: string[];
+  /** Les champs que la capture porte réellement, tels que les motifs les voient. */
+  champsAncres: string[];
+}
+
+/**
+ * Le type de capture se DÉDUIT de ce que l'écran porte, il ne se déclare pas.
+ *
+ * `config/captures.json` le dit déjà pour le pipeline : « le gabarit reconnu
+ * détermine quels champs l'OCR peut vérifier ». Déclarer le type à la main pour
+ * un lot entier serait donc à la fois inutile et faux dès que le lot est mêlé.
+ *
+ * Un écran d'acceptation prouve un prix et une distance ; un récapitulatif y
+ * ajoute une durée. Un type est possible quand tout ce qu'il prétend prouver est
+ * effectivement ancré ; entre deux types possibles, le plus exigeant l'emporte,
+ * parce que ce qu'il prouve en plus a bien été vu.
+ *
+ * SA LIMITE, ÉNONCÉE. Un récapitulatif défilé au-delà de sa durée ne porte plus
+ * que prix et distance : il sera classé comme écran d'acceptation. C'est pour
+ * cela que le candidat consigne aussi les champs ancrés — l'erreur reste
+ * visible, et se corrige sans avoir à redemander la capture.
+ */
+export const deduireType = (
+  ancrages: readonly Ancrage[],
+  regles: ReglesType
+): VerdictType => {
+  const formes = new Set(
+    ancrages.map((ancrage) => ancrage.motif).filter((motif) => motif !== undefined)
+  );
+
+  const champsAncres = Object.entries(regles.motifsParChamp)
+    .filter(([, motif]) => formes.has(motif))
+    .map(([champ]) => champ);
+
+  const possibles = Object.entries(regles.champsProuves)
+    .filter(([, champs]) => champs.every((champ) => champsAncres.includes(champ)))
+    .map(([type]) => type);
+
+  if (possibles.length === 0) return { type: null, possibles, champsAncres };
+
+  const exigence = (type: string) => regles.champsProuves[type].length;
+  const plafond = Math.max(...possibles.map(exigence));
+  const specifiques = possibles.filter((type) => exigence(type) === plafond);
+
+  return {
+    type: specifiques.length === 1 ? specifiques[0] : null,
+    possibles,
+    champsAncres,
+  };
+};
+
 export interface GabaritCandidat {
   id: string;
   plateforme: string;
   description: string;
+  /** Déduit des ancrages, null quand la capture ne tranche pas. */
+  typeCapture: string | null;
+  /** Ce qui a fondé la déduction, pour qu'un classement douteux se relise. */
+  champsAncres: string[];
   champs: ChampGabarit[];
   relations: Relation[];
 }
@@ -191,9 +261,16 @@ export interface GabaritCandidat {
 export const gabaritCandidat = (
   identite: { id: string; plateforme: string; description: string },
   ancrages: readonly Ancrage[],
-  toleranceLigne: number
-): GabaritCandidat => ({
-  ...identite,
-  champs: enChamps(ancrages),
-  relations: enRelations(ancrages, toleranceLigne),
-});
+  toleranceLigne: number,
+  reglesType: ReglesType
+): GabaritCandidat => {
+  const verdict = deduireType(ancrages, reglesType);
+
+  return {
+    ...identite,
+    typeCapture: verdict.type,
+    champsAncres: verdict.champsAncres,
+    champs: enChamps(ancrages),
+    relations: enRelations(ancrages, toleranceLigne),
+  };
+};

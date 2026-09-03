@@ -3,19 +3,29 @@
  * Outil de calibration des gabarits.
  *
  * Usage : npm run calibrer
- *          npm run calibrer -- --depuis ~/Downloads --type recapitulatif_details
+ *          npm run calibrer -- --depuis ~/Downloads
+ *          npm run calibrer -- --depuis ~/Downloads/IMG_233*.PNG
  *
  * Deux façons de fournir des spécimens.
  *
  * La première : les déposer dans calibration/entrees/ en nommant chaque fichier :
  *
- *     <plateforme>__<type_de_capture>__<description>.<png|jpg|webp>
- *     uber_eats__ecran_acceptation__android-15-sombre.png
+ *     <plateforme>__<description>.<png|jpg|webp>
+ *     uber_eats__android-15-sombre.png
  *
  * La seconde, quand ils viennent d'un téléphone et portent des noms illisibles :
- * pointer le dossier avec --depuis. Les images y sont COPIÉES dans
- * calibration/entrees/ sous un nom conforme, puis traitées. Les originaux ne
- * sont pas touchés : ils sont chez vous, à vous de les effacer.
+ * les désigner avec --depuis, qui accepte aussi bien un dossier que des fichiers
+ * précis — un dossier de téléchargements contient rarement QUE des spécimens.
+ * Les images sont COPIÉES dans calibration/entrees/ sous un nom conforme, puis
+ * traitées. Les originaux ne sont pas touchés : ils sont chez vous, à vous de
+ * les effacer.
+ *
+ * LE TYPE D'ÉCRAN NE SE DÉCLARE PAS, IL SE DÉDUIT. Un lot venu d'un téléphone
+ * mélange les récapitulatifs et les écrans d'acceptation ; leur imposer un type
+ * commun étiquetterait faux la moitié du lot. C'est ce que la capture PORTE qui
+ * tranche : un écran d'acceptation prouve un prix et une distance, un
+ * récapitulatif y ajoute une durée. On peut encore déclarer --type, mais c'est
+ * la déduction qui est écrite, et tout désaccord est signalé.
  *
  * L'outil lit chaque fichier, en tire un gabarit candidat, écrit celui-ci dans
  * calibration/candidats/, PUIS SUPPRIME LE SPÉCIMEN. À la fin, il vérifie que
@@ -40,7 +50,8 @@ import path from "node:path";
 import sharp from "sharp";
 import { createWorker } from "tesseract.js";
 
-import { gabaritCandidat, reperer } from "../lib/calibration.ts";
+import { deduireType, gabaritCandidat, reperer } from "../lib/calibration.ts";
+import { CHAMPS_VERIFIES } from "../lib/validation/ocr.ts";
 
 const racine = new URL("../", import.meta.url).pathname;
 const entrees = path.join(racine, "calibration", "entrees");
@@ -55,6 +66,21 @@ const captures = await lireJson(path.join(racine, "config", "captures.json"));
 
 const plateformesConnues = schema.$defs.plateforme.enum;
 const typesConnus = captures.types.liste.map((type) => type.cle);
+
+/* Quel motif de forme lit quel champ. On ne retient que les vraies clés de champ :
+   la table porte aussi une note et le nom du champ indispensable. */
+const motifsParChamp = Object.fromEntries(
+  CHAMPS_VERIFIES.filter(
+    (champ) => typeof interfaceUber.champs_verifiables[champ] === "string"
+  ).map((champ) => [champ, interfaceUber.champs_verifiables[champ]])
+);
+
+const reglesType = {
+  motifsParChamp,
+  champsProuves: Object.fromEntries(
+    captures.types.liste.map((type) => [type.cle, type.champs_prouves])
+  ),
+};
 
 /* La note explicative vit a cote des motifs dans la configuration : on la retire
    avant de traiter le reste comme des expressions. */
@@ -139,56 +165,104 @@ const identite = (nom) => {
   const base = nom.replace(/\.[^.]+$/, "");
   const parts = base.split("__");
 
-  if (parts.length !== 3) return { erreur: "nom attendu : plateforme__type__description" };
+  if (parts.length !== 2 && parts.length !== 3) {
+    return { erreur: "nom attendu : plateforme__description, ou plateforme__type__description" };
+  }
   if (!plateformesConnues.includes(parts[0])) return { erreur: `plateforme inconnue : ${parts[0]}` };
-  if (!typesConnus.includes(parts[1])) return { erreur: `type de capture inconnu : ${parts[1]}` };
+
+  /* Trois segments : un type déclaré, qui sert au nommage et se confronte à la
+     déduction. Deux segments : rien n'est déclaré, la capture décidera. */
+  const declare = parts.length === 3 ? parts[1] : null;
+  if (declare !== null && !typesConnus.includes(declare)) {
+    return { erreur: `type de capture inconnu : ${declare}` };
+  }
+
+  const slug = parts[parts.length - 1];
 
   return {
-    id: `${parts[0]}-${parts[1]}-${parts[2]}`,
     plateforme: parts[0],
-    type: parts[1],
-    description: parts[2].replace(/-/g, " "),
+    typeDeclare: declare,
+    slug,
+    description: slug.replace(/-/g, " "),
   };
 };
 
 await mkdir(entrees, { recursive: true });
 await mkdir(candidats, { recursive: true });
 
-/* --depuis : importer un dossier de captures sans avoir a les renommer. */
+/* --depuis : importer des captures sans avoir a les renommer. */
 const option = (nom) => {
   const index = process.argv.indexOf(`--${nom}`);
   return index === -1 ? null : process.argv[index + 1] ?? null;
 };
 
-const depuis = option("depuis");
+/* --depuis accepte plusieurs valeurs, pour recevoir un glob du shell tel quel. */
+const optionMultiple = (nom) => {
+  const index = process.argv.indexOf(`--${nom}`);
+  if (index === -1) return [];
 
-if (depuis !== null) {
-  const plateforme = option("plateforme") ?? "uber_eats";
+  const valeurs = [];
+  for (let i = index + 1; i < process.argv.length; i += 1) {
+    if (process.argv[i].startsWith("--")) break;
+    valeurs.push(process.argv[i]);
+  }
+  return valeurs;
+};
+
+const EXTENSIONS = /\.(png|jpe?g|webp)$/i;
+
+const depuis = optionMultiple("depuis");
+
+if (depuis.length > 0) {
+  /* La liste blanche des libellés décrit une plateforme et une seule : c'est
+     elle qui dit laquelle, plutôt qu'un défaut choisi ici. */
+  const plateforme = option("plateforme") ?? interfaceUber.plateforme;
   const type = option("type");
 
   if (!plateformesConnues.includes(plateforme)) {
     console.error(`Plateforme inconnue : ${plateforme}`);
     process.exit(2);
   }
-  if (type === null || !typesConnus.includes(type)) {
-    console.error(`--type est obligatoire avec --depuis, parmi : ${typesConnus.join(", ")}`);
+  if (type !== null && !typesConnus.includes(type)) {
+    console.error(`--type, s'il est donné, doit être parmi : ${typesConnus.join(", ")}`);
     process.exit(2);
   }
 
-  const source = depuis.replace(/^~/, process.env.HOME ?? "~");
-  const images = (await readdir(source)).filter((nom) => /\.(png|jpe?g|webp)$/i.test(nom)).sort();
+  /* Chaque valeur est un fichier ou un dossier. Un dossier de téléchargements ne
+     contient presque jamais QUE des spécimens : pouvoir désigner les fichiers un
+     à un évite d'y embarquer tout le reste. */
+  const sources = [];
 
-  if (images.length === 0) {
-    console.error(`Aucune image dans ${source}`);
+  for (const valeur of depuis) {
+    const chemin = valeur.replace(/^~/, process.env.HOME ?? "~");
+    let infos;
+
+    try {
+      infos = await stat(chemin);
+    } catch {
+      console.error(`Introuvable : ${chemin}`);
+      process.exit(2);
+    }
+
+    if (infos.isDirectory()) {
+      const noms = (await readdir(chemin)).filter((nom) => EXTENSIONS.test(nom)).sort();
+      sources.push(...noms.map((nom) => path.join(chemin, nom)));
+    } else if (EXTENSIONS.test(chemin)) {
+      sources.push(chemin);
+    } else {
+      console.error(`  IGNORÉ   ${path.basename(chemin)} — format non pris en charge`);
+    }
+  }
+
+  if (sources.length === 0) {
+    console.error(`Aucune image dans : ${depuis.join(" ")}`);
     process.exit(2);
   }
 
   let copiees = 0;
   let vides = 0;
 
-  for (const [index, nom] of images.entries()) {
-    const origine = path.join(source, nom);
-
+  for (const [index, origine] of sources.entries()) {
     /* Un dossier de téléchargements contient des fichiers de zéro octet : des
        transferts interrompus, des espaces réservés attendant une synchronisation.
        Les copier ne ferait que reporter l'échec plus loin. */
@@ -197,21 +271,21 @@ if (depuis !== null) {
       continue;
     }
 
-    const extension = nom.slice(nom.lastIndexOf("."));
-    const destination = `${plateforme}__${type}__importe-${index + 1}${extension}`;
-    await copyFile(origine, path.join(entrees, destination));
+    const extension = origine.slice(origine.lastIndexOf("."));
+    const segments = [plateforme, ...(type === null ? [] : [type]), `importe-${index + 1}`];
+    await copyFile(origine, path.join(entrees, `${segments.join("__")}${extension}`));
     copiees += 1;
   }
 
   console.log(
-    `${copiees} image(s) copiée(s) depuis ${source}` +
+    `${copiees} image(s) copiée(s)` +
       (vides > 0 ? `, ${vides} fichier(s) vide(s) ignoré(s)` : "") +
       "."
   );
   console.log("Les originaux ne sont pas touchés : effacez-les vous-même.\n");
 }
 
-const fichiers = (await readdir(entrees)).filter((nom) => /\.(png|jpe?g|webp)$/i.test(nom));
+const fichiers = (await readdir(entrees)).filter((nom) => EXTENSIONS.test(nom));
 
 if (fichiers.length === 0) {
   console.log(
@@ -251,7 +325,26 @@ for (const nom of fichiers) {
     const mots = lignesEtMots(data.tsv ?? "", width, height);
     const ancrages = reperer(mots, regles);
 
-    console.log(`\n  ${qui.id}  (${width}x${height}, ${mots.length} zones lues)`);
+    /* Le type vient de ce que la capture porte. L'identifiant du candidat ne
+       peut donc etre forme qu'ici, une fois l'image lue. */
+    const verdictType = deduireType(ancrages, reglesType);
+    const id = [qui.plateforme, verdictType.type, qui.slug].filter(Boolean).join("-");
+
+    console.log(`\n  ${id}  (${width}x${height}, ${mots.length} zones lues)`);
+
+    if (verdictType.type === null) {
+      console.log(
+        `    type indéterminé — champs ancrés : ${verdictType.champsAncres.join(", ") || "aucun"}`
+      );
+    } else {
+      console.log(`    type déduit : ${verdictType.type}`);
+    }
+
+    if (qui.typeDeclare !== null && qui.typeDeclare !== verdictType.type) {
+      /* On signale, on ne tranche pas en faveur de la déclaration : c'est la
+         capture qui sait ce qu'elle montre. */
+      console.error(`    DÉSACCORD : déclaré ${qui.typeDeclare}, déduit ${verdictType.type ?? "aucun"}`);
+    }
 
     if (ancrages.length === 0) {
       /* Rien à calibrer : ce n'est probablement pas un récapitulatif. Écrire un
@@ -266,16 +359,13 @@ for (const nom of fichiers) {
       }
 
       await writeFile(
-        path.join(candidats, `${qui.id}.json`),
+        path.join(candidats, `${id}.json`),
         `${JSON.stringify(
           gabaritCandidat(
-            {
-              id: qui.id,
-              plateforme: qui.plateforme,
-              description: `${qui.type} — ${qui.description}`,
-            },
+            { id, plateforme: qui.plateforme, description: qui.description },
             ancrages,
-            toleranceLigne
+            toleranceLigne,
+            reglesType
           ),
           null,
           2
@@ -288,7 +378,9 @@ for (const nom of fichiers) {
     }
   } catch (erreur) {
     /* On nomme le fichier et la cause, jamais son contenu. */
-    console.error(`\n  ${qui.id} — illisible : ${erreur instanceof Error ? erreur.message : erreur}`);
+    console.error(
+      `\n  ${qui.plateforme}-${qui.slug} — illisible : ${erreur instanceof Error ? erreur.message : erreur}`
+    );
     illisibles += 1;
   } finally {
     /* Le spécimen a servi, ou n'a rien pu servir : il disparaît dans les deux cas. */
@@ -298,7 +390,7 @@ for (const nom of fichiers) {
 
 await worker.terminate();
 
-const restants = (await readdir(entrees)).filter((nom) => /\.(png|jpe?g|webp)$/i.test(nom));
+const restants = (await readdir(entrees)).filter((nom) => EXTENSIONS.test(nom));
 
 console.log(
   `\n${traites} gabarit(s) candidat(s) écrit(s)` +
