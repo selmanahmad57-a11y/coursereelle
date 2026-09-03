@@ -4,7 +4,10 @@
     {
       "cle": "garantie_horaire_brute",
       "libelle": "Revenu minimal garanti par heure d'activité, hors pourboires",
-      "plateformes": ["uber_eats", "deliveroo"],
+      "plateformes": [
+        "uber_eats",
+        "deliveroo"
+      ],
       "valeur": 19,
       "unite": "EUR_PAR_HEURE",
       "usage": "comparaison",
@@ -20,7 +23,9 @@
     {
       "cle": "minimum_par_course",
       "libelle": "Montant minimal annoncé par course",
-      "plateformes": ["uber_eats"],
+      "plateformes": [
+        "uber_eats"
+      ],
       "valeur": 3,
       "unite": "EUR_PAR_COURSE",
       "usage": "comparaison",
@@ -37,7 +42,9 @@
     {
       "cle": "remuneration_retrait_fixe",
       "libelle": "Montant fixe à la récupération de la commande",
-      "plateformes": ["uber_eats"],
+      "plateformes": [
+        "uber_eats"
+      ],
       "groupe": "grille_kilometrique",
       "valeur": 2,
       "unite": "EUR_PAR_COURSE",
@@ -54,7 +61,9 @@
     {
       "cle": "remuneration_par_km",
       "libelle": "Montant variable au kilomètre pendant la course",
-      "plateformes": ["uber_eats"],
+      "plateformes": [
+        "uber_eats"
+      ],
       "zone": "hors_paris",
       "groupe": "grille_kilometrique",
       "valeur": 0.85,
@@ -73,7 +82,9 @@
     {
       "cle": "remuneration_par_km",
       "libelle": "Montant variable au kilomètre pendant la course",
-      "plateformes": ["uber_eats"],
+      "plateformes": [
+        "uber_eats"
+      ],
       "zone": "paris",
       "groupe": "grille_kilometrique",
       "valeur": 0.8,
@@ -92,7 +103,9 @@
     {
       "cle": "remuneration_remise_fixe",
       "libelle": "Montant fixe à la remise de la commande au client",
-      "plateformes": ["uber_eats"],
+      "plateformes": [
+        "uber_eats"
+      ],
       "groupe": "grille_kilometrique",
       "valeur": 1,
       "unite": "EUR_PAR_COURSE",
@@ -109,7 +122,9 @@
     {
       "cle": "frais_service",
       "libelle": "Frais de service prélevés par la plateforme sur le chiffre d'affaires brut",
-      "plateformes": ["uber_eats"],
+      "plateformes": [
+        "uber_eats"
+      ],
       "groupe": "grille_kilometrique",
       "valeur": 5,
       "unite": "POURCENT",
@@ -307,6 +322,16 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Assez long pour décourager une tentative automatisée, assez court pour ne pas perdre un livreur de bonne foi dont la capture était simplement illisible."
+    },
+    {
+      "cle": "retention_empreintes",
+      "libelle": "Durée de conservation du sel journalier et des compteurs anti-fraude",
+      "valeur": 2,
+      "unite": "JOURS",
+      "usage": "anti_fraude",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Couvre la pause de 24 h déclenchée par les échecs OCR, plus le passage d'un jour à l'autre. Au-delà, le sel du jour est supprimé et les empreintes calculées avec lui deviennent irréversibles : plus personne, nous compris, ne peut les relier à une adresse. Plus cette fenêtre est courte, mieux c'est ; elle ne peut simplement pas descendre sous la plus longue des limites anti-fraude."
     }
   ]
 }

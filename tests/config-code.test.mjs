@@ -15,6 +15,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 
 import { lireJson } from "../scripts/valider-baremes.mjs";
 import { CLES_ANNONCEES, CLES_LEGALES, CLES_SYSTEME, UNITES } from "../lib/cles.ts";
@@ -239,5 +240,85 @@ test("une course payee sous le minimum annonce passe tous les filtres du site", 
     }),
     [],
     "une course a 2,60 € est une preuve a publier, pas une erreur a filtrer"
+  );
+});
+
+/* ------------------------------------------------------------------ */
+/* Vocabulaires de la base et de la configuration                       */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Les plateformes, vehicules, zones et villes ne sont volontairement PAS
+ * contraints en SQL : la configuration fait foi et l'API valide avant d'ecrire.
+ * Restent les vocabulaires propres au cycle de vie en base, statut et categorie,
+ * qui existent des deux cotes. Ce test empeche les deux listes de diverger.
+ */
+
+const sql = await readFile(
+  process.env.SCHEMA_SQL ?? new URL("../sql/schema.sql", import.meta.url),
+  "utf8"
+);
+
+const listesCheck = (colonne) =>
+  [...sql.matchAll(new RegExp(`check \\(${colonne} in \\(([^)]*)\\)\\)`, "g"))].map((trouve) =>
+    [...trouve[1].matchAll(/'([^']+)'/g)].map((valeur) => valeur[1]).sort()
+  );
+
+test("les statuts de la base et leurs libelles sont la meme liste", () => {
+  const listes = listesCheck("statut");
+
+  assert.ok(listes.length >= 1, "aucune contrainte de statut trouvee dans sql/schema.sql");
+
+  for (const liste of listes) {
+    assert.deepEqual(liste, Object.keys(libelles.statuts).sort());
+  }
+});
+
+test("les categories de classification et leurs libelles sont la meme liste", () => {
+  const [liste] = listesCheck("categorie");
+
+  assert.ok(liste, "aucune contrainte de categorie trouvee dans sql/schema.sql");
+  assert.deepEqual(liste, Object.keys(libelles.categories).sort());
+});
+
+test("le schema SQL ne contient aucune colonne identifiante", () => {
+  const proscrits = [
+    "adresse_ip",
+    "ip_address",
+    " ip ",
+    "code_postal",
+    "quartier",
+    "arrondissement",
+    "latitude",
+    "longitude",
+    "email",
+    "telephone",
+  ];
+
+  const sansCommentaires = sql
+    .split("\n")
+    .filter((ligne) => !ligne.trimStart().startsWith("--"))
+    .join("\n")
+    .toLowerCase();
+
+  for (const terme of proscrits) {
+    assert.ok(
+      !sansCommentaires.includes(terme),
+      `sql/schema.sql declare "${terme.trim()}" : aucune donnee identifiante ne doit pouvoir etre stockee`
+    );
+  }
+});
+
+test("la duree de retention des empreintes est un bareme, pas une valeur du SQL", () => {
+  const retention = baremes.parametres_systeme.find((e) => e.cle === "retention_empreintes");
+
+  assert.ok(retention, "le bareme retention_empreintes doit exister");
+  assert.equal(retention.usage, "anti_fraude");
+  assert.equal(retention.unite, "JOURS");
+
+  const pause = baremes.parametres_systeme.find((e) => e.cle === "duree_pause_apres_echecs");
+  assert.ok(
+    retention.valeur * 24 >= pause.valeur,
+    "la retention doit couvrir au moins la plus longue pause anti-fraude"
   );
 });

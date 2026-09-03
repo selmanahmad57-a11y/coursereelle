@@ -191,6 +191,22 @@
       "titre": "Pourquoi le chiffre principal exclut les pourboires",
       "texte": "Le site mesure ce que la plateforme paie, pas ce que le livreur reçoit. Depuis l'avenant, la garantie horaire est elle-même calculée pourboires exclus, précisément pour qu'un pourboire reste un geste du client et ne devienne pas un moyen d'atteindre le minimum à la place de la plateforme. Toutes les comparaisons du site — grille kilométrique, minimum par course, garantie horaire — portent sur des montants versés par la plateforme ; le pourboire est le seul flux qui n'en vient pas. L'inclure dans le chiffre principal laisserait la générosité des clients masquer le niveau de paiement de la plateforme, c'est-à-dire exactement ce que ce site existe pour rendre visible.",
       "contrepartie": "Le taux avec pourboire est calculé et affiché juste en dessous, clairement étiqueté. C'est une information réelle pour le livreur, et la publier montre que le site ne gonfle pas l'écart en passant sous silence ce qui est réellement encaissé."
+    },
+    "anti_fraude": {
+      "titre": "Comment nous limitons les abus sans savoir qui vous êtes",
+      "texte": "Le filtre anti-fraude doit compter les soumissions par appareil. Le faire en conservant les adresses IP créerait exactement le risque que ce site promet d'écarter : une adresse, croisée avec une date, une heure et une ville, peut réidentifier un livreur. Aucune adresse n'est donc jamais écrite, ni en clair ni chiffrée. Un sel aléatoire est tiré chaque jour ; à chaque envoi, le serveur calcule une empreinte à partir de ce sel et de l'adresse, et n'enregistre que l'empreinte.",
+      "consequence": "Passée la fenêtre de conservation, le sel du jour est supprimé, et les empreintes calculées avec lui deviennent définitivement irréversibles — y compris pour nous, y compris en connaissant l'adresse recherchée. Le sel changeant chaque jour, une même adresse produit de toute façon une empreinte différente le lendemain : aucun suivi dans la durée n'est possible."
     }
+  },
+  "statuts": {
+    "validee_auto": "Validée automatiquement",
+    "rejetee_auto": "Rejetée automatiquement",
+    "hors_distribution": "Hors distribution"
+  },
+  "categories": {
+    "conforme": "Conforme à la grille annoncée",
+    "sous_minimum_annonce": "Sous le minimum annoncé",
+    "sous_grille_kilometrique": "Sous la grille kilométrique",
+    "temps_estime_incoherent": "Temps estimé incohérent"
   }
 }
