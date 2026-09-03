@@ -28,6 +28,13 @@ export interface ChampGabarit {
   cle: string;
   /** Variantes acceptées du libellé, comparées sans casse ni accents. */
   libelles: string[];
+  /**
+   * Ancrage par FORME plutôt que par libellé, pour les zones qu'aucun mot ne
+   * nomme — l'écran d'acceptation affiche un montant sans rien à côté. Le nom
+   * renvoie à un motif de `config/interface-uber.json` ; ce qui est vérifié est
+   * la forme du texte, jamais sa valeur.
+   */
+  motif?: string;
   zone: Zone;
 }
 
@@ -72,15 +79,23 @@ const dansLaZone = (texte: TexteDetecte, zone: Zone, tolerance: number): boolean
 const champTrouve = (
   champ: ChampGabarit,
   textes: readonly TexteDetecte[],
-  tolerance: number
+  tolerance: number,
+  motifs: Readonly<Record<string, string>>
 ): boolean => {
   const attendus = champ.libelles.map(sansAccentsNiCasse);
+  const forme = champ.motif === undefined ? null : motifs[champ.motif];
 
-  return textes.some(
-    (texte) =>
-      dansLaZone(texte, champ.zone, tolerance) &&
-      attendus.some((attendu) => sansAccentsNiCasse(texte.texte).includes(attendu))
-  );
+  return textes.some((texte) => {
+    if (!dansLaZone(texte, champ.zone, tolerance)) return false;
+
+    if (attendus.some((attendu) => sansAccentsNiCasse(texte.texte).includes(attendu))) {
+      return true;
+    }
+
+    /* Ancrage de forme : on vérifie que quelque chose de la bonne allure occupe
+       la zone, sans jamais s'intéresser à ce que ce quelque chose vaut. */
+    return forme !== null && new RegExp(forme).test(texte.texte.trim());
+  });
 };
 
 /**
@@ -92,7 +107,8 @@ export const controlerGabarit = (
   plateforme: string,
   textes: readonly TexteDetecte[],
   gabarits: readonly Gabarit[],
-  tolerance: number | null
+  tolerance: number | null,
+  motifs: Readonly<Record<string, string>> = {}
 ): VerdictGabarit => {
   const candidats = gabarits.filter((gabarit) => gabarit.plateforme === plateforme);
 
@@ -105,7 +121,7 @@ export const controlerGabarit = (
 
   for (const gabarit of candidats) {
     const manquants = gabarit.champs
-      .filter((champ) => !champTrouve(champ, textes, tolerance))
+      .filter((champ) => !champTrouve(champ, textes, tolerance, motifs))
       .map((champ) => champ.cle);
 
     if (manquants.length === 0) {

@@ -10,7 +10,8 @@
     "test": "node --test 'tests/**/*.test.mjs'",
     "valider:baremes": "node scripts/valider-baremes.mjs config/baremes.json config/baremes.schema.json",
     "verifier:env": "node scripts/verifier-env.mjs .env.local",
-    "entretien": "node scripts/avec-env.mjs .env.local node scripts/entretenir.mjs"
+    "entretien": "node scripts/avec-env.mjs .env.local node scripts/entretenir.mjs",
+    "calibrer": "node scripts/calibrer.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1125.0",

@@ -1,0 +1,26 @@
+{
+  "note": "Ce que l'outil de calibration a le DROIT d'afficher. Les libellés ci-dessous sont des chaînes génériques de l'interface, identiques sur tous les téléphones : elles ne désignent personne. Tout le reste du texte lu sur une capture — adresses, noms de restaurants, horaires — ne sort jamais de l'outil, sous aucune forme.",
+  "regle_de_sortie": "L'outil n'écrit jamais le texte qu'il a lu. Quand un libellé de cette liste est reconnu, c'est l'entrée de la liste qui est écrite, pas la lecture. Une zone qui contient du texte variable n'est décrite que par sa position.",
+  "libelles_attendus": [
+    "Détails",
+    "Durée",
+    "Distance",
+    "Total",
+    "Vos revenus",
+    "Prix total du trajet",
+    "Accepter",
+    "Refuser",
+    "Ajouter une livraison",
+    "Livraison",
+    "Pourboire",
+    "Trajet",
+    "Course"
+  ],
+  "motifs": {
+    "note": "Ancrages de forme, pour les zones sans libellé — l'écran d'acceptation affiche un montant sans rien pour le nommer. Ils ne sont PAS ancrés aux extrémités du texte, parce que le récapitulatif met durée et distance sur une même ligne : « 16 min 34 s 11.18 km ». Un motif exigeant que la ligne entière lui corresponde n'y reconnaîtrait rien. Seuls le nom du motif et la position sortent, jamais la valeur.",
+    "montant_euro": "\\d{1,4}[.,]\\d{2}\\s*€",
+    "distance_km": "\\d{1,3}[.,]?\\d{0,2}\\s*km\\b",
+    "duree_min_sec": "\\d{1,3}\\s*min(\\s*\\d{1,2}\\s*s)?\\b"
+  },
+  "confiance_minimale": 60
+}

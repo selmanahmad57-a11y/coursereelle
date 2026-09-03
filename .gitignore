@@ -31,3 +31,9 @@ next-env.d.ts
 # Certificats et clés — jamais dans un repo public
 *.pem
 *.key
+
+# Calibration — spécimens de tiers, jamais versionnés
+# Les captures prêtées par des collègues sont des données de production : elles
+# entrent, servent, et sont supprimées. Les gabarits candidats attendent une
+# relecture avant d'entrer dans config/gabarits.json.
+/calibration/
