@@ -2,12 +2,20 @@
 /**
  * Outil de calibration des gabarits.
  *
- * Usage : node scripts/calibrer.mjs
+ * Usage : npm run calibrer
+ *          npm run calibrer -- --depuis ~/Downloads --type recapitulatif_details
  *
- * Déposez les spécimens dans calibration/entrees/, en nommant chaque fichier :
+ * Deux façons de fournir des spécimens.
+ *
+ * La première : les déposer dans calibration/entrees/ en nommant chaque fichier :
  *
  *     <plateforme>__<type_de_capture>__<description>.<png|jpg|webp>
  *     uber_eats__ecran_acceptation__android-15-sombre.png
+ *
+ * La seconde, quand ils viennent d'un téléphone et portent des noms illisibles :
+ * pointer le dossier avec --depuis. Les images y sont COPIÉES dans
+ * calibration/entrees/ sous un nom conforme, puis traitées. Les originaux ne
+ * sont pas touchés : ils sont chez vous, à vous de les effacer.
  *
  * L'outil lit chaque fichier, en tire un gabarit candidat, écrit celui-ci dans
  * calibration/candidats/, PUIS SUPPRIME LE SPÉCIMEN. À la fin, il vérifie que
@@ -26,7 +34,7 @@
  * vérifie sur des lectures piégées.
  */
 
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
@@ -139,10 +147,52 @@ const identite = (nom) => {
 await mkdir(entrees, { recursive: true });
 await mkdir(candidats, { recursive: true });
 
+/* --depuis : importer un dossier de captures sans avoir a les renommer. */
+const option = (nom) => {
+  const index = process.argv.indexOf(`--${nom}`);
+  return index === -1 ? null : process.argv[index + 1] ?? null;
+};
+
+const depuis = option("depuis");
+
+if (depuis !== null) {
+  const plateforme = option("plateforme") ?? "uber_eats";
+  const type = option("type");
+
+  if (!plateformesConnues.includes(plateforme)) {
+    console.error(`Plateforme inconnue : ${plateforme}`);
+    process.exit(2);
+  }
+  if (type === null || !typesConnus.includes(type)) {
+    console.error(`--type est obligatoire avec --depuis, parmi : ${typesConnus.join(", ")}`);
+    process.exit(2);
+  }
+
+  const source = depuis.replace(/^~/, process.env.HOME ?? "~");
+  const images = (await readdir(source)).filter((nom) => /\.(png|jpe?g|webp)$/i.test(nom)).sort();
+
+  if (images.length === 0) {
+    console.error(`Aucune image dans ${source}`);
+    process.exit(2);
+  }
+
+  for (const [index, nom] of images.entries()) {
+    const extension = nom.slice(nom.lastIndexOf("."));
+    const destination = `${plateforme}__${type}__importe-${index + 1}${extension}`;
+    await copyFile(path.join(source, nom), path.join(entrees, destination));
+  }
+
+  console.log(`${images.length} image(s) copiée(s) depuis ${source}.`);
+  console.log("Les originaux ne sont pas touchés : effacez-les vous-même.\n");
+}
+
 const fichiers = (await readdir(entrees)).filter((nom) => /\.(png|jpe?g|webp)$/i.test(nom));
 
 if (fichiers.length === 0) {
-  console.log(`Aucun spécimen dans calibration/entrees/.\nDéposez-en, puis relancez.`);
+  console.log(
+    "Aucun spécimen dans calibration/entrees/.\n" +
+      "Déposez-en, ou pointez un dossier : npm run calibrer -- --depuis ~/Downloads --type recapitulatif_details"
+  );
   process.exit(0);
 }
 
