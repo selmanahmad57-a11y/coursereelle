@@ -1,0 +1,74 @@
+{
+  "granularite_maximale": {
+    "libelle": "La ville est la granularité maximale collectée",
+    "regle": "Aucun quartier, aucune adresse, aucun code postal n'est demandé ni stocké, pas même en champ optionnel. Croisée avec une date et une heure, une localisation fine peut réidentifier un livreur ; la ville seule, non.",
+    "portee": "Cette règle s'applique au formulaire, à la base et à toute statistique publiée."
+  },
+  "interpretation_zone": {
+    "libelle": "Correspondance ville vers zone tarifaire",
+    "regle": "Le livreur ne renseigne jamais la zone : il indique sa ville, et le site en déduit la zone tarifaire. Connaître la mécanique tarifaire d'une plateforme n'est pas au livreur de le faire, et chaque question retirée du formulaire compte pour tenir les 90 secondes.",
+    "incertitude": "Nous ne savons pas si la tarification « Paris » d'Uber couvre Paris intra-muros seulement, ou aussi la petite couronne. Par défaut, les communes de la petite couronne présentes dans cette liste sont classées hors_paris et marquées ci-dessous. À vérifier en semaine 5 sur de vrais récapitulatifs : si ceux de Montreuil montrent le tarif parisien, cette configuration change, et la frontière réelle de la zone Paris devient elle-même une statistique du site.",
+    "source": {
+      "libelle": "Déduction à partir de la grille tarifaire annoncée par Uber Eats, non confirmée par la plateforme",
+      "url": null,
+      "consultee_le": null
+    }
+  },
+  "villes": [
+    { "slug": "paris", "libelle": "Paris", "zone": "paris" },
+    { "slug": "marseille", "libelle": "Marseille", "zone": "hors_paris" },
+    { "slug": "lyon", "libelle": "Lyon", "zone": "hors_paris" },
+    { "slug": "toulouse", "libelle": "Toulouse", "zone": "hors_paris" },
+    { "slug": "nice", "libelle": "Nice", "zone": "hors_paris" },
+    { "slug": "nantes", "libelle": "Nantes", "zone": "hors_paris" },
+    { "slug": "montpellier", "libelle": "Montpellier", "zone": "hors_paris" },
+    { "slug": "strasbourg", "libelle": "Strasbourg", "zone": "hors_paris" },
+    { "slug": "bordeaux", "libelle": "Bordeaux", "zone": "hors_paris" },
+    { "slug": "lille", "libelle": "Lille", "zone": "hors_paris" },
+    { "slug": "rennes", "libelle": "Rennes", "zone": "hors_paris" },
+    { "slug": "reims", "libelle": "Reims", "zone": "hors_paris" },
+    { "slug": "toulon", "libelle": "Toulon", "zone": "hors_paris" },
+    { "slug": "saint-etienne", "libelle": "Saint-Étienne", "zone": "hors_paris" },
+    { "slug": "le-havre", "libelle": "Le Havre", "zone": "hors_paris" },
+    { "slug": "grenoble", "libelle": "Grenoble", "zone": "hors_paris" },
+    { "slug": "dijon", "libelle": "Dijon", "zone": "hors_paris" },
+    { "slug": "angers", "libelle": "Angers", "zone": "hors_paris" },
+    { "slug": "nimes", "libelle": "Nîmes", "zone": "hors_paris" },
+    { "slug": "villeurbanne", "libelle": "Villeurbanne", "zone": "hors_paris" },
+    { "slug": "clermont-ferrand", "libelle": "Clermont-Ferrand", "zone": "hors_paris" },
+    { "slug": "aix-en-provence", "libelle": "Aix-en-Provence", "zone": "hors_paris" },
+    { "slug": "brest", "libelle": "Brest", "zone": "hors_paris" },
+    { "slug": "tours", "libelle": "Tours", "zone": "hors_paris" },
+    { "slug": "amiens", "libelle": "Amiens", "zone": "hors_paris" },
+    { "slug": "limoges", "libelle": "Limoges", "zone": "hors_paris" },
+    { "slug": "annecy", "libelle": "Annecy", "zone": "hors_paris" },
+    { "slug": "perpignan", "libelle": "Perpignan", "zone": "hors_paris" },
+    { "slug": "metz", "libelle": "Metz", "zone": "hors_paris" },
+    { "slug": "besancon", "libelle": "Besançon", "zone": "hors_paris" },
+    { "slug": "orleans", "libelle": "Orléans", "zone": "hors_paris" },
+    { "slug": "rouen", "libelle": "Rouen", "zone": "hors_paris" },
+    { "slug": "mulhouse", "libelle": "Mulhouse", "zone": "hors_paris" },
+    { "slug": "caen", "libelle": "Caen", "zone": "hors_paris" },
+    { "slug": "nancy", "libelle": "Nancy", "zone": "hors_paris" },
+    {
+      "slug": "argenteuil",
+      "libelle": "Argenteuil",
+      "zone": "hors_paris",
+      "petite_couronne": true
+    },
+    {
+      "slug": "montreuil",
+      "libelle": "Montreuil",
+      "zone": "hors_paris",
+      "petite_couronne": true
+    },
+    {
+      "slug": "saint-denis",
+      "libelle": "Saint-Denis",
+      "zone": "hors_paris",
+      "petite_couronne": true
+    },
+    { "slug": "avignon", "libelle": "Avignon", "zone": "hors_paris" },
+    { "slug": "poitiers", "libelle": "Poitiers", "zone": "hors_paris" }
+  ]
+}

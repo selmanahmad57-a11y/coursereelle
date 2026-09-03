@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
 import {
+  granulariteMaximale,
+  interpretationZone,
+} from "@/lib/parametres";
+import {
   baremes,
   decrirePortee,
   etatSource,
@@ -174,6 +178,32 @@ export default function PageMethode() {
           ))}
         </ul>
       </Section>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-neutral-900">Ce que nous ne collectons pas</h2>
+        <div className="mt-4 space-y-3">
+          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-neutral-900">
+              {granulariteMaximale.libelle}
+            </h3>
+            <p className="mt-2 text-sm text-neutral-700">{granulariteMaximale.regle}</p>
+            <p className="mt-2 text-sm text-neutral-600">{granulariteMaximale.portee}</p>
+          </div>
+
+          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-neutral-900">
+              {interpretationZone.libelle}
+            </h3>
+            <p className="mt-2 text-sm text-neutral-700">{interpretationZone.regle}</p>
+            <p className="mt-2 border-l-2 border-amber-300 pl-3 text-sm text-neutral-700">
+              {interpretationZone.incertitude}
+            </p>
+            <p className="mt-3 border-t border-neutral-200 pt-3 text-xs text-neutral-600">
+              {interpretationZone.source.libelle}
+            </p>
+          </div>
+        </div>
+      </section>
 
       <Section
         titre={familles.parametres_systeme.titre}

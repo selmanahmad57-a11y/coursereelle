@@ -122,5 +122,66 @@
       "titre": "Ce que nous décidons",
       "description": "Les seuls réglages choisis par le site, et les seuls qui peuvent écarter une course. Ils ne portent que sur la cohérence physique et la fraude — jamais sur le montant payé."
     }
+  },
+  "anomalies": {
+    "distance_sous_minimum": {
+      "unite": "KM",
+      "message": "Distance de {valeur}, sous le minimum de {limite} : il s'agit très probablement d'une erreur de saisie."
+    },
+    "distance_sur_maximum": {
+      "unite": "KM",
+      "message": "Distance de {valeur}, au-delà du maximum de {limite} : ce n'est plus de la livraison de repas."
+    },
+    "vitesse_sous_minimum": {
+      "unite": "KM_PAR_HEURE",
+      "message": "Vitesse moyenne de {valeur}, sous le minimum de {limite} : la distance ou la durée saisie est probablement fausse."
+    },
+    "vitesse_sur_maximum": {
+      "unite": "KM_PAR_HEURE",
+      "message": "Vitesse moyenne de {valeur}, au-delà de {limite} pour ce véhicule : la course est physiquement impossible telle qu'elle est saisie."
+    }
+  },
+  "formulaire": {
+    "titre": "Publier une course",
+    "introduction": "Huit champs, dont quatre seulement changent d'une course à l'autre. Vos réponses de ville, plateforme et véhicule sont retenues sur cet appareil pour la prochaine fois.",
+    "champs": {
+      "ville": "Ville",
+      "plateforme": "Plateforme",
+      "vehicule": "Véhicule",
+      "distance_km": "Distance parcourue",
+      "prix_paye": "Prix payé par la plateforme",
+      "pourboire": "Pourboire",
+      "duree_estimee": "Temps estimé par l'application",
+      "duree_reelle": "Temps réel, de l'acceptation à la remise",
+      "date_course": "Date de la course"
+    },
+    "aides": {
+      "pourboire": "Laissez vide s'il n'y en a pas eu.",
+      "duree_reelle": "Le temps que vous avez vraiment passé, pas celui affiché par l'application."
+    },
+    "choisir": "Choisir…",
+    "autre_ville": "Autre ville",
+    "autre_ville_champ": "Nom de votre ville",
+    "zone_deduite": "Zone tarifaire déduite",
+    "zone_inconnue": "Zone inconnue pour cette ville : la course sera publiée sans comparaison à la grille kilométrique.",
+    "resultats": {
+      "titre": "Ce que cela représente",
+      "attente": "Renseignez le prix payé et le temps réel pour voir votre taux horaire.",
+      "taux_reel": "Votre taux horaire réel",
+      "taux_estime": "Ce que l'application laisse croire",
+      "ecart": "Écart introduit par l'estimation",
+      "net": "Net estimé, après cotisations",
+      "vitesse": "Vitesse moyenne"
+    },
+    "anomalies_titre": "À vérifier avant d'envoyer",
+    "anomalies_introduction": "Ces contrôles ne portent que sur la cohérence physique. Le montant payé n'entre jamais en compte : une course mal payée est une preuve à publier, pas une erreur.",
+    "section_contexte": "Vous",
+    "section_contexte_aide": "Retenu sur cet appareil, à ne remplir qu'une fois.",
+    "section_course": "La course",
+    "envoi": {
+      "bouton": "Envoyer la course",
+      "indisponible": "L'envoi n'est pas encore branché : il attend la base de données et le dépôt de la capture d'écran, qui viennent à la même étape. Le calcul ci-dessous fonctionne déjà."
+    },
+    "anciennete_depassee": "Cette course a plus de {limite}. Le site n'accepte que les courses assez récentes pour que la capture reste vérifiable et le temps réel encore en mémoire."
   }
 }
