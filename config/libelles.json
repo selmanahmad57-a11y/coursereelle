@@ -295,7 +295,11 @@
       "texte": "Une capture d'écran de course contient bien plus que des chiffres : l'adresse du restaurant, celle de la livraison, l'horaire exact. Le site promet que la ville est la granularité maximale de ce qu'il conserve — une capture gardée indéfiniment démentirait cette promesse.",
       "regle": "La capture sert à vérifier vos chiffres, puis elle est supprimée. Définitivement, quarante-huit heures après le verdict rendu sur la course. Pas caviardée : supprimée. Caviarder supposerait de repérer les zones sensibles sur chaque variante d'écran, donc une détection de plus qui peut se tromper, et une image conservée reste une surface de fuite. Ce qui n'existe plus ne peut pas fuiter.",
       "reste": "Ce qui subsiste après suppression : les chiffres vérifiés, l'empreinte de l'image qui permet de refuser un doublon, et le verdict. Rien d'autre. Le texte lu sur la capture n'est jamais enregistré, nulle part — ni en base, ni dans un journal, ni dans un message d'erreur : il contient précisément ce que nous promettons de ne pas détenir.",
-      "controle": "Le tableau de surveillance compte en permanence les captures qui dépassent leur délai. Ce compteur doit rester à zéro ; s'il ne l'est pas, c'est visible."
+      "controle": "La suppression n'attend aucun geste : une tâche automatique passe toutes les heures et supprime ce qui a dépassé son terme. Une promesse dont l'exécution dépendrait d'une commande lancée à la main ne serait pas une garantie — elle serait une intention.",
+      "compteur_intitule": "Captures au-delà de leur délai",
+      "compteur_regle": "Ce compteur est le contrôle, et c'est pourquoi il est publié ici plutôt que gardé pour nous. Il doit valoir zéro en permanence. S'il monte, c'est que la tâche s'est arrêtée : la promesse n'est pas seulement affirmée, elle est prouvable en défaut.",
+      "compteur_detail": "{dans_le_delai} en cours de délai · {supprimees} déjà supprimées",
+      "compteur_indisponible": "Compteur indisponible : la base n'est pas jointe. Aucun chiffre n'est affiché plutôt qu'un zéro qui voudrait dire « tout va bien »."
     },
     "verification": {
       "titre": "Ce qu'une capture doit prouver, et ce qu'elle peut seulement suggérer",

@@ -1,0 +1,36 @@
+# Lecture des captures en attente, et verdicts.
+#
+# Le filtre 2 est différé exprès : un échec de lecture ne doit jamais faire
+# échouer un envoi par ailleurs valide. Ce report n'a de sens que si quelque
+# chose reprend le travail sans qu'on le lui demande — sinon les courses
+# resteraient « en attente » indéfiniment, ce qui reviendrait à ne jamais rendre
+# de verdict.
+#
+# Un quart d'heure est le compromis : un livreur qui publie entre deux courses
+# voit son verdict avant la fin de sa journée, sans qu'une fonction démarre pour
+# rien quand il n'y a rien à lire — la route ne fait aucun travail lorsque la
+# file est vide.
+#
+# Même remarque que pour l'entretien : le cron Vercel quotidien reste en filet.
+
+name: Lecture des captures
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  lecture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déclencher la lecture des captures en attente
+        run: |
+          reponse=$(curl --silent --show-error --fail-with-body \
+            --max-time 300 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/taches/lecture")
+          echo "$reponse"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}

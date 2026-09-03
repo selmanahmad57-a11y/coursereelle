@@ -1,0 +1,41 @@
+# Suppression des captures dont le délai est écoulé.
+#
+# POURQUOI PAS UN CRON VERCEL. Sur le plan gratuit, une tâche planifiée Vercel ne
+# peut s'exécuter qu'une fois par jour, et à l'heure près seulement — une
+# expression plus fréquente fait échouer le déploiement. Un passage quotidien
+# repousserait la suppression jusqu'à vingt-cinq heures après l'échéance, là où
+# le site promet quarante-huit heures. La promesse publiée décide donc de la
+# cadence, et non l'inverse : un passage par heure, qui garantit une suppression
+# au plus une heure après le terme.
+#
+# Le cron déclaré dans vercel.json reste, en filet quotidien : si ce planificateur
+# s'arrête, la suppression continue, en retard mais elle a lieu.
+#
+# Deux secrets de dépôt : CRON_SECRET, identique à celui du déploiement, et
+# SITE_URL, l'adresse de production.
+#
+# GitHub désactive les planifications d'un dépôt resté soixante jours sans
+# activité. Le compteur « échues » du tableau de surveillance est ce qui le
+# rendrait visible.
+
+name: Entretien des captures
+
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  entretien:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déclencher la suppression des captures échues
+        run: |
+          reponse=$(curl --silent --show-error --fail-with-body \
+            --max-time 120 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/taches/entretien")
+          echo "$reponse"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}

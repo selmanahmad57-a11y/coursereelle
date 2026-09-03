@@ -16,8 +16,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { arreterLecteur, demarrerLecteur } from "../lib/ocr-tesseract.ts";
-import { reglesClassificationDepuis } from "../lib/classification-regles.ts";
-import { uniqueEnVigueur } from "../lib/periodes.ts";
+import { reglesTraitementDepuis } from "../lib/regles-traitement.ts";
 import { traiterEnAttente } from "../lib/traitement-lecture.ts";
 
 const racine = new URL("../", import.meta.url).pathname;
@@ -29,37 +28,9 @@ const captures = await lireJson("config/captures.json");
 
 const aujourdhui = new Date().toISOString().slice(0, 10);
 
-const valeur = (cle) =>
-  uniqueEnVigueur(
-    baremes.parametres_systeme.filter((entree) => entree.cle === cle),
-    aujourdhui
-  )?.valeur ?? null;
-
-/* La note explicative et le nom du champ indispensable vivent a cote de la
-   correspondance champ -> motif : on les met de cote avant de la parcourir. */
-const parChamp = Object.fromEntries(
-  Object.entries(interfaceUber.champs_verifiables).filter(
-    ([cle]) => cle !== "note" && cle !== "indispensable"
-  )
-);
-
-const motifs = Object.fromEntries(
-  Object.entries(parChamp).map(([champ, nom]) => [champ, interfaceUber.motifs[nom]])
-);
-
-const regles = {
-  lecture: { motifs, confianceMinimale: valeur("confiance_minimale_lecture") ?? 0 },
-  tolerances: {
-    prixEuros: valeur("tolerance_ocr_prix"),
-    distanceKm: valeur("tolerance_ocr_distance"),
-    dureeEstimeeMinutes: valeur("tolerance_ocr_duree_estimee"),
-  },
-  champsFacultatifs: captures.politique_verification.declaratifs,
-  champsProbants: captures.politique_verification.probants,
-  /* La classification consulte les mêmes barèmes que la page qui les affiche,
-     par la même fonction : deux consommateurs, une seule vérité. */
-  reglesClassification: (date, contexte) => reglesClassificationDepuis(baremes, date, contexte),
-};
+/* Les seuils sont assembles par le meme constructeur que la route periodique :
+   deux consommateurs, une seule lecture de la configuration. */
+const regles = reglesTraitementDepuis(baremes, interfaceUber, captures, aujourdhui);
 
 console.log("Seuils en vigueur :");
 console.log(`  confiance minimale de lecture : ${regles.lecture.confianceMinimale} %`);

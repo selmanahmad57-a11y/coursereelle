@@ -3,14 +3,18 @@ import type { Metadata } from "next";
 import libelles from "@/config/libelles.json";
 
 import {
+  delaiSuppressionCaptureHeures,
   granulariteMaximale,
   interpretationZone,
 } from "@/lib/parametres";
+import { aujourdhui } from "@/lib/contexte-livreur.ts";
+import { etatCaptures } from "@/lib/entretien.ts";
 import {
   baremes,
   decrirePortee,
   etatSource,
   familles,
+  formaterNombre,
   formaterPeriode,
   formaterValeur,
   grouperParGrille,
@@ -21,6 +25,13 @@ import {
   type RegleLegale,
   type Source,
 } from "@/lib/baremes";
+
+/*
+ * Cette page publie un compteur vivant : celui des captures au-delà de leur
+ * délai. Figé à la construction, il afficherait éternellement l'état du dernier
+ * déploiement — c'est-à-dire zéro, sur la page même qui en fait une preuve.
+ */
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Méthode",
@@ -133,8 +144,13 @@ function Section({
   );
 }
 
-export default function PageMethode() {
+export default async function PageMethode() {
   const grilles = grouperParGrille(baremes.regles_annoncees);
+
+  const etatDesCaptures = await etatCaptures(
+    new Date(),
+    delaiSuppressionCaptureHeures(aujourdhui())
+  );
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -305,9 +321,40 @@ export default function PageMethode() {
               {libelles.methode.captures.regle}
             </p>
             <p className="mt-2 text-sm text-neutral-700">{libelles.methode.captures.reste}</p>
-            <p className="mt-2 border-t border-neutral-200 pt-2 text-xs text-neutral-600">
+            <p className="mt-2 border-t border-neutral-200 pt-2 text-sm text-neutral-700">
               {libelles.methode.captures.controle}
             </p>
+
+            <div className="mt-3 rounded border border-neutral-300 bg-neutral-50 p-3">
+              <p className="text-xs text-neutral-600">
+                {libelles.methode.captures.compteur_intitule}
+              </p>
+
+              {etatDesCaptures === null ? (
+                <p className="mt-1 text-sm text-neutral-700">
+                  {libelles.methode.captures.compteur_indisponible}
+                </p>
+              ) : (
+                <>
+                  <p
+                    className={`mt-0.5 font-mono text-3xl font-semibold tabular-nums ${
+                      etatDesCaptures.echues === 0 ? "text-neutral-900" : "text-rose-700"
+                    }`}
+                  >
+                    {formaterNombre(etatDesCaptures.echues)}
+                  </p>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    {libelles.methode.captures.compteur_detail
+                      .replace("{dans_le_delai}", formaterNombre(etatDesCaptures.dans_le_delai))
+                      .replace("{supprimees}", formaterNombre(etatDesCaptures.supprimees))}
+                  </p>
+                </>
+              )}
+
+              <p className="mt-2 text-xs text-neutral-600">
+                {libelles.methode.captures.compteur_regle}
+              </p>
+            </div>
           </div>
 
           <div className="rounded-lg border border-neutral-200 bg-white p-4">

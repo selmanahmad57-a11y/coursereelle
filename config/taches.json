@@ -1,0 +1,21 @@
+{
+  "note": "Réglages des tâches périodiques. Ce ne sont pas des barèmes : ils ne jugent aucune course et ne se datent pas. Ils vivent hors du code parce qu'ils dépendent des limites d'un hébergeur, lesquelles changent sans prévenir — et qu'une valeur enfouie dans une fonction ne se relit jamais.",
+  "lecture": {
+    "courses_par_passage": 20,
+    "justification": "Mesuré sur des captures réelles : environ deux secondes de lecture par image, plus une seconde et demie d'initialisation du moteur. Vingt captures tiennent donc dans une cinquantaine de secondes, contre trois cents accordées à une fonction — six fois la marge, de quoi absorber plusieurs images lentes sans jamais approcher l'expiration. Un lot plus grand ne ferait pas gagner de temps : il ferait risquer une expiration au milieu d'un traitement.",
+    "source": {
+      "libelle": "Vercel Functions Limits — plan Hobby : 300 s, 2 Go",
+      "url": "https://vercel.com/docs/functions/limitations",
+      "consultee_le": "2026-09-04"
+    }
+  },
+  "planification": {
+    "note": "Les cadences elles-mêmes ne sont pas ici : elles vivent dans .github/workflows/taches.yml, qui est ce qui les exécute vraiment. Les recopier ici donnerait deux vérités dont l'une serait décorative.",
+    "contrainte_hebergeur": "Sur le plan gratuit de Vercel, une tâche planifiée ne peut s'exécuter qu'une fois par jour, et à l'heure près seulement : une expression plus fréquente fait échouer le déploiement. Les crons déclarés dans vercel.json sont donc un filet quotidien, pas la garantie. La cadence réelle vient d'un planificateur externe qui frappe les mêmes portes.",
+    "source": {
+      "libelle": "Vercel Cron Jobs — Usage & Pricing : « Hobby accounts are limited to cron jobs that run once per day »",
+      "url": "https://vercel.com/docs/cron-jobs/usage-and-pricing",
+      "consultee_le": "2026-09-04"
+    }
+  }
+}
