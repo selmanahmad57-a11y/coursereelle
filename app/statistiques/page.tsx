@@ -10,6 +10,14 @@ import { etatPublication } from "@/lib/publication.ts";
 
 const textes = libelles.statistiques;
 
+/*
+ * Cette page lit la base : elle ne peut pas être figée au moment de la
+ * construction. Sans cela, le compteur afficherait éternellement l'état du site
+ * au dernier déploiement — c'est-à-dire zéro, sur un site qui promet de publier
+ * des chiffres vrais.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: textes.titre,
   description:
@@ -50,7 +58,7 @@ export default async function PageStatistiques() {
           {etat.restantAvantPublication !== null && etat.effectif > 0
             ? textes.restant.replace(
                 "{restant}",
-                formaterValeur(etat.restantAvantPublication, UNITES.courses)
+                formaterNombre(etat.restantAvantPublication)
               )
             : null}
         </p>

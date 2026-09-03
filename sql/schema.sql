@@ -86,7 +86,7 @@ create table if not exists courses (
   -- calibrer le filtre 2 sur de vrais récapitulatifs.
   ocr_prix_euros          numeric(7, 2),
   ocr_distance_km         numeric(6, 2),
-  ocr_duree_estimee_minutes integer,
+  ocr_duree_estimee_minutes numeric(8, 4),
 
   -- « en_attente_ocr » : la course a passé les filtres branchés, mais la lecture
   -- automatique de la capture ne l'a pas encore confirmée. Elle n'est donc PAS
@@ -339,3 +339,5 @@ alter table courses add column if not exists verdict_le timestamptz;
 create index if not exists courses_capture_a_purger_idx
   on courses (verdict_le)
   where capture_cle_r2 is not null and capture_supprimee_le is null;
+
+alter table courses alter column ocr_duree_estimee_minutes type numeric(8, 4);

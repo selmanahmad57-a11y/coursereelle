@@ -314,7 +314,9 @@
     "capture_illisible": "Capture illisible par le lecteur automatique",
     "valeur_absente_de_la_capture": "Valeur introuvable sur la capture",
     "valeur_non_saisie": "Valeur lue sur la capture mais absente du formulaire",
-    "valeur_divergente": "Valeur saisie différente de celle lue sur la capture"
+    "valeur_divergente": "Valeur saisie différente de celle lue sur la capture",
+    "echec_lecture": "Capture trop peu lisible pour conclure — renvoyez-en une plus nette",
+    "lecture_ambigue": "Plusieurs valeurs différentes lues pour un même champ"
   },
   "motifs_capture": {
     "aucun_fichier": "Aucune capture n'a été jointe",

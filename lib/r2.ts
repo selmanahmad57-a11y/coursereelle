@@ -9,7 +9,12 @@
  * course rejetee : inutile de conserver la preuve d'une soumission ecartee.
  */
 
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 
 import { endpointR2, juridictionValide } from "./r2-endpoint.ts";
 
@@ -60,6 +65,18 @@ export const deposerCapture = async (
       ContentType: typeMime,
     })
   );
+};
+
+/** Relire une capture pour la vérifier. Elle ne quitte jamais le serveur. */
+export const lireCapture = async (cle: string): Promise<Uint8Array<ArrayBuffer>> => {
+  const objet = await clientR2().send(
+    new GetObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: cle })
+  );
+
+  const octets = await objet.Body?.transformToByteArray();
+  if (!octets) throw new Error(`Capture illisible depuis le stockage : ${cle}`);
+
+  return new Uint8Array(octets);
 };
 
 export const supprimerCapture = async (cle: string): Promise<void> => {

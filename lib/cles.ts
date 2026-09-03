@@ -26,6 +26,7 @@ export const CLES_SYSTEME = {
   distancePerceptuelleSurveillance: "distance_perceptuelle_surveillance",
   reliefMinimalEmpreinte: "relief_minimal_empreinte",
   delaiSuppressionCapture: "delai_suppression_capture",
+  confianceMinimaleLecture: "confiance_minimale_lecture",
   toleranceGabarit: "tolerance_position_gabarit",
   dureeSessionMinimale: "duree_session_minimale",
   dureeSessionMaximale: "duree_session_maximale",

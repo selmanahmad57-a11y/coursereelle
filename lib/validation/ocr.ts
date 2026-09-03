@@ -40,6 +40,8 @@ export type Tolerances = Record<ChampVerifie, number | null>;
 
 export const MOTIFS_OCR = [
   "capture_illisible",
+  "echec_lecture",
+  "lecture_ambigue",
   "valeur_absente_de_la_capture",
   "valeur_non_saisie",
   "valeur_divergente",

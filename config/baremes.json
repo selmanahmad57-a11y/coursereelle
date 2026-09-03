@@ -462,6 +462,16 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Une capture d'écran de course contient bien plus que les chiffres : l'adresse du restaurant, celle de la livraison, l'horaire. Le site promet que la ville est la granularité maximale, et une capture conservée dément cette promesse. Quarante-huit heures après le verdict laissent le temps de diagnostiquer un problème de lecture depuis le tableau de surveillance ; au-delà, la capture n'a plus d'usage et sa seule existence est un risque. Suppression pure, sans caviardage : caviarder supposerait de localiser les zones sensibles sur chaque variante d'écran, soit une détection de plus qui peut échouer, et une image conservée reste une surface de fuite. Ce qui n'existe plus ne peut pas fuiter."
+    },
+    {
+      "cle": "confiance_minimale_lecture",
+      "libelle": "Confiance en deçà de laquelle une lecture est tenue pour hésitante",
+      "valeur": 70,
+      "unite": "POURCENT",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Une lecture hésitante ne doit produire aucun des deux verdicts. Ni une validation, qui reviendrait à confirmer une course au bénéfice du doute ; ni une divergence, qui reviendrait à reprocher au livreur un écart que le lecteur a peut-être inventé. Elle produit donc un échec de lecture, et le livreur renvoie une capture plus nette. Mesuré sur deux captures réelles : 86 sur un récapitulatif, 67 sur un écran d'acceptation chargé — d'où un seuil placé juste au-dessus du second, à recalibrer en semaine 5 quand le tableau de surveillance aura compté les échecs."
     }
   ]
 }
