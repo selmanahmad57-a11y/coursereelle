@@ -1,0 +1,7 @@
+{
+  "note": "Réglages d'affichage. Ce ne sont pas des règles du système : ils ne décident d'aucun verdict, n'écartent aucune course et ne se datent donc pas — un barème daté sert à juger une course selon les règles de SA date, ce qui n'a aucun sens pour une taille de page. Ils vivent quand même hors du code, pour la même raison que tout le reste : une valeur écrite dans un composant est une valeur que personne ne relit.",
+  "liste_courses": {
+    "par_page": 50,
+    "justification": "La page sert deux publics. Le livreur qui vient voir si des courses ressemblent aux siennes regarde le haut de l'écran, et vingt lui suffiraient ; celui qui veut parcourir le corpus a besoin de tout. Cinquante donne au défilement une impression honnête de l'ensemble tout en gardant la page rapide sur un téléphone en 4G, qui reste le critère de ce site. Au-delà, une pagination numérotée plutôt qu'un défilement infini : une page numérotée se cite, se partage et se retrouve."
+  }
+}

@@ -262,6 +262,30 @@ export default function PageMethode() {
       </section>
 
       <section className="mt-12">
+        <h2 className="text-xl font-semibold text-neutral-900">
+          {libelles.methode.choix_editoriaux.titre}
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-neutral-700">
+          {libelles.methode.choix_editoriaux.chapeau}
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {libelles.methode.choix_editoriaux.points.map((point) => (
+            <div
+              key={point.titre}
+              className="rounded-lg border border-neutral-200 bg-white p-4"
+            >
+              <h3 className="text-sm font-medium text-neutral-900">{point.titre}</h3>
+              <p className="mt-2 text-sm text-neutral-700">{point.texte}</p>
+              <p className="mt-2 border-l-2 border-neutral-300 pl-3 text-sm font-medium text-neutral-900">
+                {point.consequence}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-12">
         <h2 className="text-xl font-semibold text-neutral-900">Ce que nous ne collectons pas</h2>
         <div className="mt-4 space-y-3">
           <div className="rounded-lg border border-neutral-200 bg-white p-4">

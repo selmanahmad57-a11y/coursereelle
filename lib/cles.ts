@@ -48,6 +48,22 @@ export const CLES_LEGALES = {
 export const CLES_ANNONCEES = {
   garantieHoraire: "garantie_horaire_brute",
   minimumParCourse: "minimum_par_course",
+  retraitFixe: "remuneration_retrait_fixe",
+  remunerationParKm: "remuneration_par_km",
+  remiseFixe: "remuneration_remise_fixe",
+  fraisService: "frais_service",
+} as const;
+
+/**
+ * Les regroupements de barèmes que le code désigne comme un tout.
+ *
+ * La grille kilométrique n'est pas une valeur mais quatre, et c'est leur
+ * combinaison qui dit ce qu'une course aurait dû rapporter. Une classification
+ * « sous la grille » ne se rattache donc à aucune des quatre en particulier :
+ * elle se rattache au groupe.
+ */
+export const GROUPES_ANNONCES = {
+  grilleKilometrique: "grille_kilometrique",
 } as const;
 
 /**

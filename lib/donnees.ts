@@ -128,3 +128,122 @@ export const lireDerniereCourseVerifiee = async (): Promise<CourseVerifiee | nul
       ligne.duree_estimee_minutes === null ? null : Number(ligne.duree_estimee_minutes),
   };
 };
+
+/* ------------------------------------------------------------------ */
+/* La liste publique des courses                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Une course telle que la liste publique la montre.
+ *
+ * La ville est la donnée la plus fine qui existe : ce n'est pas une décision de
+ * cette couche, c'est qu'il n'y a rien d'autre en base. Aucun quartier, aucun
+ * code postal, aucune adresse n'a jamais été collecté, donc aucun ne peut
+ * fuir ici par distraction.
+ */
+export interface CoursePubliee {
+  id: string;
+  dateCourse: string;
+  villeSlug: string | null;
+  zone: string | null;
+  plateforme: string;
+  vehicule: string;
+  distanceKm: number;
+  prixEuros: number;
+  dureeReelleMinutes: number;
+  dureeEstimeeMinutes: number | null;
+  /** Ce que la capture a confirmé, champ par champ. */
+  statutsLecture: Record<string, string>;
+}
+
+export interface PageDeCourses {
+  courses: CoursePubliee[];
+  /** Nombre total de courses validées, toutes pages confondues. */
+  total: number;
+  /** Faux quand la base n'est pas branchée : la page l'explique au lieu d'afficher zéro. */
+  disponible: boolean;
+}
+
+const enDate = (valeur: string | Date): string =>
+  valeur instanceof Date ? valeur.toISOString().slice(0, 10) : String(valeur).slice(0, 10);
+
+/**
+ * Les courses validées, de la plus récente à la plus ancienne.
+ *
+ * L'ORDRE EST LA MÊME DÉCISION QUE CELLE DE L'ACCUEIL. Trier par taux horaire
+ * croissant mettrait les pires courses en tête et donnerait une liste plus
+ * frappante, entièrement composée de faits vrais — et pourtant l'ordre, lui,
+ * serait une thèse. La date décroissante ne choisit rien : elle montre ce qui
+ * vient d'arriver.
+ */
+export const lireCoursesPubliees = async (
+  { page, parPage }: { page: number; parPage: number }
+): Promise<PageDeCourses> => {
+  if (!baseConfiguree()) return { courses: [], total: 0, disponible: false };
+
+  const { db } = await import("./db.ts");
+
+  const sql = db();
+  const debut = Math.max(0, (page - 1) * parPage);
+
+  const [lignes, total] = await Promise.all([
+    sql`
+      select id, date_course, ville_slug, zone, plateforme, vehicule,
+             distance_km, prix_paye_euros, duree_reelle_minutes, duree_estimee_minutes
+      from courses
+      where statut = 'validee_auto'
+      order by date_course desc, soumise_le desc
+      limit ${parPage} offset ${debut}
+    `,
+    sql`select count(*)::int as nombre from courses where statut = 'validee_auto'`,
+  ]);
+
+  const courses = (lignes as {
+    id: string;
+    date_course: string | Date;
+    ville_slug: string | null;
+    zone: string | null;
+    plateforme: string;
+    vehicule: string;
+    distance_km: string | number;
+    prix_paye_euros: string | number;
+    duree_reelle_minutes: string | number;
+    duree_estimee_minutes: string | number | null;
+  }[]).map((ligne) => ({
+    id: ligne.id,
+    dateCourse: enDate(ligne.date_course),
+    villeSlug: ligne.ville_slug,
+    zone: ligne.zone,
+    plateforme: ligne.plateforme,
+    vehicule: ligne.vehicule,
+    distanceKm: Number(ligne.distance_km),
+    prixEuros: Number(ligne.prix_paye_euros),
+    dureeReelleMinutes: Number(ligne.duree_reelle_minutes),
+    dureeEstimeeMinutes:
+      ligne.duree_estimee_minutes === null ? null : Number(ligne.duree_estimee_minutes),
+    statutsLecture: {} as Record<string, string>,
+  }));
+
+  /* Les statuts de vérification arrivent en une requête pour toute la page :
+     une par course multiplierait les allers-retours sans rien apprendre de plus. */
+  if (courses.length > 0) {
+    const lectures = (await sql`
+      select course_id, champ, statut_lecture
+      from lectures_capture
+      where course_id = any(${courses.map((course) => course.id) as string[]})
+    `) as { course_id: string; champ: string; statut_lecture: string }[];
+
+    const parCourse = new Map(courses.map((course) => [course.id, course]));
+
+    for (const lecture of lectures) {
+      const course = parCourse.get(lecture.course_id);
+      if (course !== undefined) course.statutsLecture[lecture.champ] = lecture.statut_lecture;
+    }
+  }
+
+  return {
+    courses,
+    total: Number((total as { nombre: number }[])[0].nombre),
+    disponible: true,
+  };
+};

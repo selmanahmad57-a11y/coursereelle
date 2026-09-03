@@ -302,6 +302,27 @@
       "texte": "Tous les chiffres d'une course n'ont pas le même statut. Le prix et la distance sont comparés à ce que la plateforme annonce : ils doivent être lus franchement sur la capture, sans quoi la course échoue. Valider une course comme « payée sous la grille kilométrique » avec une distance que nous n'avons pas su lire serait une accusation sans preuve.",
       "declaratif": "La durée affichée par l'application, elle, ne sert qu'à mesurer l'écart avec le temps réellement passé — et ce temps réel est déclaratif par construction, puisqu'il n'apparaît sur aucun écran. Quand la capture ne la montre pas, ou quand la lecture hésite, la course est validée sur ce qui a pu être vérifié, et ce champ est marqué comme non vérifié. Les deux situations sont la même : nous ne savons pas. Bloquer dans un cas et pas dans l'autre ferait dépendre le verdict d'un accident de netteté.",
       "consequence": "Chaque champ porte donc son propre statut, et les statistiques d'écart ne portent que sur les courses où la durée a été réellement vérifiée. Le sous-échantillon est annoncé, comme partout ailleurs sur cette page."
+    },
+    "choix_editoriaux": {
+      "titre": "Choix éditoriaux",
+      "chapeau": "Un site qui mesure des écarts doit d'abord répondre de ses propres choix de présentation. Ceux-ci sont publiés au même titre que les seuils.",
+      "points": [
+        {
+          "titre": "La dernière course, jamais la pire",
+          "texte": "L'accueil montre la dernière course vérifiée, et la liste est triée de la plus récente à la plus ancienne. Retenir la course la moins bien payée donnerait un chiffre plus frappant, et ce chiffre serait vrai — mais la règle de sélection, elle, serait une thèse déguisée en observation.",
+          "consequence": "Un site qui reproche aux plateformes de communiquer sur leurs meilleurs cas ne peut pas communiquer sur ses pires."
+        },
+        {
+          "titre": "Trois natures de données, jamais confondues",
+          "texte": "Une donnée mesurée a été lue sur une capture et comparée à la saisie. Une donnée déclarée a été renseignée par le livreur sans que rien ne la confirme — le temps réel en est le cas principal. Une donnée déduite a été calculée par le site à partir des deux autres.",
+          "consequence": "Chaque affichage dit de quelle nature relève ce qu'il montre, et une déduction n'est jamais présentée comme une mesure. Une déduction n'est d'ailleurs recevable que sur des données relevées sous les règles en vigueur : conclure à partir d'anciennes mesures, prises sous des règles depuis corrigées, revient à mesurer une absence périmée avec l'aplomb d'une mesure."
+        },
+        {
+          "titre": "Aucune moyenne en tête de liste",
+          "texte": "La liste des courses ne porte aucun résumé, aucun total et aucune moyenne. Un chiffre agrégé placé au-dessus de données brutes est lu comme leur conclusion, alors qu'il en est une interprétation.",
+          "consequence": "Les chiffres agrégés vivent sur la page Statistiques, ne sont publiés qu'au-delà d'un effectif minimal, et sont des médianes — jamais des moyennes."
+        }
+      ]
     }
   },
   "statuts": {
@@ -596,6 +617,10 @@
         "libelle": "Publier une session"
       },
       {
+        "href": "/courses",
+        "libelle": "Les courses"
+      },
+      {
         "href": "/statistiques",
         "libelle": "Statistiques"
       },
@@ -664,5 +689,33 @@
         "description": "Toutes les règles de validation et toutes les valeurs employées, publiées intégralement. C'est la même configuration que celle que le code applique."
       }
     ]
+  },
+  "courses": {
+    "titre": "Les courses",
+    "introduction": "Chaque course vérifiée, telle qu'elle a été publiée. La liste est brute : aucun résumé, aucune moyenne, aucun chiffre agrégé en tête. Les statistiques sont ailleurs, et ce sont des médianes.",
+    "ordre": "De la plus récente à la plus ancienne. Trier par taux horaire croissant mettrait les pires courses en tête et donnerait une liste plus frappante, faite de faits vrais — mais l'ordre, lui, serait une thèse. La date ne choisit rien.",
+    "granularite": "La ville est la donnée la plus fine de cette liste, et il n'y en a pas d'autre : ni quartier, ni code postal, ni adresse n'a jamais été collecté.",
+    "compteur_intitule": "Courses vérifiées",
+    "colonnes": {
+      "date": "Date",
+      "ville": "Ville",
+      "plateforme": "Plateforme",
+      "vehicule": "Véhicule",
+      "distance": "Distance",
+      "prix": "Prix payé",
+      "taux": "Taux plateforme",
+      "categorie": "Conformité",
+      "verification": "Vérification"
+    },
+    "badge_complete": "Vérifiée par capture",
+    "badge_partielle": "Vérifiée en partie",
+    "detail_categorie": "Annoncé {bareme}, constaté {constate}",
+    "aucune": "Aucune course vérifiée pour l'instant. Cette liste restera vide jusqu'à la première : elle ne contiendra jamais d'exemple fabriqué, même pour montrer à quoi elle ressemblera.",
+    "base_absente": "La base de données n'est pas branchée : aucune course ne peut être lue pour le moment. Cette liste est donc vide, et non incomplète.",
+    "pagination": {
+      "precedente": "Page précédente",
+      "suivante": "Page suivante",
+      "position": "Page {page} sur {pages}"
+    }
   }
 }
