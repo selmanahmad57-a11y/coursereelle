@@ -35,6 +35,7 @@ import {
   MOTIFS_SOUMISSION,
 } from "../lib/validation/soumission.ts";
 import { CODES_SIGNALEMENT, MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
+import { STATUTS_LECTURE } from "../lib/traitement-lecture.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
 const chemin = (nom) => process.env[nom.env] ?? new URL(nom.defaut, import.meta.url);
@@ -837,4 +838,30 @@ test("le delai de suppression protege sans jamais ecarter une course", () => {
   assert.ok(delai, "le delai de suppression doit exister");
   assert.equal(delai.usage, "confidentialite");
   assert.notEqual(delai.usage, "rejet", "protéger une donnée ne doit jamais rejeter une course");
+});
+
+test("les statuts de lecture ont leur propre vocabulaire, distinct de celui des courses", () => {
+  /*
+   * Le cycle de vie d'une course et le resultat d'une lecture sont deux choses
+   * differentes. Les nommer pareil ferait passer l'un pour l'autre au premier
+   * controle de coherence — c'est exactement ce qui est arrive.
+   */
+  const [liste] = listesCheck("statut_lecture");
+
+  assert.ok(liste, "aucune contrainte de statut_lecture dans sql/schema.sql");
+  assert.deepEqual(liste, Object.keys(libelles.statuts_lecture).sort());
+  assert.deepEqual(liste, [...STATUTS_LECTURE].sort());
+
+  for (const statut of liste) {
+    assert.ok(
+      !Object.keys(libelles.statuts).includes(statut),
+      `« ${statut} » appartient aux deux vocabulaires : ils doivent rester disjoints`
+    );
+  }
+});
+
+test("chaque champ lu a un libelle pour la surveillance", () => {
+  for (const champ of CHAMPS_VERIFIES) {
+    assert.ok(libelles.champs_lecture[champ], `champ sans libelle de lecture : ${champ}`);
+  }
 });

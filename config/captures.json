@@ -62,5 +62,15 @@
         ]
       }
     ]
+  },
+  "politique_verification": {
+    "note": "Un champ comparé à un barème doit être lu franchement, ou la course échoue : valider une course « sous la grille kilométrique » avec une distance non vérifiée serait une accusation sans preuve. Un champ purement déclaratif peut rester non vérifié — c'est déjà le cas quand il ne figure pas sur la capture, et une lecture illisible est épistémiquement la même situation. Bloquer dans un cas et pas dans l'autre ferait dépendre le verdict d'un accident de netteté, pas d'une différence de preuve.",
+    "probants": [
+      "prixEuros",
+      "distanceKm"
+    ],
+    "declaratifs": [
+      "dureeEstimeeMinutes"
+    ]
   }
 }

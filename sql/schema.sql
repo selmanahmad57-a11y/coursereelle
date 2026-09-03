@@ -172,6 +172,36 @@ create index if not exists classifications_categorie_idx on classifications (cat
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Lecture des captures, champ par champ
+-- ─────────────────────────────────────────────────────────────────────────────
+--
+-- Le statut de lecture est une donnée, pas une conséquence implicite du verdict.
+-- Il dit, pour chaque grandeur, si la capture l'a confirmée — et sinon pourquoi.
+--
+-- Le nom du champ est une valeur et non une colonne : la liste des grandeurs
+-- vérifiables vit dans la configuration, et le schéma n'a pas à la répéter.
+--
+-- Deux usages : les statistiques d'écart ne portent que sur les champs vérifiés,
+-- et une répartition qui bascule vers « lecture hésitante » signale un gabarit
+-- qui lit mal en série, pas des livreurs négligents.
+
+create table if not exists lectures_capture (
+  course_id  uuid not null references courses (id) on delete cascade,
+  champ      text not null,
+  -- Nommé « statut_lecture » et non « statut » : le cycle de vie d'une course et
+  -- le résultat d'une lecture sont deux vocabulaires distincts, et les confondre
+  -- ferait passer l'un pour l'autre au premier contrôle de cohérence venu.
+  statut_lecture text not null check (statut_lecture in ('verifie', 'non_verifie_lecture_hesitante', 'absent_de_la_capture', 'non_saisi')),
+  confiance  numeric(5, 2),
+  lue_le     timestamptz not null default now(),
+
+  primary key (course_id, champ)
+);
+
+create index if not exists lectures_capture_statut_idx on lectures_capture (champ, statut_lecture);
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Signalements
 -- ─────────────────────────────────────────────────────────────────────────────
 --
@@ -341,3 +371,18 @@ create index if not exists courses_capture_a_purger_idx
   where capture_cle_r2 is not null and capture_supprimee_le is null;
 
 alter table courses alter column ocr_duree_estimee_minutes type numeric(8, 4);
+
+-- Renommage conditionnel : sur une base neuve la colonne porte déjà le bon nom,
+-- et un rename inconditionnel y échouerait. Sur une base déjà créée, il corrige.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_name = 'lectures_capture' and column_name = 'statut'
+  ) then
+    alter table lectures_capture rename column statut to statut_lecture;
+  end if;
+end $$;
+
+create index if not exists lectures_capture_statut_idx
+  on lectures_capture (champ, statut_lecture);

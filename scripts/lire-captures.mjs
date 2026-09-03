@@ -24,6 +24,7 @@ const lireJson = async (nom) => JSON.parse(await readFile(path.join(racine, nom)
 
 const baremes = await lireJson("config/baremes.json");
 const interfaceUber = await lireJson("config/interface-uber.json");
+const captures = await lireJson("config/captures.json");
 
 const aujourdhui = new Date().toISOString().slice(0, 10);
 
@@ -35,8 +36,6 @@ const valeur = (cle) =>
 
 /* La note explicative et le nom du champ indispensable vivent a cote de la
    correspondance champ -> motif : on les met de cote avant de la parcourir. */
-const { indispensable } = interfaceUber.champs_verifiables;
-
 const parChamp = Object.fromEntries(
   Object.entries(interfaceUber.champs_verifiables).filter(
     ([cle]) => cle !== "note" && cle !== "indispensable"
@@ -54,8 +53,8 @@ const regles = {
     distanceKm: valeur("tolerance_ocr_distance"),
     dureeEstimeeMinutes: valeur("tolerance_ocr_duree_estimee"),
   },
-  champsFacultatifs: ["dureeEstimeeMinutes"],
-  champIndispensable: indispensable,
+  champsFacultatifs: captures.politique_verification.declaratifs,
+  champsProbants: captures.politique_verification.probants,
 };
 
 console.log("Seuils en vigueur :");
@@ -79,8 +78,9 @@ for (const verdict of verdicts) {
   for (const [champ, lue] of Object.entries(verdict.valeurs)) {
     const confiance = verdict.confiances[champ];
     console.log(
-      `      ${champ.padEnd(20)} lu ${lue === null ? "(rien)" : lue}` +
-        (confiance === null ? "" : `   confiance ${Math.round(confiance)}`)
+      `      ${champ.padEnd(20)} lu ${String(lue === null ? "(rien)" : lue).padEnd(8)}` +
+        `${(confiance === null ? "" : `confiance ${Math.round(confiance)}`).padEnd(14)}` +
+        verdict.statutsLecture[champ]
     );
   }
 }

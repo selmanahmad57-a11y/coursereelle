@@ -28,7 +28,6 @@
 
 import { db } from "./db.ts";
 import {
-  lectureConcluante,
   lireCapture as extraireValeurs,
   type ReglesLecture,
 } from "./lecture-capture.ts";
@@ -50,6 +49,15 @@ export interface CourseAlire {
   saisie: ValeursSaisies;
 }
 
+export const STATUTS_LECTURE = [
+  "verifie",
+  "non_verifie_lecture_hesitante",
+  "absent_de_la_capture",
+  "non_saisi",
+] as const;
+
+export type StatutLecture = (typeof STATUTS_LECTURE)[number];
+
 export interface Verdict {
   id: string;
   statut: "validee_auto" | "rejetee_auto";
@@ -57,6 +65,8 @@ export interface Verdict {
   /** Ce que la lecture a extrait : des nombres, jamais du texte. */
   valeurs: Record<ChampVerifie, number | null>;
   confiances: Record<ChampVerifie, number | null>;
+  /** Ce que la capture a confirmé, champ par champ, et sinon pourquoi. */
+  statutsLecture: Record<ChampVerifie, StatutLecture>;
 }
 
 export interface ReglesTraitement {
@@ -64,8 +74,12 @@ export interface ReglesTraitement {
   tolerances: Tolerances;
   /** Champs facultatifs : non vérifiés quand le livreur ne les a pas saisis. */
   champsFacultatifs: readonly ChampVerifie[];
-  /** Champ que toute capture doit porter : sans lui, rien n'est vérifiable. */
-  champIndispensable: ChampVerifie;
+  /**
+   * Champs comparés à un barème. Ils doivent être lus franchement, sinon la
+   * course échoue : valider une course « sous la grille kilométrique » avec une
+   * distance non vérifiée serait une accusation sans preuve.
+   */
+  champsProbants: readonly ChampVerifie[];
 }
 
 export const coursesEnAttente = async (limite: number): Promise<CourseAlire[]> => {
@@ -96,21 +110,23 @@ export const coursesEnAttente = async (limite: number): Promise<CourseAlire[]> =
 };
 
 /**
- * Les champs qu'on comptait vraiment vérifier. Le prix en fait toujours partie :
- * c'est la valeur probante. Les autres seulement s'ils ont été saisis ET si
- * quelque chose de leur forme figure sur la capture — un écran d'acceptation
- * n'affiche pas de durée, et le lui reprocher serait absurde.
+ * Ce que la capture a confirmé pour un champ, et sinon pourquoi.
+ *
+ * Les quatre issues disent des choses différentes, et les confondre reviendrait
+ * à faire dépendre un verdict d'un accident : un champ que le livreur n'a pas
+ * renseigné, un champ que l'écran n'affiche pas, et un champ que le lecteur n'a
+ * pas su lire sont trois situations distinctes — mais aucune des trois n'est une
+ * vérification.
  */
-const champsAttendus = (
-  lecture: ReturnType<typeof extraireValeurs>,
-  saisie: ValeursSaisies,
-  regles: ReglesTraitement
-): ChampVerifie[] =>
-  CHAMPS_VERIFIES.filter((champ) => {
-    if (champ === regles.champIndispensable) return true;
-    if (saisie[champ] === null) return false;
-    return lecture.champs[champ].issue !== "absente";
-  });
+const statutDe = (
+  issue: "lue" | "absente" | "ambigue" | "peu_sure",
+  saisi: number | null
+): StatutLecture => {
+  if (saisi === null) return "non_saisi";
+  if (issue === "absente") return "absent_de_la_capture";
+  if (issue === "lue") return "verifie";
+  return "non_verifie_lecture_hesitante";
+};
 
 export const lireUneCourse = async (
   course: CourseAlire,
@@ -129,29 +145,34 @@ export const lireUneCourse = async (
     CHAMPS_VERIFIES.map((champ) => [champ, lecture.champs[champ].confiance])
   ) as Record<ChampVerifie, number | null>;
 
-  const attendus = champsAttendus(lecture, course.saisie, regles);
+  const statutsLecture = Object.fromEntries(
+    CHAMPS_VERIFIES.map((champ) => [
+      champ,
+      statutDe(lecture.champs[champ].issue, course.saisie[champ]),
+    ])
+  ) as Record<ChampVerifie, StatutLecture>;
 
-  /* Le champ indispensable doit avoir été trouvé : sans prix lu, il n'y a rien
-     à confirmer, et valider serait valider sur rien. */
-  if (lecture.champs[regles.champIndispensable].issue === "absente") {
-    return { id: course.id, statut: "rejetee_auto", motif: "echec_lecture", valeurs, confiances };
+  const echec = { id: course.id, statut: "rejetee_auto" as const, valeurs, confiances, statutsLecture };
+
+  /*
+   * Asymétrie assumée. Un champ comparé à un barème doit être lu franchement :
+   * sans lui, il n'y a rien à confirmer, et le confirmer quand même reviendrait
+   * à valider sur rien. Un champ purement déclaratif peut rester non vérifié —
+   * c'est déjà ce qui arrive quand il ne figure pas sur la capture, et une
+   * lecture illisible est la même situation : nous ne savons pas.
+   */
+  for (const champ of regles.champsProbants) {
+    if (statutsLecture[champ] === "verifie") continue;
+
+    const motif =
+      lecture.champs[champ].issue === "ambigue" ? "lecture_ambigue" : "echec_lecture";
+
+    return { ...echec, motif };
   }
 
-  const conclusion = lectureConcluante(lecture, attendus);
-
-  if (!conclusion.concluante) {
-    return {
-      id: course.id,
-      statut: "rejetee_auto",
-      motif: conclusion.motif,
-      valeurs,
-      confiances,
-    };
-  }
-
-  /* On ne vérifie que ce qu'on a su lire et que le livreur a saisi. */
+  /* On ne compare que ce qui a été lu franchement ET saisi. */
   const effectives = CHAMPS_VERIFIES.reduce<Tolerances>(
-    (acc, champ) => ({ ...acc, [champ]: attendus.includes(champ) ? acc[champ] : null }),
+    (acc, champ) => ({ ...acc, [champ]: statutsLecture[champ] === "verifie" ? acc[champ] : null }),
     tolerancesEffectives(regles.tolerances, course.saisie, regles.champsFacultatifs)
   );
 
@@ -163,11 +184,25 @@ export const lireUneCourse = async (
     motif: verdict.accepte ? null : resumerMotif(verdict.divergences),
     valeurs,
     confiances,
+    statutsLecture,
   };
 };
 
 export const enregistrerVerdict = async (verdict: Verdict): Promise<void> => {
-  await db()`
+  const sql = db();
+
+  for (const [champ, statut] of Object.entries(verdict.statutsLecture)) {
+    await sql`
+      insert into lectures_capture (course_id, champ, statut_lecture, confiance)
+      values (${verdict.id}, ${champ}, ${statut}, ${verdict.confiances[champ as ChampVerifie]})
+      on conflict (course_id, champ) do update
+        set statut_lecture = excluded.statut_lecture,
+            confiance = excluded.confiance,
+            lue_le = now()
+    `;
+  }
+
+  await sql`
     update courses set
       statut = ${verdict.statut},
       motif_rejet = ${verdict.motif},

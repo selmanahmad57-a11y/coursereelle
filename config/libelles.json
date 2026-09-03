@@ -291,6 +291,12 @@
       "regle": "La capture sert à vérifier vos chiffres, puis elle est supprimée. Définitivement, quarante-huit heures après le verdict rendu sur la course. Pas caviardée : supprimée. Caviarder supposerait de repérer les zones sensibles sur chaque variante d'écran, donc une détection de plus qui peut se tromper, et une image conservée reste une surface de fuite. Ce qui n'existe plus ne peut pas fuiter.",
       "reste": "Ce qui subsiste après suppression : les chiffres vérifiés, l'empreinte de l'image qui permet de refuser un doublon, et le verdict. Rien d'autre. Le texte lu sur la capture n'est jamais enregistré, nulle part — ni en base, ni dans un journal, ni dans un message d'erreur : il contient précisément ce que nous promettons de ne pas détenir.",
       "controle": "Le tableau de surveillance compte en permanence les captures qui dépassent leur délai. Ce compteur doit rester à zéro ; s'il ne l'est pas, c'est visible."
+    },
+    "verification": {
+      "titre": "Ce qu'une capture doit prouver, et ce qu'elle peut seulement suggérer",
+      "texte": "Tous les chiffres d'une course n'ont pas le même statut. Le prix et la distance sont comparés à ce que la plateforme annonce : ils doivent être lus franchement sur la capture, sans quoi la course échoue. Valider une course comme « payée sous la grille kilométrique » avec une distance que nous n'avons pas su lire serait une accusation sans preuve.",
+      "declaratif": "La durée affichée par l'application, elle, ne sert qu'à mesurer l'écart avec le temps réellement passé — et ce temps réel est déclaratif par construction, puisqu'il n'apparaît sur aucun écran. Quand la capture ne la montre pas, ou quand la lecture hésite, la course est validée sur ce qui a pu être vérifié, et ce champ est marqué comme non vérifié. Les deux situations sont la même : nous ne savons pas. Bloquer dans un cas et pas dans l'autre ferait dépendre le verdict d'un accident de netteté.",
+      "consequence": "Chaque champ porte donc son propre statut, et les statistiques d'écart ne portent que sur les courses où la durée a été réellement vérifiée. Le sous-échantillon est annoncé, comme partout ailleurs sur cette page."
     }
   },
   "statuts": {
@@ -410,7 +416,8 @@
       "anti_fraude": "Compteurs anti-fraude agrégés",
       "statuts": "Courses reçues, par statut",
       "types_capture": "Types de capture reconnus",
-      "captures": "Cycle de vie des captures"
+      "captures": "Cycle de vie des captures",
+      "lectures": "Lecture des captures, par champ"
     },
     "vide": "Aucune donnée.",
     "anti_fraude_note": "Agrégés par empreinte salée, jamais par adresse. Les empreintes plus anciennes que la fenêtre de rétention ont disparu avec leur sel.",
@@ -427,7 +434,8 @@
       "echues": "Captures à supprimer sans délai",
       "supprimees": "Captures déjà supprimées"
     },
-    "captures_note": "Une capture est supprimée définitivement après son délai. « À supprimer sans délai » doit rester à zéro : toute autre valeur signale que l'entretien ne tourne plus."
+    "captures_note": "Une capture est supprimée définitivement après son délai. « À supprimer sans délai » doit rester à zéro : toute autre valeur signale que l'entretien ne tourne plus.",
+    "lectures_note": "Une répartition qui bascule vers « lecture hésitante » sur un champ signale un gabarit qui lit mal en série, pas des livreurs négligents."
   },
   "types_capture": {
     "recapitulatif_details": "Récapitulatif « Détails » d'après course",
@@ -462,5 +470,16 @@
     "pourboire_euros": "Pourboire",
     "duree_estimee_minutes": "Durée affichée par l'application",
     "duree_reelle_minutes": "Temps réel"
+  },
+  "statuts_lecture": {
+    "verifie": "Vérifié sur la capture",
+    "non_verifie_lecture_hesitante": "Non vérifié : lecture hésitante",
+    "absent_de_la_capture": "Non vérifié : absent de la capture",
+    "non_saisi": "Non vérifié : non renseigné par le livreur"
+  },
+  "champs_lecture": {
+    "prixEuros": "Prix payé par la plateforme",
+    "distanceKm": "Distance parcourue",
+    "dureeEstimeeMinutes": "Durée affichée par l'application"
   }
 }

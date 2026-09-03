@@ -32,6 +32,12 @@ const compteurs = (etat: EtatSurveillance) =>
       vide: textes.vide,
     },
     {
+      cle: "lectures",
+      entrees: etat.lectures,
+      table: "statuts_lecture",
+      vide: textes.vide,
+    },
+    {
       cle: "captures",
       entrees: etat.captures,
       table: "captures_compteurs",
@@ -79,6 +85,14 @@ const libelleMotifRejet = (code: string): string => {
 
 const intituler = (table: string, code: string): string => {
   if (table === "motifsRejet") return libelleMotifRejet(code);
+  /* « prixEuros : verifie » -> « Prix payé par la plateforme — Vérifié sur la capture ». */
+  if (table === "statuts_lecture") {
+    const [champ, statut] = code.split(" : ");
+    const nomChamp =
+      enTexte(tables.champs_lecture?.[champ]) ?? champ;
+    const nomStatut = enTexte(tables.statuts_lecture?.[statut]) ?? statut;
+    return `${nomChamp} — ${nomStatut}`;
+  }
   if (table === "captures_compteurs") {
     return (
       enTexte(textes.captures_compteurs[code as keyof typeof textes.captures_compteurs]) ?? code
@@ -187,6 +201,11 @@ export default async function PageSurveillance({
           </h2>
           <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
             <Compteurs entrees={groupe.entrees} table={groupe.table} vide={groupe.vide} />
+            {groupe.cle === "lectures" ? (
+              <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
+                {textes.lectures_note}
+              </p>
+            ) : null}
             {groupe.cle === "captures" ? (
               <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
                 {textes.captures_note}
