@@ -21,3 +21,13 @@ dist/
 .DS_Store
 *.log
 .vercel
+
+# TypeScript / Next.js (généré, jamais versionné)
+*.tsbuildinfo
+next-env.d.ts
+/build
+/coverage
+
+# Certificats et clés — jamais dans un repo public
+*.pem
+*.key
