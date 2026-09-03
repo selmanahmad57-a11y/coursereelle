@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import libelles from "@/config/libelles.json";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,6 +25,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const { navigation } = libelles;
+
   return (
     <html
       lang="fr"
@@ -30,26 +34,41 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col bg-neutral-50">
         <header className="border-b border-neutral-200 bg-white">
-          <nav className="mx-auto flex max-w-3xl items-baseline gap-6 px-4 py-4">
+          <nav className="mx-auto flex max-w-3xl flex-wrap items-baseline gap-x-6 gap-y-2 px-4 py-4">
             <Link className="font-semibold text-neutral-900" href="/">
-              Course Réelle
+              {navigation.marque}
             </Link>
-            <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/publier">
-              Publier une course
-            </Link>
-            <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/session">
-              Publier une session
-            </Link>
-            <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/statistiques">
-              Statistiques
-            </Link>
-            <Link className="text-sm text-neutral-600 hover:text-neutral-900" href="/methode">
-              Méthode
-            </Link>
+            {navigation.liens.map((lien) => (
+              <Link
+                key={lien.href}
+                className="text-sm text-neutral-600 hover:text-neutral-900"
+                href={lien.href}
+              >
+                {lien.libelle}
+              </Link>
+            ))}
           </nav>
         </header>
 
         <div className="flex-1">{children}</div>
+
+        <footer className="mt-16 border-t border-neutral-200 bg-white">
+          <div className="mx-auto max-w-3xl px-4 py-6">
+            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+              {navigation.pied.liens.map((lien) => (
+                <li key={lien.href}>
+                  <Link
+                    className="text-sm text-neutral-600 hover:text-neutral-900"
+                    href={lien.href}
+                  >
+                    {lien.libelle}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-neutral-600">{navigation.pied.mention}</p>
+          </div>
+        </footer>
       </body>
     </html>
   );

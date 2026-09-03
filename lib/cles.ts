@@ -68,3 +68,17 @@ export const UNITES = {
   coursesParHeure: "COURSES_PAR_HEURE",
   courses: "COURSES",
 } as const;
+
+/**
+ * Les valeurs que les textes publics citent, et le barème d'où chacune sort.
+ *
+ * La FAQ et les mentions légales annoncent des délais ; les y écrire en toutes
+ * lettres donnerait deux vérités. Cette table est le seul endroit qui relie un
+ * jeton de texte à un barème, et `tests/textes.test.mjs` vérifie dans les deux
+ * sens : aucun jeton employé n'est absent d'ici, aucune clé nommée ici n'est
+ * absente de la configuration.
+ */
+export const JETONS_TEXTE = {
+  delai_suppression: CLES_SYSTEME.delaiSuppressionCapture,
+  retention_empreintes: CLES_SYSTEME.retentionEmpreintes,
+} as const;

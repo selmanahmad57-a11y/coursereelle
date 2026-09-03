@@ -490,5 +490,140 @@
   "motifs_promotion": {
     "trop_peu_d_ancrages": "Trop peu d'ancrages pour que la structure vérifiée veuille dire quelque chose",
     "aucun_champ_probant": "Aucun champ probant : ce gabarit ne reconnaîtrait que des écrans qui ne prouvent rien"
+  },
+  "faq": {
+    "titre": "Questions fréquentes",
+    "chapeau": "Les réponses ci-dessous décrivent ce que le site fait réellement aujourd'hui, pas ce qu'il compte faire. Chaque fois qu'un chiffre apparaît, il est lu dans la configuration publiée sur la page Méthode : cette page et le comportement du site ne peuvent pas diverger.",
+    "note_valeurs": "Les valeurs entre accolades sont remplacées à l'affichage par la valeur en vigueur à la date du jour, lue dans config/baremes.json. Aucun chiffre n'est écrit deux fois.",
+    "questions": [
+      {
+        "cle": "est_ce_legal",
+        "question": "Est-ce légal de publier mes courses ?",
+        "reponse": [
+          "Oui. Les données de vos courses vous appartiennent, et les partager est un droit : le RGPD vous reconnaît même la portabilité, c'est-à-dire le droit d'exiger de la plateforme l'export complet de votre historique.",
+          "Le site publie des faits et des calculs, jamais des intentions. Il ne dit pas qu'une plateforme triche : il affiche l'annonce, il affiche la donnée, et il affiche l'écart entre les deux. Chaque règle de calcul est publiée intégralement, et n'importe qui peut refaire les opérations."
+        ],
+        "renvoi": {
+          "libelle": "Voir la méthode",
+          "href": "/methode"
+        }
+      },
+      {
+        "cle": "desactivation",
+        "question": "Est-ce qu'Uber peut me désactiver pour ça ?",
+        "reponse": [
+          "Le site ne publie ni votre nom, ni votre identifiant de livreur, ni votre adresse électronique — il ne les demande jamais. Il ne vous crée pas de compte. Votre capture est supprimée après vérification, et ce qui reste publié est une ligne de chiffres : une ville, une plateforme, un véhicule, un prix, une distance.",
+          "Nous n'irons pas jusqu'à promettre l'impossible. Une course publiée reste une course que vous avez faite, et dans une ville où le site n'aurait qu'un seul contributeur, la publication d'une course rare pourrait, en théorie, se rapprocher d'un indice. C'est précisément pourquoi la ville est la granularité maximale — jamais un quartier, jamais une adresse — et pourquoi les statistiques ne sont publiées qu'au-delà d'un effectif minimal, en dessous duquel un chiffre parlerait de quelqu'un plutôt que d'une tendance."
+        ],
+        "renvoi": null
+      },
+      {
+        "cle": "anonymat",
+        "question": "Mes données sont-elles vraiment anonymes ?",
+        "reponse": [
+          "Il n'y a pas de compte, pas de nom, pas d'adresse électronique. Votre adresse IP n'est jamais écrite : le site en calcule une empreinte salée, renouvelée chaque jour, qui sert uniquement à limiter les envois en rafale. Le sel est effacé au bout de {retention_empreintes} jours, et à partir de cet instant l'empreinte ne peut plus être rattachée à personne — pas même par nous.",
+          "La ville est la granularité maximale du site. Ni quartier, ni code postal, ni adresse — pas même en champ facultatif, parce qu'un champ facultatif finit toujours par être rempli."
+        ],
+        "renvoi": {
+          "libelle": "Ce que nous ne collectons pas",
+          "href": "/methode"
+        }
+      },
+      {
+        "cle": "stockage",
+        "question": "Où mes données sont-elles stockées ?",
+        "reponse": [
+          "Dans l'Union européenne. La base de données est hébergée à Francfort, en Allemagne ; les captures, le temps de leur lecture, sont déposées sur un stockage de juridiction européenne. Le site lui-même est hébergé par Vercel, dont l'identité complète figure dans les mentions légales."
+        ],
+        "renvoi": {
+          "libelle": "Mentions légales",
+          "href": "/mentions-legales"
+        }
+      },
+      {
+        "cle": "capture",
+        "question": "Que devient ma capture d'écran ?",
+        "reponse": [
+          "Elle sert à vérifier vos chiffres, puis elle disparaît. Le site la lit automatiquement, en extrait le prix, la distance et la durée, compare ces valeurs à celles que vous avez saisies, et rend son verdict. La capture est ensuite supprimée {delai_suppression} heures après ce verdict.",
+          "Supprimée, et non caviardée : nous avons écarté l'idée de la conserver floutée, parce qu'une image modifiée reste une image, et qu'une capture de récapitulatif porte l'adresse du restaurant et celle du client. Le délai existe seulement pour vous laisser contester un rejet.",
+          "Le texte lu sur votre capture n'est écrit nulle part — ni en base, ni dans un journal, ni dans un message d'erreur. Seuls les nombres extraits sont conservés, dans des colonnes numériques. Un test le vérifie à chaque modification du code."
+        ],
+        "renvoi": null
+      },
+      {
+        "cle": "en_attente",
+        "question": "Pourquoi ma course est-elle « en attente » ?",
+        "reponse": [
+          "Parce que la lecture de votre capture ne se fait pas pendant l'envoi. Le moteur de reconnaissance pèse plusieurs dizaines de mégaoctets et met quelques secondes à démarrer : vous faire patienter reviendrait à vous demander de rester sur la page entre deux courses.",
+          "Il y a une raison plus importante. Un échec de lecture ne doit jamais faire échouer un envoi par ailleurs valide. Votre course est donc enregistrée d'abord, puis lue ensuite ; si la lecture ne conclut pas, c'est la lecture qui est en cause, pas votre envoi."
+        ],
+        "renvoi": null
+      },
+      {
+        "cle": "non_verifie",
+        "question": "Pourquoi un champ est-il marqué « non vérifié » ?",
+        "reponse": [
+          "Parce que la capture ne l'a pas confirmé, et que le site préfère le dire plutôt que de laisser croire le contraire. Trois situations différentes mènent là : le champ ne figure pas sur l'écran que vous avez photographié, vous ne l'avez pas renseigné, ou la lecture a hésité.",
+          "Ces trois cas ne sont pas confondus, et ils ne se valent pas. Le prix et la distance sont comparés aux barèmes annoncés : ils doivent être lus franchement, sinon la course échoue — valider une course « sous la grille » avec une distance non vérifiée serait une accusation sans preuve. La durée, elle, ne sert à aucune comparaison de ce genre : elle peut rester déclarative, et la course est publiée en le signalant.",
+          "Une lecture hésitante ne produit jamais de reproche non plus. Le site ne vous oppose pas un écart que son propre lecteur a peut-être inventé : il constate qu'il n'a pas su lire, et vous propose de renvoyer une capture plus nette."
+        ],
+        "renvoi": null
+      },
+      {
+        "cle": "qui",
+        "question": "Qui est derrière le site ?",
+        "reponse": [
+          "Un livreur indépendant, à titre personnel et non commercial. Le site ne vend rien, n'affiche aucune publicité, et n'est financé par aucune plateforme ni par aucun syndicat.",
+          "L'identité de l'éditeur n'est pas publiée, et c'est assumé : c'est la même logique que celle qui protège les contributeurs. Un livreur qui documente ses propres conditions de travail s'expose auprès de ceux dont il dépend pour travailler. La loi le permet pour un éditeur non professionnel, à une condition que nous remplissons : l'hébergeur, lui, connaît cette identité et peut la communiquer à l'autorité judiciaire.",
+          "La confiance ne repose donc pas sur un nom, mais sur ce qui est vérifiable sans nous croire : le code est public sous licence AGPL, la méthode est publiée intégralement, et tous les calculs peuvent être refaits à partir des règles affichées. L'adresse de contact répond."
+        ],
+        "renvoi": {
+          "libelle": "Mentions légales",
+          "href": "/mentions-legales"
+        }
+      }
+    ]
+  },
+  "navigation": {
+    "marque": "Course Réelle",
+    "liens": [
+      {
+        "href": "/publier",
+        "libelle": "Publier une course"
+      },
+      {
+        "href": "/session",
+        "libelle": "Publier une session"
+      },
+      {
+        "href": "/statistiques",
+        "libelle": "Statistiques"
+      },
+      {
+        "href": "/methode",
+        "libelle": "Méthode"
+      },
+      {
+        "href": "/faq",
+        "libelle": "FAQ"
+      }
+    ],
+    "pied": {
+      "liens": [
+        {
+          "href": "/mentions-legales",
+          "libelle": "Mentions légales"
+        },
+        {
+          "href": "/methode",
+          "libelle": "Méthode"
+        },
+        {
+          "href": "/faq",
+          "libelle": "FAQ"
+        }
+      ],
+      "mention": "Site indépendant, sans publicité et sans financement de plateforme. Code public sous licence AGPL."
+    }
   }
 }

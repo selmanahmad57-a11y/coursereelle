@@ -1,0 +1,89 @@
+{
+  "note": "Les faits juridiques du site : qui l'édite, qui l'héberge, où vivent les données, et ce qu'il advient de ce que vous envoyez. Les valeurs entre accolades sont remplacées à l'affichage par la valeur en vigueur, lue dans config/baremes.json — un délai annoncé ici et un délai appliqué par le code ne peuvent pas diverger.",
+  "titre": "Mentions légales",
+  "mise_a_jour": "2026-09-03",
+  "editeur": {
+    "titre": "Éditeur",
+    "regime": "Éditeur non professionnel",
+    "texte": [
+      "Course Réelle est édité par une personne physique agissant à titre personnel et non commercial. Le site ne vend rien, n'affiche aucune publicité et ne reçoit de financement d'aucune plateforme ni d'aucune organisation.",
+      "La loi pour la confiance dans l'économie numérique permet à un éditeur non professionnel de ne pas publier son identité, à condition d'avoir communiqué celle-ci à son hébergeur. Cette condition est remplie : l'hébergeur désigné ci-dessous détient l'identité de l'éditeur et peut la communiquer à l'autorité judiciaire qui la requiert.",
+      "Ce choix protège du public un livreur qui documente ses propres conditions de travail auprès de ceux dont il dépend pour travailler. Il ne protège d'aucune procédure, et n'a pas cette prétention : c'est une raison de plus pour que ce site ne publie que des faits et des calculs."
+    ],
+    "contact": "contact@coursereelle.fr",
+    "contact_texte": "Toute demande — droit d'accès, rectification, suppression, signalement d'un contenu, question de presse — se fait à cette adresse, qui est relevée."
+  },
+  "hebergeur": {
+    "titre": "Hébergeur",
+    "denomination": "Vercel Inc.",
+    "adresse": "440 N Barranca Ave #4133, Covina, CA 91723, États-Unis",
+    "role": "Hébergement du site et de son interface de programmation.",
+    "source": {
+      "libelle": "Conditions d'utilisation de Vercel, section 22.3.4",
+      "url": "https://vercel.com/legal/terms",
+      "consultee_le": "2026-09-03"
+    }
+  },
+  "stockage": {
+    "titre": "Où vivent les données",
+    "chapeau": "Les données du site restent dans l'Union européenne. Deux prestataires interviennent, chacun pour une chose et une seule.",
+    "liste": [
+      {
+        "denomination": "Neon, LLC, filiale de Databricks, Inc.",
+        "role": "Base de données PostgreSQL : les courses publiées et leurs verdicts.",
+        "localisation": "Francfort, Allemagne — région eu-central-1",
+        "source": {
+          "libelle": "Conditions d'utilisation de Neon",
+          "url": "https://neon.com/terms-of-service",
+          "consultee_le": "2026-09-03"
+        }
+      },
+      {
+        "denomination": "Cloudflare, Inc.",
+        "role": "Stockage temporaire des captures d'écran, le temps de leur lecture automatique, et protection contre les robots.",
+        "localisation": "Juridiction Union européenne",
+        "source": null
+      }
+    ]
+  },
+  "confidentialite": {
+    "titre": "Données personnelles",
+    "chapeau": "Le site est conçu pour ne pas savoir qui vous êtes. Ce qui suit décrit ce qu'il collecte réellement ; les valeurs citées sont celles que le code applique.",
+    "points": [
+      {
+        "titre": "Aucun compte, aucune identité",
+        "texte": "Publier une course ne demande ni nom, ni adresse électronique, ni identifiant de livreur. Ces champs n'existent pas dans le formulaire, et les colonnes correspondantes n'existent pas en base."
+      },
+      {
+        "titre": "L'adresse IP n'est jamais écrite",
+        "texte": "Pour limiter les envois en rafale, le site calcule une empreinte salée de l'adresse IP, renouvelée chaque jour. L'adresse elle-même n'est stockée nulle part. Le sel du jour est effacé au bout de {retention_empreintes} jours : passé ce délai, l'empreinte ne peut plus être rattachée à une adresse, y compris par l'éditeur."
+      },
+      {
+        "titre": "La ville est la granularité maximale",
+        "texte": "Ni quartier, ni code postal, ni adresse — pas même en champ facultatif. Un champ facultatif finit toujours par être rempli."
+      },
+      {
+        "titre": "Les captures sont supprimées",
+        "texte": "Une capture sert à vérifier des chiffres, puis elle est supprimée {delai_suppression} heures après le verdict — supprimée, et non conservée floutée. Le texte lu sur la capture n'est écrit nulle part : ni en base, ni dans un journal, ni dans un message d'erreur. Seuls les nombres extraits sont conservés."
+      },
+      {
+        "titre": "Exercer vos droits, malgré l'anonymat",
+        "texte": "Le RGPD vous donne un droit d'accès, de rectification et de suppression. L'anonymat du site en complique l'exercice, et il faut le dire franchement : aucune donnée conservée ne permet de relier une course à une personne, donc l'éditeur ne peut pas retrouver vos envois à partir de votre nom. Écrivez à l'adresse de contact en indiquant la ville, la date et les montants de la course concernée : cela suffit à l'identifier et à la supprimer."
+      }
+    ]
+  },
+  "licence": {
+    "titre": "Code et réutilisation",
+    "nom": "GNU Affero General Public License, version 3",
+    "identifiant": "AGPL-3.0-or-later",
+    "url": "https://www.gnu.org/licenses/agpl-3.0.html",
+    "texte": "Le code du site est public et placé sous licence AGPL. N'importe qui peut le lire, le vérifier, le réutiliser et le modifier, à la condition que les versions modifiées mises en ligne restent elles aussi publiques. Un site qui demande à être cru sur parole ne mérite pas de l'être : le code est le seul document qui dit vraiment ce que le site fait."
+  },
+  "contenu": {
+    "titre": "Ce que le site publie",
+    "texte": [
+      "Course Réelle publie des données envoyées par des livreurs, vérifiées automatiquement selon des règles publiées intégralement, et présentées sans commentaire d'intention. Le site n'affirme rien sur les motivations d'une plateforme : il affiche l'annonce, la donnée et l'écart.",
+      "Une donnée publiée qui vous paraîtrait erronée peut être signalée à l'adresse de contact. Les signalements sont traités par les mêmes règles que les envois, et le motif d'un rejet est toujours consultable."
+    ]
+  }
+}

@@ -14,8 +14,8 @@ import gabarits from "@/config/gabarits.json";
 import provenance from "@/config/provenance.json";
 import villes from "@/config/villes.json";
 
-import { baremes, formaterValeur } from "./baremes";
-import { CLES_LEGALES, CLES_SYSTEME, UNITES } from "./cles";
+import { baremes, formaterNombre, formaterValeur } from "./baremes";
+import { CLES_LEGALES, CLES_SYSTEME, JETONS_TEXTE, UNITES } from "./cles";
 import { uniqueEnVigueur } from "./periodes";
 import type { Limites } from "./validation/anti-fraude.ts";
 import type { ReglesAuthenticite } from "./validation/authenticite.ts";
@@ -255,3 +255,18 @@ export const retentionEmpreintesJours = (date: string): number | null =>
 
 export const delaiSuppressionCaptureHeures = (date: string): number | null =>
   parametreSysteme(CLES_SYSTEME.delaiSuppressionCapture, date);
+
+/**
+ * Les valeurs que les textes publics citent, prêtes à être insérées.
+ *
+ * Un barème absent de la configuration à cette date n'est pas remplacé : le
+ * jeton reste visible dans le texte, ce qui est un défaut voyant plutôt qu'un
+ * délai inventé. Les tests interdisent que ce cas arrive en production.
+ */
+export const valeursDesJetons = (date: string): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(JETONS_TEXTE)
+      .map(([jeton, cle]) => [jeton, parametreSysteme(cle, date)] as const)
+      .filter(([, valeur]) => valeur !== null)
+      .map(([jeton, valeur]) => [jeton, formaterNombre(valeur as number)])
+  );

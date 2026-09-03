@@ -1,0 +1,151 @@
+/**
+ * Tests des textes publics — FAQ, mentions légales, navigation.
+ *
+ * Usage : node --test 'tests/**\/*.test.mjs'
+ *
+ * Ces pages annoncent au public ce que le site fait : un délai de suppression,
+ * une durée de rétention, une adresse d'hébergeur. Le risque n'est pas qu'elles
+ * soient laides, c'est qu'elles soient FAUSSES — et une page légale fausse ne se
+ * remarque pas, puisque personne ne la relit.
+ *
+ * D'où deux garanties vérifiées ici plutôt que promises : aucun chiffre n'est
+ * écrit dans la prose (les jetons renvoient au barème daté, dans les deux sens),
+ * et aucune rubrique obligatoire n'est vide.
+ */
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+import { JETONS_TEXTE } from "../lib/cles.ts";
+import { jetonsDe, remplacer } from "../lib/textes.ts";
+
+const lire = async (chemin) => JSON.parse(await readFile(chemin, "utf8"));
+
+const libelles = await lire("config/libelles.json");
+const mentions = await lire("config/mentions-legales.json");
+const baremes = await lire("config/baremes.json");
+
+/** Toutes les chaines d'une structure, quelle que soit sa profondeur. */
+const chainesDe = (valeur, recolte = []) => {
+  if (typeof valeur === "string") recolte.push(valeur);
+  else if (Array.isArray(valeur)) for (const v of valeur) chainesDe(v, recolte);
+  else if (valeur && typeof valeur === "object")
+    for (const v of Object.values(valeur)) chainesDe(v, recolte);
+  return recolte;
+};
+
+test("tout jeton employe dans un texte public designe un bareme connu", () => {
+  const employes = new Set(
+    [...chainesDe(libelles.faq), ...chainesDe(mentions)].flatMap(jetonsDe)
+  );
+
+  assert.ok(employes.size > 0, "les textes doivent citer au moins une valeur du systeme");
+
+  for (const jeton of employes) {
+    assert.ok(
+      Object.hasOwn(JETONS_TEXTE, jeton),
+      `jeton sans bareme dans lib/cles.ts : « ${jeton} » — il s'afficherait entre accolades`
+    );
+  }
+});
+
+test("tout bareme nomme dans la table des jetons existe et est en vigueur", () => {
+  for (const [jeton, cle] of Object.entries(JETONS_TEXTE)) {
+    const entree = baremes.parametres_systeme.find(
+      (candidate) => candidate.cle === cle && candidate.valable_au === null
+    );
+
+    assert.ok(entree !== undefined, `${jeton} : aucun bareme « ${cle} » en vigueur`);
+    assert.equal(typeof entree.valeur, "number", `${jeton} : valeur non numerique`);
+  }
+});
+
+test("aucun delai n'est ecrit en toutes lettres a cote de son jeton", () => {
+  /* Le jeton ne sert a rien si la valeur est aussi recopiee dans la phrase :
+     la prose et le code redeviendraient deux verites. */
+  const valeurs = Object.values(JETONS_TEXTE).map((cle) => {
+    const entree = baremes.parametres_systeme.find(
+      (candidate) => candidate.cle === cle && candidate.valable_au === null
+    );
+    return String(entree.valeur);
+  });
+
+  for (const texte of [...chainesDe(libelles.faq), ...chainesDe(mentions.confidentialite)]) {
+    if (jetonsDe(texte).length === 0) continue;
+
+    for (const valeur of valeurs) {
+      assert.ok(
+        !new RegExp(`\\b${valeur}\\b`).test(texte),
+        `une valeur de bareme est recopiee a cote de son jeton : « ${texte.slice(0, 60)}… »`
+      );
+    }
+  }
+});
+
+test("chaque question de la FAQ est complete et unique", () => {
+  const { questions } = libelles.faq;
+
+  assert.ok(questions.length > 0);
+  assert.equal(
+    new Set(questions.map((entree) => entree.cle)).size,
+    questions.length,
+    "deux questions partagent une ancre : le sommaire pointerait au mauvais endroit"
+  );
+
+  for (const entree of questions) {
+    assert.match(entree.cle, /^[a-z_]+$/, `${entree.cle} : ancre non utilisable dans une URL`);
+    assert.ok(entree.question.length > 0, `${entree.cle} : question vide`);
+    assert.ok(Array.isArray(entree.reponse) && entree.reponse.length > 0,
+      `${entree.cle} : reponse vide`);
+    assert.ok(entree.reponse.every((p) => typeof p === "string" && p.length > 0),
+      `${entree.cle} : paragraphe vide`);
+
+    if (entree.renvoi !== null) {
+      assert.match(entree.renvoi.href, /^\//, `${entree.cle} : renvoi hors du site`);
+      assert.ok(entree.renvoi.libelle.length > 0, `${entree.cle} : renvoi sans libelle`);
+    }
+  }
+});
+
+test("les rubriques obligatoires des mentions legales sont remplies", () => {
+  /*
+   * Le regime de l'editeur non professionnel dispense de publier une identite,
+   * mais a une condition : que l'hebergeur soit identifie completement. Une
+   * rubrique hebergeur incomplete ferait donc tomber la dispense elle-meme.
+   */
+  assert.ok(mentions.editeur.regime.length > 0);
+  assert.ok(mentions.editeur.texte.length > 0);
+  assert.match(mentions.editeur.contact, /^[^@\s]+@[^@\s]+\.[a-z]+$/);
+
+  assert.ok(mentions.hebergeur.denomination.length > 0, "hebergeur sans denomination");
+  assert.ok(mentions.hebergeur.adresse.length > 0, "hebergeur sans adresse postale");
+  assert.ok(mentions.hebergeur.source.url.startsWith("https://"), "adresse sans source");
+
+  assert.ok(mentions.stockage.liste.length > 0);
+  for (const prestataire of mentions.stockage.liste) {
+    assert.ok(prestataire.denomination.length > 0);
+    assert.ok(prestataire.localisation.length > 0, "un prestataire sans localisation");
+    assert.ok(prestataire.role.length > 0);
+  }
+
+  assert.ok(mentions.confidentialite.points.length > 0);
+  assert.ok(mentions.licence.url.startsWith("https://"));
+});
+
+test("les liens de navigation pointent tous vers une page du site", () => {
+  const liens = [...libelles.navigation.liens, ...libelles.navigation.pied.liens];
+
+  for (const lien of liens) {
+    assert.match(lien.href, /^\//, `${lien.libelle} : lien hors du site`);
+    assert.ok(lien.libelle.length > 0);
+  }
+});
+
+test("un jeton inconnu reste visible plutot que de disparaitre", () => {
+  /* Une valeur absente ne doit pas laisser une phrase amputee : mieux vaut une
+     accolade a l'ecran qu'un delai efface. */
+  assert.equal(remplacer("effacé au bout de {inconnu} jours", {}), "effacé au bout de {inconnu} jours");
+  assert.equal(remplacer("{a} et {a}", { a: "48" }), "48 et 48");
+  assert.deepEqual(jetonsDe("{a} puis {b} puis {a}"), ["a", "b"]);
+});
