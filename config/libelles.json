@@ -60,7 +60,7 @@
     "MINUTES": {
       "symbole": "min",
       "decimales_min": 0,
-      "decimales_max": 0
+      "decimales_max": 1
     },
     "HEURES": {
       "symbole": "h",
@@ -182,8 +182,8 @@
     },
     "aides": {
       "pourboire": "Laissez vide s'il n'y en a pas eu.",
-      "duree_reelle": "Le temps que vous avez vraiment passé, pas celui affiché par l'application.",
-      "duree_estimee": "La ligne « Durée » de l'écran Détails de la course. Laissez vide si vous ne l'avez pas notée : le reste du calcul fonctionne sans."
+      "duree_reelle": "Le temps que vous avez vraiment passé, pas celui affiché par l'application. Même forme : 32:15, 32 min 15 s, ou 32.",
+      "duree_estimee": "La ligne « Durée » de l'écran Détails. Notez-la comme vous la lisez : 16:34, ou 16 min 34 s, ou simplement 17. Laissez vide si vous ne l'avez pas."
     },
     "choisir": "Choisir…",
     "autre_ville": "Autre ville",
@@ -238,6 +238,9 @@
       "formats_acceptes": "Formats acceptés",
       "taille_acceptee": "Taille acceptée",
       "heic": "Les photos d'écran prises avec l'appareil photo d'un iPhone sont au format HEIC, que nous ne savons pas lire. Envoyez la capture d'écran d'origine plutôt qu'une photo de l'écran."
+    },
+    "exemples": {
+      "duree": "16:34"
     }
   },
   "methode": {
@@ -309,7 +312,8 @@
     "gabarit_non_reconnu": "Mise en page non conforme au récapitulatif attendu"
   },
   "signalements": {
-    "similarite_perceptuelle": "Capture ressemblante à une capture déjà reçue, sans certitude"
+    "similarite_perceptuelle": "Capture ressemblante à une capture déjà reçue, sans certitude",
+    "empreinte_sans_relief": "Capture trop uniforme pour être comparée aux précédentes"
   },
   "motifs_session": {
     "duree_sous_minimum": "Session trop courte pour être une session de travail",
@@ -412,5 +416,13 @@
     "turnstile": "Vérification anti-robot refusée",
     "champs": "Champs invalides",
     "coherence_physique": "Course physiquement impossible telle qu'elle est saisie"
+  },
+  "motifs_soumission": {
+    "champ_absent": "Champ obligatoire non renseigné",
+    "nombre_invalide": "Valeur non lisible comme un nombre",
+    "duree_invalide": "Durée non lisible : écrivez-la 16:34, 16 min 34 s, ou 17",
+    "date_invalide": "Date invalide",
+    "valeur_hors_vocabulaire": "Valeur inattendue",
+    "ville_absente": "Ville non renseignée"
   }
 }

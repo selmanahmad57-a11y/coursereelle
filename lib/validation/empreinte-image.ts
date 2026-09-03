@@ -54,6 +54,30 @@ export const empreinteImage = (luminances: readonly (readonly number[])[]): stri
   return empreinte;
 };
 
+/**
+ * Combien de comparaisons portent une information.
+ *
+ * Le dHash compare chaque pixel a son voisin. Quand les deux sont egaux, la
+ * comparaison est tranchee arbitrairement et n'apprend rien. Une image sans
+ * relief a l'echelle reduite — un aplat, une capture presque uniforme — produit
+ * donc une empreinte de zeros, identique a celle de n'importe quelle autre image
+ * sans relief. Deux captures parfaitement differentes se ressembleraient alors
+ * parfaitement.
+ *
+ * Cette mesure permet de savoir quand l'empreinte ne conclut rien.
+ */
+export const reliefEmpreinte = (luminances: readonly (readonly number[])[]): number => {
+  let strictes = 0;
+
+  for (const ligne of luminances) {
+    for (let colonne = 0; colonne < ligne.length - 1; colonne += 1) {
+      if (ligne[colonne] !== ligne[colonne + 1]) strictes += 1;
+    }
+  }
+
+  return strictes;
+};
+
 const BITS_PAR_QUARTET = 4;
 
 const compterBits = (valeur: number): number => {

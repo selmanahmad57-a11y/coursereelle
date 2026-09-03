@@ -6,6 +6,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import libelles from "@/config/libelles.json";
 import { formaterValeur } from "@/lib/baremes";
 import { calculer } from "@/lib/calculs.ts";
+import { analyserDuree } from "@/lib/duree.ts";
 import { UNITES } from "@/lib/cles.ts";
 import {
   abonnerStockage,
@@ -119,8 +120,8 @@ export default function FormulaireCourse() {
       prixPaye: enNombre(prixPaye),
       pourboire: enNombre(pourboire),
       distanceKm: enNombre(distance),
-      dureeReelleMinutes: enNombre(dureeReelle),
-      dureeEstimeeMinutes: enNombre(dureeEstimee),
+      dureeReelleMinutes: analyserDuree(dureeReelle),
+      dureeEstimeeMinutes: analyserDuree(dureeEstimee),
     }),
     [prixPaye, pourboire, distance, dureeReelle, dureeEstimee]
   );
@@ -336,6 +337,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="duree-estimee"
+              placeholder={textes.exemples.duree}
             name="duree_estimee_minutes"
               inputMode="numeric"
               onChange={(evenement) => setDureeEstimee(evenement.target.value)}
@@ -352,6 +354,7 @@ export default function FormulaireCourse() {
             <input
               className={classesSaisie}
               id="duree-reelle"
+              placeholder={textes.exemples.duree}
             name="duree_reelle_minutes"
               inputMode="numeric"
               onChange={(evenement) => setDureeReelle(evenement.target.value)}

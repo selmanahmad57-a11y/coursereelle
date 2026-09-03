@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import { controlerAuthenticite } from "../lib/validation/authenticite.ts";
 import {
   classerSimilarites,
+  reliefEmpreinte,
   distanceHamming,
   empreinteImage,
   longueurEnBits,
@@ -320,11 +321,13 @@ const REGLES = {
   gabarits: [GABARIT],
   toleranceGabarit: 0.05,
   distancesPerceptuelles: SEUILS_DISTANCE,
+  reliefMinimal: 8,
 };
 
 const CAPTURE_PROPRE = {
   metadonnees: METADONNEES_PROPRES,
   empreinte: REFERENCE,
+  reliefEmpreinte: 64,
   empreintesConnues: [],
   plateforme: "uber_eats",
   textes: TEXTES_CONFORMES,
@@ -456,4 +459,53 @@ test("les accents sont vraiment neutralises des deux cotes", () => {
 
   assert.equal(sansAccent.conforme, true, "l'OCR rend souvent le texte sans accents");
   assert.equal(avecAccent.conforme, true);
+});
+
+/* ------------------------------------------------------------------ */
+/* Une empreinte sans relief ne conclut rien                            */
+/* ------------------------------------------------------------------ */
+
+test("le relief compte les comparaisons qui apprennent quelque chose", () => {
+  const uniforme = Array.from({ length: 8 }, () => Array.from({ length: 9 }, () => 128));
+  const contraste = Array.from({ length: 8 }, (_, y) =>
+    Array.from({ length: 9 }, (_, x) => ((x + y) % 2) * 255)
+  );
+
+  assert.equal(reliefEmpreinte(uniforme), 0, "un aplat n'apprend rien");
+  assert.equal(reliefEmpreinte(contraste), 64, "un damier apprend tout");
+});
+
+test("deux captures sans relief ne peuvent pas etre declarees identiques", () => {
+  /*
+   * Le piege, decouvert sur des images de test : reduites en 9 par 8, deux
+   * captures parfaitement differentes mais presque uniformes donnent des
+   * empreintes de zeros, donc une distance minuscule. Sans cette garde, une
+   * course legitime serait rejetee en doublon — le pire echec possible.
+   */
+  const resultat = controlerAuthenticite(
+    { ...CAPTURE_PROPRE, reliefEmpreinte: 2, empreintesConnues: [A_DEUX_BITS] },
+    REGLES
+  );
+
+  assert.equal(resultat.refus, null, "une mesure qui ne mesure rien ne doit rien rejeter");
+  assert.equal(resultat.signalements[0].code, "empreinte_sans_relief");
+  assert.equal(resultat.signalements[0].valeur, 2);
+});
+
+test("avec du relief, le doublon est de nouveau detecte", () => {
+  const resultat = controlerAuthenticite(
+    { ...CAPTURE_PROPRE, reliefEmpreinte: 40, empreintesConnues: [A_DEUX_BITS] },
+    REGLES
+  );
+
+  assert.equal(resultat.refus.motif, "doublon_perceptuel");
+});
+
+test("sans seuil de relief configure, le controle fonctionne comme avant", () => {
+  const resultat = controlerAuthenticite(
+    { ...CAPTURE_PROPRE, reliefEmpreinte: 0, empreintesConnues: [A_DEUX_BITS] },
+    { ...REGLES, reliefMinimal: null }
+  );
+
+  assert.equal(resultat.refus.motif, "doublon_perceptuel");
 });

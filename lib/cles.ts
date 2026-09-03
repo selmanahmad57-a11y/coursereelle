@@ -24,6 +24,7 @@ export const CLES_SYSTEME = {
   toleranceDureeEstimee: "tolerance_ocr_duree_estimee",
   distancePerceptuelleRejet: "distance_perceptuelle_rejet",
   distancePerceptuelleSurveillance: "distance_perceptuelle_surveillance",
+  reliefMinimalEmpreinte: "relief_minimal_empreinte",
   toleranceGabarit: "tolerance_position_gabarit",
   dureeSessionMinimale: "duree_session_minimale",
   dureeSessionMaximale: "duree_session_maximale",

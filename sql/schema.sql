@@ -54,8 +54,10 @@ create table if not exists courses (
   -- Facultative : l'écran d'acceptation ne l'affiche pas, et un livreur ne la
   -- note pas toujours. Les statistiques d'écart ne portent donc que sur les
   -- courses qui la renseignent, ce que la page Méthode annonce.
-  duree_estimee_minutes   integer,
-  duree_reelle_minutes    integer not null,
+  -- En minutes, décimales comprises : un récapitulatif affiche « 16 min 34 s »,
+  -- ce qui ne tient pas dans un entier sans perdre les secondes.
+  duree_estimee_minutes   numeric(8, 4),
+  duree_reelle_minutes    numeric(8, 4) not null,
 
   -- Capture d'écran : preuve de vérification, jamais publiée.
   capture_cle_r2          text,
@@ -182,7 +184,7 @@ create index if not exists classifications_categorie_idx on classifications (cat
 create table if not exists signalements (
   id         uuid primary key default gen_random_uuid(),
   course_id  uuid not null references courses (id) on delete cascade,
-  code       text not null check (code in ('similarite_perceptuelle')),
+  code       text not null check (code in ('similarite_perceptuelle', 'empreinte_sans_relief')),
   -- La grandeur constatée : pour une similarité, la distance perceptuelle.
   valeur     numeric(10, 4),
   -- Ce à quoi la capture ressemblait, pour pouvoir remonter au dossier.
@@ -314,6 +316,15 @@ create table if not exists activite_appareil (
 alter table courses alter column duree_estimee_minutes drop not null;
 alter table courses add column if not exists type_capture text;
 
+-- Les durées passent de l'entier au décimal : « 16 min 34 s » ne tient pas dans
+-- un entier, et y envoyer 16,57 faisait échouer l'écriture sans rien expliquer.
+alter table courses alter column duree_estimee_minutes type numeric(8, 4);
+alter table courses alter column duree_reelle_minutes type numeric(8, 4);
+
 alter table courses drop constraint if exists duree_estimee_positive;
 alter table courses add constraint duree_estimee_positive
   check (duree_estimee_minutes is null or duree_estimee_minutes > 0);
+
+alter table signalements drop constraint if exists signalements_code_check;
+alter table signalements add constraint signalements_code_check
+  check (code in ('similarite_perceptuelle', 'empreinte_sans_relief'));

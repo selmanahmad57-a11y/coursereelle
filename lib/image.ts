@@ -9,7 +9,7 @@
 
 import sharp from "sharp";
 
-import { empreinteImage } from "./validation/empreinte-image.ts";
+import { empreinteImage, reliefEmpreinte } from "./validation/empreinte-image.ts";
 import { extraireProvenance } from "./metadonnees.ts";
 import type { MetadonneesImage } from "./validation/provenance.ts";
 
@@ -31,7 +31,15 @@ export const empreinteExacte = async (donnees: OctetsImage): Promise<string> => 
     .join("");
 };
 
-export const empreinteAppariee = async (donnees: OctetsImage): Promise<string> => {
+export interface EmpreintePerceptuelle {
+  empreinte: string;
+  /** Comparaisons porteuses d'information : dit si l'empreinte conclut quelque chose. */
+  relief: number;
+}
+
+export const empreinteAppariee = async (
+  donnees: OctetsImage
+): Promise<EmpreintePerceptuelle> => {
   const { data } = await sharp(donnees)
     .greyscale()
     .resize(COLONNES, LIGNES, { fit: "fill" })
@@ -42,7 +50,7 @@ export const empreinteAppariee = async (donnees: OctetsImage): Promise<string> =
     Array.from(data.subarray(ligne * COLONNES, (ligne + 1) * COLONNES))
   );
 
-  return empreinteImage(luminances);
+  return { empreinte: empreinteImage(luminances), relief: reliefEmpreinte(luminances) };
 };
 
 export const metadonneesProvenance = async (

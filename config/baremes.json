@@ -442,6 +442,16 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Une course toutes les dix minutes, sans interruption, sur toute la durée de connexion : au-delà, la saisie ne décrit plus une journée possible. Seuil de cohérence physique, jamais de jugement sur la rémunération."
+    },
+    {
+      "cle": "relief_minimal_empreinte",
+      "libelle": "Nombre minimal de comparaisons porteuses d'information pour qu'une empreinte perceptuelle puisse conclure",
+      "valeur": 8,
+      "unite": "BITS",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Une empreinte se calcule en comparant chaque pixel réduit à son voisin. Sur une image presque uniforme, ces comparaisons sont des égalités tranchées arbitrairement : l'empreinte devient une suite de zéros, identique pour deux captures parfaitement différentes. En dessous de huit comparaisons porteuses sur soixante-quatre, la comparaison ne conclut donc rien et ne doit pas rejeter. Ce seuil va dans le sens permissif — il ne peut qu'empêcher un rejet, jamais en provoquer un — et peut donc être généreux dès le départ, contrairement aux seuils qui écartent."
     }
   ]
 }

@@ -5,6 +5,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import libelles from "@/config/libelles.json";
 import { formaterValeur } from "@/lib/baremes";
 import { calculerSession, horodatagesSession } from "@/lib/calculs-session.ts";
+import { analyserDuree } from "@/lib/duree.ts";
 import { UNITES } from "@/lib/cles.ts";
 import { remplir } from "@/lib/modeles.ts";
 import {
@@ -68,7 +69,7 @@ export default function FormulaireSession() {
       deconnexionLe: horodatages?.deconnexionLe ?? null,
       nombreCourses: enNombre(nombreCourses),
       revenuPlateformeEuros: enNombre(revenu),
-      minutesEnCourse: enNombre(minutesEnCourse),
+      minutesEnCourse: analyserDuree(minutesEnCourse),
     };
   }, [dateSession, connexion, deconnexion, nombreCourses, revenu, minutesEnCourse]);
 

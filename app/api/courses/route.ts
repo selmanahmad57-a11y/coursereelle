@@ -233,7 +233,7 @@ export async function POST(requete: Request) {
     return reponse({ statut: "rejetee_auto", motif: "capture_illisible", id: identifiant }, 200);
   }
 
-  const [hashExact, phash, metadonnees] = await Promise.all([
+  const [hashExact, perceptuelle, metadonnees] = await Promise.all([
     empreinteExacte(donnees),
     empreinteAppariee(donnees),
     metadonneesProvenance(donnees),
@@ -249,7 +249,8 @@ export async function POST(requete: Request) {
   const authenticite = controlerAuthenticite(
     {
       metadonnees,
-      empreinte: phash,
+      empreinte: perceptuelle.empreinte,
+      reliefEmpreinte: perceptuelle.relief,
       empreintesConnues: connues.map((ligne) => ligne.capture_phash),
       plateforme: course.plateforme,
       textes: [],
@@ -296,7 +297,7 @@ export async function POST(requete: Request) {
         ${course.dateCourse}, ${course.villeSlug}, ${zone}, ${course.plateforme}, ${course.vehicule},
         ${course.distanceKm}, ${course.prixPayeEuros}, ${course.pourboireEuros},
         ${course.dureeEstimeeMinutes}, ${course.dureeReelleMinutes},
-        ${cleR2}, ${hashExact}, ${phash},
+        ${cleR2}, ${hashExact}, ${perceptuelle.empreinte},
         ${null}, ${null}, 'en_attente_ocr'
       ) returning id
     `) as { id: string }[];

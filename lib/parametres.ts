@@ -198,6 +198,7 @@ export const reglesAuthenticite = (date: string): ReglesAuthenticite => {
       rejet: parametreSysteme(CLES_SYSTEME.distancePerceptuelleRejet, date),
       surveillance: parametreSysteme(CLES_SYSTEME.distancePerceptuelleSurveillance, date),
     },
+    reliefMinimal: parametreSysteme(CLES_SYSTEME.reliefMinimalEmpreinte, date),
   };
 };
 

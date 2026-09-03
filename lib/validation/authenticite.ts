@@ -45,7 +45,10 @@ export const MOTIFS_AUTHENTICITE = [
 
 export type MotifAuthenticite = (typeof MOTIFS_AUTHENTICITE)[number];
 
-export const CODES_SIGNALEMENT = ["similarite_perceptuelle"] as const;
+export const CODES_SIGNALEMENT = [
+  "similarite_perceptuelle",
+  "empreinte_sans_relief",
+] as const;
 
 export type CodeSignalement = (typeof CODES_SIGNALEMENT)[number];
 
@@ -53,6 +56,8 @@ export interface CaptureAControler {
   metadonnees: MetadonneesImage;
   /** Empreinte perceptuelle de l'image proposée. */
   empreinte: string;
+  /** Combien de comparaisons de cette empreinte portent une information. */
+  reliefEmpreinte: number;
   /** Empreintes des captures déjà reçues, pour la comparaison de similarité. */
   empreintesConnues: readonly string[];
   plateforme: string;
@@ -65,6 +70,7 @@ export interface ReglesAuthenticite {
   gabarits: readonly Gabarit[];
   toleranceGabarit: number | null;
   distancesPerceptuelles: { rejet: number | null; surveillance: number | null };
+  reliefMinimal: number | null;
 }
 
 export interface RefusAuthenticite {
@@ -104,11 +110,29 @@ export const controlerAuthenticite = (
     return { refus: { motif: "provenance_ia", provenance }, signalements };
   }
 
-  const { identiques, aSurveiller } = classerSimilarites(
-    capture.empreinte,
-    capture.empreintesConnues,
-    regles.distancesPerceptuelles
-  );
+  /*
+   * Une empreinte sans relief ne conclut rien : elle ressemble a toutes les
+   * autres empreintes sans relief. La comparer reviendrait a rejeter une course
+   * legitime sur une mesure qui n'a rien mesure.
+   */
+  const conclut =
+    regles.reliefMinimal === null || capture.reliefEmpreinte >= regles.reliefMinimal;
+
+  if (!conclut) {
+    signalements.push({
+      code: "empreinte_sans_relief",
+      valeur: capture.reliefEmpreinte,
+      reference: capture.empreinte,
+    });
+  }
+
+  const { identiques, aSurveiller } = conclut
+    ? classerSimilarites(
+        capture.empreinte,
+        capture.empreintesConnues,
+        regles.distancesPerceptuelles
+      )
+    : { identiques: [], aSurveiller: [] };
 
   if (aSurveiller.length > 0) {
     signalements.push({

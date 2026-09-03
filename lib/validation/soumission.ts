@@ -11,6 +11,8 @@
  * Module pur : les vocabulaires arrivent en paramètre, depuis la configuration.
  */
 
+import { analyserDuree, arrondirDuree } from "../duree.ts";
+
 export const CHAMPS_REQUIS = [
   "date_course",
   "plateforme",
@@ -30,6 +32,7 @@ export const CHAMPS_FACULTATIFS = ["duree_estimee_minutes", "pourboire_euros"] a
 export const MOTIFS_SOUMISSION = [
   "champ_absent",
   "nombre_invalide",
+  "duree_invalide",
   "date_invalide",
   "valeur_hors_vocabulaire",
   "ville_absente",
@@ -98,13 +101,24 @@ export const analyserSoumissionCourse = (
   const nombres: Record<string, number | null> = {
     distance_km: enNombre(champs.distance_km),
     prix_paye_euros: enNombre(champs.prix_paye_euros),
-    duree_estimee_minutes: enNombre(champs.duree_estimee_minutes),
-    duree_reelle_minutes: enNombre(champs.duree_reelle_minutes),
   };
 
   for (const [champ, valeur] of Object.entries(nombres)) {
     if (champs[champ] && champs[champ]?.trim() !== "" && valeur === null) {
       erreurs.push({ champ, motif: "nombre_invalide" });
+    }
+  }
+
+  /* Les durées ont leur propre lecture : « 16:34 » et « 16 min 34 s » sont des
+     formes que les livreurs écrivent réellement, et « 16 » aussi. */
+  const durees: Record<string, number | null> = {
+    duree_estimee_minutes: analyserDuree(champs.duree_estimee_minutes),
+    duree_reelle_minutes: analyserDuree(champs.duree_reelle_minutes),
+  };
+
+  for (const [champ, valeur] of Object.entries(durees)) {
+    if (champs[champ] && champs[champ]?.trim() !== "" && valeur === null) {
+      erreurs.push({ champ, motif: "duree_invalide" });
     }
   }
 
@@ -157,8 +171,11 @@ export const analyserSoumissionCourse = (
       distanceKm: nombres.distance_km as number,
       prixPayeEuros: nombres.prix_paye_euros as number,
       pourboireEuros: pourboire,
-      dureeEstimeeMinutes: nombres.duree_estimee_minutes,
-      dureeReelleMinutes: nombres.duree_reelle_minutes as number,
+      dureeEstimeeMinutes:
+        durees.duree_estimee_minutes === null
+          ? null
+          : arrondirDuree(durees.duree_estimee_minutes),
+      dureeReelleMinutes: arrondirDuree(durees.duree_reelle_minutes as number),
     },
     erreurs: [],
   };
