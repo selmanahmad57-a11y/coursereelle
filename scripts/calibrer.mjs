@@ -34,7 +34,7 @@
  * vérifie sur des lectures piégées.
  */
 
-import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
@@ -176,13 +176,31 @@ if (depuis !== null) {
     process.exit(2);
   }
 
+  let copiees = 0;
+  let vides = 0;
+
   for (const [index, nom] of images.entries()) {
+    const origine = path.join(source, nom);
+
+    /* Un dossier de téléchargements contient des fichiers de zéro octet : des
+       transferts interrompus, des espaces réservés attendant une synchronisation.
+       Les copier ne ferait que reporter l'échec plus loin. */
+    if ((await stat(origine)).size === 0) {
+      vides += 1;
+      continue;
+    }
+
     const extension = nom.slice(nom.lastIndexOf("."));
     const destination = `${plateforme}__${type}__importe-${index + 1}${extension}`;
-    await copyFile(path.join(source, nom), path.join(entrees, destination));
+    await copyFile(origine, path.join(entrees, destination));
+    copiees += 1;
   }
 
-  console.log(`${images.length} image(s) copiée(s) depuis ${source}.`);
+  console.log(
+    `${copiees} image(s) copiée(s) depuis ${source}` +
+      (vides > 0 ? `, ${vides} fichier(s) vide(s) ignoré(s)` : "") +
+      "."
+  );
   console.log("Les originaux ne sont pas touchés : effacez-les vous-même.\n");
 }
 
@@ -198,6 +216,8 @@ if (fichiers.length === 0) {
 
 const worker = await createWorker("fra", 1, { cachePath: cache, logger: () => {} });
 let traites = 0;
+let illisibles = 0;
+let sansAncrage = 0;
 
 for (const nom of fichiers) {
   const chemin = path.join(entrees, nom);
@@ -208,42 +228,76 @@ for (const nom of fichiers) {
     continue;
   }
 
-  const { width, height } = await sharp(chemin).metadata();
-  const { data } = await worker.recognize(chemin, {}, { tsv: true });
+  /*
+   * Une image illisible ne doit jamais arrêter la série : un seul fichier
+   * abîmé laisserait tous les suivants sur le disque, ce qui est exactement
+   * ce que cet outil promet de ne pas faire. Le spécimen est donc supprimé
+   * quoi qu'il arrive.
+   */
+  try {
+    const { width, height } = await sharp(chemin).metadata();
 
-  const mots = lignesEtMots(data.tsv ?? "", width, height);
-  const ancrages = reperer(mots, regles);
+    if (!width || !height) throw new Error("dimensions illisibles");
 
-  const gabarit = gabaritCandidat(
-    { id: qui.id, plateforme: qui.plateforme, description: `${qui.type} — ${qui.description}` },
-    ancrages
-  );
+    const { data } = await worker.recognize(chemin, {}, { tsv: true });
 
-  await writeFile(
-    path.join(candidats, `${qui.id}.json`),
-    `${JSON.stringify(gabarit, null, 2)}\n`,
-    "utf8"
-  );
+    const mots = lignesEtMots(data.tsv ?? "", width, height);
+    const ancrages = reperer(mots, regles);
 
-  /* Le spécimen a servi : il disparaît. */
-  await rm(chemin);
-  traites += 1;
+    console.log(`\n  ${qui.id}  (${width}x${height}, ${mots.length} zones lues)`);
 
-  console.log(`\n  ${qui.id}  (${width}x${height}, ${mots.length} zones lues)`);
-  for (const ancrage of ancrages) {
-    const ou = `x ${ancrage.zone.x.toFixed(3)}  y ${ancrage.zone.y.toFixed(3)}`;
-    const quoi = ancrage.libelle ?? `forme ${ancrage.motif}`;
-    console.log(`    ${quoi.padEnd(24)} ${ou}   confiance ${Math.round(ancrage.confiance)}`);
+    if (ancrages.length === 0) {
+      /* Rien à calibrer : ce n'est probablement pas un récapitulatif. Écrire un
+         gabarit vide encombrerait la relecture sans rien apprendre. */
+      console.log("    aucun ancrage reconnu — ce n'est pas un récapitulatif");
+      sansAncrage += 1;
+    } else {
+      for (const ancrage of ancrages) {
+        const ou = `x ${ancrage.zone.x.toFixed(3)}  y ${ancrage.zone.y.toFixed(3)}`;
+        const quoi = ancrage.libelle ?? `forme ${ancrage.motif}`;
+        console.log(`    ${quoi.padEnd(30)} ${ou}   confiance ${Math.round(ancrage.confiance)}`);
+      }
+
+      await writeFile(
+        path.join(candidats, `${qui.id}.json`),
+        `${JSON.stringify(
+          gabaritCandidat(
+            {
+              id: qui.id,
+              plateforme: qui.plateforme,
+              description: `${qui.type} — ${qui.description}`,
+            },
+            ancrages
+          ),
+          null,
+          2
+        )}\n`,
+        "utf8"
+      );
+
+      traites += 1;
+      console.log("    candidat écrit");
+    }
+  } catch (erreur) {
+    /* On nomme le fichier et la cause, jamais son contenu. */
+    console.error(`\n  ${qui.id} — illisible : ${erreur instanceof Error ? erreur.message : erreur}`);
+    illisibles += 1;
+  } finally {
+    /* Le spécimen a servi, ou n'a rien pu servir : il disparaît dans les deux cas. */
+    await rm(chemin, { force: true });
   }
-  if (ancrages.length === 0) console.log("    aucun ancrage reconnu");
-  console.log(`    spécimen supprimé, candidat écrit`);
 }
 
 await worker.terminate();
 
 const restants = (await readdir(entrees)).filter((nom) => /\.(png|jpe?g|webp)$/i.test(nom));
 
-console.log(`\n${traites} spécimen(s) traité(s).`);
+console.log(
+  `\n${traites} gabarit(s) candidat(s) écrit(s)` +
+    (sansAncrage > 0 ? `, ${sansAncrage} image(s) sans ancrage` : "") +
+    (illisibles > 0 ? `, ${illisibles} illisible(s)` : "") +
+    "."
+);
 
 if (restants.length > 0) {
   console.error(
