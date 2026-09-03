@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Refuse un commit dont la suite de tests ne passe pas.
+#
+# Ce crochet existe parce qu'un commit est parti avec trois tests rouges : la
+# sortie avait ete lue par la fin, ou le resume n'apparait pas toujours. Lire la
+# fin d'une sortie est une erreur qui se reproduira tant qu'elle dependra de
+# l'attention. On ne lit donc plus rien : on regarde le code de sortie.
+#
+# Installation : git config core.hooksPath .githooks
+# Contournement, a n'utiliser qu'en connaissance de cause : git commit --no-verify
+
+set -e
+
+if ! command -v node > /dev/null 2>&1; then
+  echo "pre-commit : node introuvable, tests non executes." >&2
+  exit 1
+fi
+
+echo "pre-commit : execution de la suite de tests…"
+
+if ! node --test 'tests/**/*.test.mjs' > /tmp/coursereelle-tests.log 2>&1; then
+  echo "" >&2
+  grep -E "^(not ok|# (fail|pass|tests))|✖" /tmp/coursereelle-tests.log | head -30 >&2
+  echo "" >&2
+  echo "pre-commit : des tests echouent, commit refuse." >&2
+  echo "  detail complet : /tmp/coursereelle-tests.log" >&2
+  exit 1
+fi
+
+echo "pre-commit : suite verte."
