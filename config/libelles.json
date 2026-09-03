@@ -241,6 +241,14 @@
     },
     "exemples": {
       "duree": "16:34"
+    },
+    "succes": {
+      "titre": "Course reçue",
+      "explication": "Elle attend la lecture automatique de sa capture avant d'entrer dans les statistiques. Vous n'avez rien d'autre à faire.",
+      "recapitulatif": "Ce que vous venez d'envoyer",
+      "autre": "Publier une autre course",
+      "autre_aide": "Votre ville, votre plateforme et votre véhicule sont conservés.",
+      "statistiques": "Voir les statistiques"
     }
   },
   "methode": {

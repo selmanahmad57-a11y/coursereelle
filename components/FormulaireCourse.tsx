@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Script from "next/script";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
@@ -115,6 +116,16 @@ export default function FormulaireCourse() {
   const [dureeReelle, setDureeReelle] = useState("");
 
   const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
+
+  /*
+   * Une course envoyee fige l'ecran. Sans cela, le formulaire reste rempli et le
+   * bouton reste cliquable : le livreur ne sait pas si son envoi a abouti, et un
+   * second clic produirait un doublon perceptuel de sa propre capture.
+   */
+  const [envoyee, setEnvoyee] = useState(false);
+
+  /* Change a chaque remise a zero, pour vider le champ capture par remontage. */
+  const [essai, setEssai] = useState(0);
   const [retourEnvoi, setRetourEnvoi] = useState<{
     reussite: boolean;
     message: string;
@@ -208,9 +219,13 @@ export default function FormulaireCourse() {
           : `${textes.envoi.rejet} ${motifs[corps.motif ?? ""] ?? corps.motif ?? ""}${precision}`.trim(),
       });
 
-      /* Le jeton vient d'etre consomme : sans nouvelle validation, le prochain
-         essai echouerait pour une raison sans rapport avec la premiere. */
-      if (!reussite) reinitialiserTurnstile();
+      if (reussite) {
+        setEnvoyee(true);
+      } else {
+        /* Le jeton vient d'etre consomme : sans nouvelle validation, le prochain
+           essai echouerait pour une raison sans rapport avec la premiere. */
+        reinitialiserTurnstile();
+      }
     } catch {
       setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
       reinitialiserTurnstile();
@@ -219,10 +234,73 @@ export default function FormulaireCourse() {
     }
   };
 
+  /*
+   * Enchainer une autre course : on vide ce qui change d'une course a l'autre et
+   * on garde ce qui ne change pas. C'est le cas reel d'un livreur qui saisit sa
+   * soiree en serie.
+   */
+  const reprendre = () => {
+    setDistance("");
+    setPrixPaye("");
+    setPourboire("");
+    setDureeEstimee("");
+    setDureeReelle("");
+    setDateSaisie(null);
+    setRetourEnvoi(null);
+    setEnvoyee(false);
+    setEssai((precedent) => precedent + 1);
+    reinitialiserTurnstile();
+  };
+
   const limiteAnciennete = dateDuJour === "" ? null : ancienneteMaximale(dateDuJour);
   const anciennete = joursEcoules(dateCourse, dateDuJour);
   const tropAncienne =
     limiteAnciennete !== null && anciennete !== null && anciennete > limiteAnciennete;
+
+  if (envoyee) {
+    return (
+      <div className="space-y-6">
+        <section className="rounded-lg border border-emerald-300 bg-emerald-50 p-4">
+          <h2 className="text-base font-semibold text-emerald-900">
+            {textes.succes.titre}
+          </h2>
+          <p className="mt-2 text-sm text-emerald-900">{textes.succes.explication}</p>
+        </section>
+
+        <section>
+          <h3 className="text-sm font-medium text-neutral-900">
+            {textes.succes.recapitulatif}
+          </h3>
+          <div className="mt-2">
+            <CalculEnDirect
+              anomalies={[]}
+              course={course}
+              resultat={resultat}
+              tauxCotisations={taux}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <button
+            className="w-full rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white"
+            onClick={reprendre}
+            type="button"
+          >
+            {textes.succes.autre}
+          </button>
+          <p className="text-xs text-neutral-600">{textes.succes.autre_aide}</p>
+
+          <Link
+            className="block text-sm underline underline-offset-2 hover:text-neutral-900"
+            href="/statistiques"
+          >
+            {textes.succes.statistiques}
+          </Link>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <form className="space-y-8" onSubmit={envoyer}>
@@ -405,7 +483,7 @@ export default function FormulaireCourse() {
 
       {dateCourse === "" ? null : (
         <section>
-          <ChampCapture dateCourse={dateCourse} />
+          <ChampCapture dateCourse={dateCourse} key={essai} />
         </section>
       )}
 
