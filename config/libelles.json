@@ -1,0 +1,126 @@
+{
+  "locale": "fr-FR",
+  "plateformes": {
+    "uber_eats": "Uber Eats",
+    "deliveroo": "Deliveroo",
+    "stuart": "Stuart"
+  },
+  "vehicules": {
+    "a_pied": "À pied",
+    "velo": "Vélo",
+    "velo_electrique": "Vélo électrique",
+    "scooter_moto": "Scooter ou moto",
+    "voiture": "Voiture"
+  },
+  "zones": {
+    "paris": "Paris",
+    "hors_paris": "Hors Paris"
+  },
+  "unites": {
+    "EUR_PAR_HEURE": {
+      "symbole": "€/h",
+      "decimales_min": 2,
+      "decimales_max": 2
+    },
+    "EUR_PAR_COURSE": {
+      "symbole": "€",
+      "decimales_min": 2,
+      "decimales_max": 2
+    },
+    "EUR_PAR_KM": {
+      "symbole": "€/km",
+      "decimales_min": 2,
+      "decimales_max": 2
+    },
+    "POURCENT": {
+      "symbole": "%",
+      "decimales_min": 0,
+      "decimales_max": 2
+    },
+    "ECARTS_TYPES": {
+      "symbole": "écarts-types",
+      "decimales_min": 0,
+      "decimales_max": 1
+    },
+    "COURSES": {
+      "symbole": "courses",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "KM": {
+      "symbole": "km",
+      "decimales_min": 0,
+      "decimales_max": 2
+    },
+    "KM_PAR_HEURE": {
+      "symbole": "km/h",
+      "decimales_min": 0,
+      "decimales_max": 1
+    },
+    "MINUTES": {
+      "symbole": "min",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "HEURES": {
+      "symbole": "h",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "JOURS": {
+      "symbole": "jours",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "SECONDES": {
+      "symbole": "s",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "SOUMISSIONS": {
+      "symbole": "soumissions",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "TENTATIVES": {
+      "symbole": "tentatives",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "OCTETS": {
+      "symbole": "octets",
+      "decimales_min": 0,
+      "decimales_max": 0
+    }
+  },
+  "usages": {
+    "comparaison": "Sert de comparaison — ne rejette jamais",
+    "calcul": "Entre dans un calcul affiché",
+    "rejet": "Peut rejeter une course",
+    "statistique": "Filtre statistique",
+    "affichage": "Règle d'affichage",
+    "anti_fraude": "Anti-fraude"
+  },
+  "etats_source": {
+    "verifiee": "Source vérifiée",
+    "citee": "Source citée, non vérifiée",
+    "absente": "Constatée, en attente de sourçage"
+  },
+  "portees": {
+    "tous_vehicules": "Tous véhicules"
+  },
+  "familles": {
+    "regles_annoncees": {
+      "titre": "Ce que les plateformes annoncent",
+      "description": "Ces valeurs servent uniquement de référence de comparaison. Aucune ne peut faire rejeter une course : une course payée sous le minimum annoncé est une preuve à publier, pas une erreur à filtrer. Cette interdiction n'est pas une promesse, elle est inscrite dans le schéma de la configuration."
+    },
+    "regles_legales": {
+      "titre": "Ce que le droit impose",
+      "description": "Valeurs que ni les plateformes ni nous ne décidons. Elles alimentent les calculs affichés, jamais un rejet."
+    },
+    "parametres_systeme": {
+      "titre": "Ce que nous décidons",
+      "description": "Les seuls réglages choisis par le site, et les seuls qui peuvent écarter une course. Ils ne portent que sur la cohérence physique et la fraude — jamais sur le montant payé."
+    }
+  }
+}
