@@ -33,7 +33,15 @@ const valeur = (cle) =>
     aujourdhui
   )?.valeur ?? null;
 
-const { note: _note, indispensable, ...parChamp } = interfaceUber.champs_verifiables;
+/* La note explicative et le nom du champ indispensable vivent a cote de la
+   correspondance champ -> motif : on les met de cote avant de la parcourir. */
+const { indispensable } = interfaceUber.champs_verifiables;
+
+const parChamp = Object.fromEntries(
+  Object.entries(interfaceUber.champs_verifiables).filter(
+    ([cle]) => cle !== "note" && cle !== "indispensable"
+  )
+);
 
 const motifs = Object.fromEntries(
   Object.entries(parChamp).map(([champ, nom]) => [champ, interfaceUber.motifs[nom]])
