@@ -403,5 +403,14 @@
     "recapitulatif_details": "Récapitulatif « Détails » d'après course",
     "ecran_acceptation": "Écran d'acceptation de la course",
     "non_reconnu": "Non reconnu (lecture automatique pas encore branchée)"
+  },
+  "motifs_technique": {
+    "requete_illisible": "Requête mal formée",
+    "depot_capture": "Dépôt de la capture impossible",
+    "ecriture_base": "Écriture en base impossible",
+    "retention_non_configuree": "Durée de conservation des empreintes non configurée",
+    "turnstile": "Vérification anti-robot refusée",
+    "champs": "Champs invalides",
+    "coherence_physique": "Course physiquement impossible telle qu'elle est saisie"
   }
 }

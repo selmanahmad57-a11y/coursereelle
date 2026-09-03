@@ -36,6 +36,40 @@ import ChampCapture from "./ChampCapture";
 
 const textes = libelles.formulaire;
 
+/* Les motifs renvoyes par le serveur sont normalises : on les traduit ici plutot
+   que d'afficher un identifiant technique a un livreur. */
+const motifs: Record<string, string> = {
+  ...libelles.motifs_technique,
+  ...libelles.motifs_capture,
+  ...libelles.motifs_anti_fraude,
+  ...libelles.motifs_authenticite,
+  ...libelles.motifs_ocr,
+};
+
+/*
+ * Le script Turnstile expose un objet global. On ne declare que ce qu'on utilise
+ * plutot que d'importer une definition complete pour une seule methode.
+ */
+declare global {
+  interface Window {
+    turnstile?: { reset: (widget?: string) => void };
+  }
+}
+
+/*
+ * Un jeton Turnstile ne sert qu'une fois. Apres un echec — erreur serveur,
+ * capture refusee, champ oublie — le jeton est consomme, et sans cette remise a
+ * zero le livreur devrait recharger la page pour reessayer. Les
+ * quatre-vingt-dix secondes n'y survivraient pas.
+ */
+const reinitialiserTurnstile = () => {
+  try {
+    window.turnstile?.reset();
+  } catch {
+    /* Script absent ou deja retire : le prochain envoi le signalera lui-meme. */
+  }
+};
+
 /* Publique par nature : le prefixe NEXT_PUBLIC_ est ce qui autorise son passage
    au navigateur. La cle secrete, elle, ne quitte jamais le serveur. */
 const cleTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
@@ -148,10 +182,15 @@ export default function FormulaireCourse() {
         reussite,
         message: reussite
           ? textes.envoi.reussite
-          : `${textes.envoi.rejet} ${corps.motif ?? ""}${precision}`.trim(),
+          : `${textes.envoi.rejet} ${motifs[corps.motif ?? ""] ?? corps.motif ?? ""}${precision}`.trim(),
       });
+
+      /* Le jeton vient d'etre consomme : sans nouvelle validation, le prochain
+         essai echouerait pour une raison sans rapport avec la premiere. */
+      if (!reussite) reinitialiserTurnstile();
     } catch {
       setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
+      reinitialiserTurnstile();
     } finally {
       setEnvoi("repos");
     }

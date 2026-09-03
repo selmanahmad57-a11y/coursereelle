@@ -213,7 +213,13 @@ export async function POST(requete: Request) {
       1
     );
     return reponse(
-      { statut: "rejetee_auto", motif: "coherence_physique", anomalies, id: identifiant },
+      {
+        statut: "rejetee_auto",
+        motif: "coherence_physique",
+        details: anomalies.map((anomalie) => anomalie.code),
+        anomalies,
+        id: identifiant,
+      },
       200
     );
   }
@@ -266,7 +272,17 @@ export async function POST(requete: Request) {
       ?.extensions[0] ?? "";
   const cleR2 = `captures/${course.dateCourse}/${hashExact}${extension}`;
 
-  await deposerCapture(cleR2, donnees, fichier.type);
+  /*
+   * Les deux écritures sont distinguées, et l'erreur réelle est journalisée.
+   * Un motif fourre-tout comme « écriture impossible » oblige à deviner lequel
+   * des deux systèmes a lâché — et à deviner longtemps.
+   */
+  try {
+    await deposerCapture(cleR2, donnees, fichier.type);
+  } catch (erreur) {
+    console.error("[courses] dépôt de la capture impossible :", erreur);
+    return reponse({ statut: "rejetee_auto", motif: "depot_capture" }, 502);
+  }
 
   try {
     const [ligne] = (await sql`
@@ -314,10 +330,13 @@ export async function POST(requete: Request) {
     /* L'écriture a échoué : la capture ne doit pas rester orpheline. */
     await supprimerCapture(cleR2).catch(() => undefined);
 
-    const doublon = String(erreur).includes("capture_hash_unique");
+    const description = erreur instanceof Error ? erreur.message : String(erreur);
+    const doublon = description.includes("capture_hash");
+
+    if (!doublon) console.error("[courses] écriture en base impossible :", erreur);
 
     return reponse(
-      { statut: "rejetee_auto", motif: doublon ? "doublon_perceptuel" : "ecriture_impossible" },
+      { statut: "rejetee_auto", motif: doublon ? "doublon_perceptuel" : "ecriture_base" },
       doublon ? 200 : 500
     );
   }

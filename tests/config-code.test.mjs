@@ -666,3 +666,45 @@ test("l'ecran d'acceptation ne promet pas la duree, le recapitulatif si", async 
     assert.ok(par[cle].includes("distanceKm"), `${cle} doit prouver la distance`);
   }
 });
+
+/* ------------------------------------------------------------------ */
+/* Aucun motif ne peut s'afficher en jargon                             */
+/* ------------------------------------------------------------------ */
+
+test("chaque motif que la route peut renvoyer a un libelle", async () => {
+  /*
+   * Le formulaire affiche le motif renvoye par le serveur. Un motif sans libelle
+   * afficherait un identifiant technique a un livreur — au moment precis ou il a
+   * besoin de comprendre ce qui s'est passe.
+   */
+  const route = await readFile(new URL("../app/api/courses/route.ts", import.meta.url), "utf8");
+
+  const motifs = [...route.matchAll(/motif:\s*"([a-z0-9_]+)"/g)].map((trouve) => trouve[1]);
+
+  assert.ok(motifs.length > 5, "le balayage de la route doit trouver des motifs");
+
+  const connus = new Set(
+    [
+      "motifs_technique",
+      "motifs_capture",
+      "motifs_anti_fraude",
+      "motifs_authenticite",
+      "motifs_ocr",
+      "motifs_session",
+    ].flatMap((table) => Object.keys(libelles[table] ?? {}))
+  );
+
+  for (const motif of new Set(motifs)) {
+    assert.ok(connus.has(motif), `motif sans libelle, il s'afficherait tel quel : ${motif}`);
+  }
+});
+
+test("les motifs techniques distinguent les deux ecritures", () => {
+  /* Un motif fourre-tout obligeait a deviner lequel des deux systemes avait lache. */
+  assert.ok(libelles.motifs_technique.depot_capture);
+  assert.ok(libelles.motifs_technique.ecriture_base);
+  assert.ok(
+    !("ecriture_impossible" in libelles.motifs_technique),
+    "l'ancien motif indistinct ne doit pas revenir"
+  );
+});
