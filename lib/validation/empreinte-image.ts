@@ -114,3 +114,31 @@ export const trouverSimilaires = (
     )
     .sort((a, b) => a.distance - b.distance);
 };
+
+export interface Similarites {
+  /** Assez proches pour être tenues pour la même capture : rejet. */
+  identiques: Similaire[];
+  /** Ressemblantes sans certitude : journalisées, sans effet sur la soumission. */
+  aSurveiller: Similaire[];
+}
+
+/**
+ * Deux bandes plutôt qu'un seuil unique, parce que toutes nos images sont des
+ * captures du même gabarit d'interface : deux courses différentes se ressemblent
+ * déjà beaucoup, et un seuil de rejet trop large écarterait des courses
+ * légitimes en série.
+ */
+export const classerSimilarites = (
+  empreinte: string,
+  connues: readonly string[],
+  seuils: { rejet: number | null; surveillance: number | null }
+): Similarites => {
+  const large = trouverSimilaires(empreinte, connues, seuils.surveillance ?? seuils.rejet);
+
+  if (seuils.rejet === null) return { identiques: [], aSurveiller: large };
+
+  return {
+    identiques: large.filter((candidate) => candidate.distance <= (seuils.rejet as number)),
+    aSurveiller: large.filter((candidate) => candidate.distance > (seuils.rejet as number)),
+  };
+};

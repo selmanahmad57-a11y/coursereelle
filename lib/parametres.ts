@@ -192,9 +192,9 @@ export const reglesAuthenticite = (date: string): ReglesAuthenticite => {
     },
     gabarits: gabarits.gabarits as Gabarit[],
     toleranceGabarit: tolerance === null ? null : tolerance / POURCENT_EN_FRACTION,
-    distancePerceptuelleMaximale: parametreSysteme(
-      CLES_SYSTEME.distancePerceptuelleMaximale,
-      date
-    ),
+    distancesPerceptuelles: {
+      rejet: parametreSysteme(CLES_SYSTEME.distancePerceptuelleRejet, date),
+      surveillance: parametreSysteme(CLES_SYSTEME.distancePerceptuelleSurveillance, date),
+    },
   };
 };

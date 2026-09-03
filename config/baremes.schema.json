@@ -308,9 +308,10 @@
             "rejet",
             "statistique",
             "affichage",
-            "anti_fraude"
+            "anti_fraude",
+            "surveillance"
           ],
-          "description": "Seuls les paramètres système peuvent avoir l'usage « rejet »."
+          "description": "Seuls les paramètres système peuvent avoir l'usage « rejet ». ASYMÉTRIE DE CALIBRAGE, à respecter pour tout nouveau seuil : un seuil qui REJETTE se règle prudemment, au plus près du cas certain, et ne s'élargit que sur preuve mesurée — un rejet à tort coûte une course légitime et un livreur découragé. Un seuil qui SURVEILLE peut au contraire être large dès le départ : il journalise pour le tableau de surveillance et ne coûte rien au livreur légitime, puisqu'il n'a aucun effet sur sa soumission."
         },
         "valable_du": {
           "$ref": "#/$defs/date_ou_null"

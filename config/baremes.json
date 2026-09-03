@@ -384,16 +384,6 @@
       "justification": "Même logique d'arrondi : « 16 min » affiché peut recouvrir 15,6 comme 16,4."
     },
     {
-      "cle": "distance_perceptuelle_maximale",
-      "libelle": "Écart maximal entre deux empreintes perceptuelles au-delà duquel deux captures sont considérées distinctes",
-      "valeur": 5,
-      "unite": "BITS",
-      "usage": "anti_fraude",
-      "valable_du": "2026-09-03",
-      "valable_au": null,
-      "justification": "Sur une empreinte de 64 bits, un écart de cinq bits ou moins correspond à la même image réenregistrée, recadrée légèrement ou éclaircie — le geste typique d'une campagne de soumissions fabriquées. Valeur de départ à recalibrer en semaine 5 : trop haute, elle confondrait deux courses réellement différentes dont les récapitulatifs se ressemblent."
-    },
-    {
       "cle": "tolerance_position_gabarit",
       "libelle": "Décalage toléré entre la position attendue d'un libellé et sa position constatée",
       "valeur": 5,
@@ -402,6 +392,26 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Exprimé en fraction de la largeur et de la hauteur de l'image, pour absorber les différences de résolution et de barre d'état entre appareils. Sans effet tant qu'aucun gabarit n'est enregistré : le contrôle de gabarit ne rejette rien avant d'avoir été calibré sur de vraies captures."
+    },
+    {
+      "cle": "distance_perceptuelle_rejet",
+      "libelle": "Écart entre deux empreintes perceptuelles en deçà duquel deux captures sont tenues pour la même",
+      "valeur": 2,
+      "unite": "BITS",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Seuil délibérément bas, et la raison tient à ce que sont nos images. Deux récapitulatifs parfaitement légitimes, de deux courses différentes, sont des captures du MÊME gabarit d'interface : même mise en page, mêmes libellés, mêmes aplats, seuls quelques chiffres changent. Or une empreinte perceptuelle encode la structure des variations, laquelle est dominée par l'interface et non par les valeurs. Deux captures légitimes distinctes peuvent donc tomber à trois, quatre ou cinq bits l'une de l'autre. À ce seuil, le risque n'est pas de laisser passer des fraudes, c'est d'écarter des courses légitimes en série — le pire échec possible pour un site qui vit de la participation. Deux bits ou moins ne désignent donc que le quasi-identique : la même capture recadrée, réenregistrée ou éclaircie."
+    },
+    {
+      "cle": "distance_perceptuelle_surveillance",
+      "libelle": "Écart en deçà duquel une similarité est journalisée pour le tableau de surveillance",
+      "valeur": 8,
+      "unite": "BITS",
+      "usage": "surveillance",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Entre le seuil de rejet et celui-ci, la similarité est signalée sans aucun effet sur la soumission : la course est acceptée normalement. Ce seuil peut être large sans risque, puisqu'il ne coûte rien au livreur légitime. C'est lui qui donnera, en semaine 5, la distribution réelle des distances entre captures légitimes d'un même gabarit — et c'est sur cette mesure, pas sur une hypothèse, que le seuil de rejet montera ou descendra."
     }
   ]
 }

@@ -209,6 +209,13 @@ export default function PageMethode() {
             {libelles.methode.authenticite.conclusion}
           </p>
         </div>
+
+        <div className="mt-3 rounded-lg border border-neutral-200 bg-white p-4">
+          <h3 className="text-sm font-medium text-neutral-900">
+            {libelles.methode.calibrage.titre}
+          </h3>
+          <p className="mt-2 text-sm text-neutral-700">{libelles.methode.calibrage.texte}</p>
+        </div>
       </section>
 
       <section className="mt-12">

@@ -1,9 +1,8 @@
 /**
  * Contrôles d'authenticité d'une capture, réunis en un seul point d'entrée.
  *
- * Trois contrôles, dans l'ordre du moins coûteux au plus coûteux :
- * provenance déclarée dans les métadonnées, similarité avec une capture déjà
- * reçue, conformité au gabarit du récapitulatif.
+ * Trois contrôles : provenance déclarée dans les métadonnées, similarité avec
+ * une capture déjà reçue, conformité au gabarit du récapitulatif.
  *
  * Aucun des trois ne prouve qu'une capture est authentique, et ce module ne
  * prétend pas le contraire : ils écartent les tentatives paresseuses, qui sont
@@ -11,10 +10,20 @@
  * robustes de `lib/statistiques.ts`, la limite de débit par appareil et le seuil
  * de publication. La page Méthode dit les deux choses publiquement.
  *
+ * ASYMÉTRIE DE CALIBRAGE, qui explique la forme du résultat renvoyé : un
+ * contrôle peut REJETER ou seulement SIGNALER, et les deux ne se règlent pas de
+ * la même façon. Un seuil qui rejette se tient au plus près du cas certain, et
+ * ne s'élargit que sur mesure — un rejet à tort coûte une course légitime et un
+ * livreur découragé. Un seuil qui signale peut être large dès le départ : il
+ * remplit le tableau de surveillance et ne coûte rien au livreur légitime.
+ *
  * Module pur : règles, gabarits et seuils arrivent en paramètre.
  */
 
-import { trouverSimilaires, type Similaire } from "./empreinte-image.ts";
+import {
+  classerSimilarites,
+  type Similaire,
+} from "./empreinte-image.ts";
 import {
   controlerGabarit,
   type Gabarit,
@@ -30,11 +39,15 @@ import {
 
 export const MOTIFS_AUTHENTICITE = [
   "provenance_ia",
-  "capture_deja_soumise",
+  "doublon_perceptuel",
   "gabarit_non_reconnu",
 ] as const;
 
 export type MotifAuthenticite = (typeof MOTIFS_AUTHENTICITE)[number];
+
+export const CODES_SIGNALEMENT = ["similarite_perceptuelle"] as const;
+
+export type CodeSignalement = (typeof CODES_SIGNALEMENT)[number];
 
 export interface CaptureAControler {
   metadonnees: MetadonneesImage;
@@ -51,7 +64,7 @@ export interface ReglesAuthenticite {
   provenance: ReglesProvenance;
   gabarits: readonly Gabarit[];
   toleranceGabarit: number | null;
-  distancePerceptuelleMaximale: number | null;
+  distancesPerceptuelles: { rejet: number | null; surveillance: number | null };
 }
 
 export interface RefusAuthenticite {
@@ -61,23 +74,52 @@ export interface RefusAuthenticite {
   gabarit?: VerdictGabarit;
 }
 
-/** `null` signifie « aucun indice de fabrication », jamais « capture authentique ». */
+export interface Signalement {
+  code: CodeSignalement;
+  /** La grandeur constatée : ici, la distance perceptuelle la plus faible. */
+  valeur: number;
+  /** À quoi la capture ressemble, pour pouvoir remonter au dossier. */
+  reference: string;
+}
+
+export interface ResultatAuthenticite {
+  /** null quand aucun contrôle n'a de raison certaine d'écarter la course. */
+  refus: RefusAuthenticite | null;
+  /** Journalisés pour le tableau de surveillance, sans effet sur la soumission. */
+  signalements: Signalement[];
+}
+
+/**
+ * `refus` à null signifie « aucun indice certain de fabrication », jamais
+ * « capture authentique ».
+ */
 export const controlerAuthenticite = (
   capture: CaptureAControler,
   regles: ReglesAuthenticite
-): RefusAuthenticite | null => {
+): ResultatAuthenticite => {
+  const signalements: Signalement[] = [];
+
   const provenance = detecterProvenanceIa(capture.metadonnees, regles.provenance);
   if (provenance !== null) {
-    return { motif: "provenance_ia", provenance };
+    return { refus: { motif: "provenance_ia", provenance }, signalements };
   }
 
-  const similaires = trouverSimilaires(
+  const { identiques, aSurveiller } = classerSimilarites(
     capture.empreinte,
     capture.empreintesConnues,
-    regles.distancePerceptuelleMaximale
+    regles.distancesPerceptuelles
   );
-  if (similaires.length > 0) {
-    return { motif: "capture_deja_soumise", similaires };
+
+  if (aSurveiller.length > 0) {
+    signalements.push({
+      code: "similarite_perceptuelle",
+      valeur: aSurveiller[0].distance,
+      reference: aSurveiller[0].empreinte,
+    });
+  }
+
+  if (identiques.length > 0) {
+    return { refus: { motif: "doublon_perceptuel", similaires: identiques }, signalements };
   }
 
   const gabarit = controlerGabarit(
@@ -86,9 +128,10 @@ export const controlerAuthenticite = (
     regles.gabarits,
     regles.toleranceGabarit
   );
+
   if (!gabarit.conforme) {
-    return { motif: "gabarit_non_reconnu", gabarit };
+    return { refus: { motif: "gabarit_non_reconnu", gabarit }, signalements };
   }
 
-  return null;
+  return { refus: null, signalements };
 };

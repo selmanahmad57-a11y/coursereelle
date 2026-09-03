@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 
 import { controlerAuthenticite } from "../lib/validation/authenticite.ts";
 import {
+  classerSimilarites,
   distanceHamming,
   empreinteImage,
   longueurEnBits,
@@ -258,6 +259,59 @@ test("un gabarit d'une autre plateforme ne s'applique pas", () => {
 });
 
 /* ------------------------------------------------------------------ */
+/* Deux bandes de similarite                                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Empreintes fabriquees a la main, pour raisonner sur des distances exactes.
+ * Sur 64 bits : 0x3 vaut deux bits, 0xf en vaut quatre, 0xff en vaut huit.
+ */
+const REFERENCE = "0000000000000000";
+const A_DEUX_BITS = "0000000000000003";
+const A_QUATRE_BITS = "000000000000000f";
+const A_HUIT_BITS = "00000000000000ff";
+const A_NEUF_BITS = "00000000000001ff";
+
+const SEUILS_DISTANCE = { rejet: 2, surveillance: 8 };
+
+test("les distances fabriquees valent bien ce qu'on croit", () => {
+  assert.equal(distanceHamming(REFERENCE, A_DEUX_BITS), 2);
+  assert.equal(distanceHamming(REFERENCE, A_QUATRE_BITS), 4);
+  assert.equal(distanceHamming(REFERENCE, A_HUIT_BITS), 8);
+  assert.equal(distanceHamming(REFERENCE, A_NEUF_BITS), 9);
+});
+
+test("seul le quasi identique est tenu pour la meme capture", () => {
+  const { identiques, aSurveiller } = classerSimilarites(
+    REFERENCE,
+    [REFERENCE, A_DEUX_BITS, A_QUATRE_BITS, A_HUIT_BITS, A_NEUF_BITS],
+    SEUILS_DISTANCE
+  );
+
+  assert.deepEqual(
+    identiques.map((c) => c.distance),
+    [0, 2],
+    "au-dela de deux bits, on ne peut plus affirmer que c'est la meme capture"
+  );
+  assert.deepEqual(
+    aSurveiller.map((c) => c.distance),
+    [4, 8],
+    "la bande de surveillance observe sans rien couter au livreur"
+  );
+});
+
+test("au-dela de la bande de surveillance, plus rien n'est retenu", () => {
+  const { identiques, aSurveiller } = classerSimilarites(
+    REFERENCE,
+    [A_NEUF_BITS],
+    SEUILS_DISTANCE
+  );
+
+  assert.deepEqual(identiques, []);
+  assert.deepEqual(aSurveiller, []);
+});
+
+/* ------------------------------------------------------------------ */
 /* Les trois controles reunis                                          */
 /* ------------------------------------------------------------------ */
 
@@ -265,61 +319,112 @@ const REGLES = {
   provenance: REGLES_PROVENANCE,
   gabarits: [GABARIT],
   toleranceGabarit: 0.05,
-  distancePerceptuelleMaximale: 5,
+  distancesPerceptuelles: SEUILS_DISTANCE,
 };
 
 const CAPTURE_PROPRE = {
   metadonnees: METADONNEES_PROPRES,
-  empreinte: empreinteImage(CAPTURE),
+  empreinte: REFERENCE,
   empreintesConnues: [],
   plateforme: "uber_eats",
   textes: TEXTES_CONFORMES,
 };
 
 test("une capture ordinaire passe les trois controles", () => {
-  assert.equal(controlerAuthenticite(CAPTURE_PROPRE, REGLES), null);
+  const resultat = controlerAuthenticite(CAPTURE_PROPRE, REGLES);
+
+  assert.equal(resultat.refus, null);
+  assert.deepEqual(resultat.signalements, []);
 });
 
-test("la provenance est examinee en premier", () => {
-  const refus = controlerAuthenticite(
+test("deux courses differentes du meme gabarit ne sont PAS rejetees, seulement signalees", () => {
+  /*
+   * Le cas qui compte vraiment. Toutes nos captures montrent la meme interface :
+   * meme mise en page, memes libelles, memes aplats, seuls quelques chiffres
+   * changent. Deux courses parfaitement legitimes tombent donc naturellement a
+   * quelques bits l'une de l'autre. Les rejeter serait le pire echec possible
+   * pour un site qui vit de la participation.
+   */
+  const resultat = controlerAuthenticite(
+    { ...CAPTURE_PROPRE, empreintesConnues: [A_QUATRE_BITS] },
+    REGLES
+  );
+
+  assert.equal(resultat.refus, null, "une course legitime ne doit jamais tomber ici");
+  assert.equal(resultat.signalements.length, 1);
+  assert.equal(resultat.signalements[0].code, "similarite_perceptuelle");
+  assert.equal(resultat.signalements[0].valeur, 4);
+  assert.equal(resultat.signalements[0].reference, A_QUATRE_BITS);
+});
+
+test("la meme capture retouchee et resoumise est, elle, rejetee", () => {
+  const resultat = controlerAuthenticite(
+    { ...CAPTURE_PROPRE, empreintesConnues: [A_DEUX_BITS] },
+    REGLES
+  );
+
+  assert.equal(resultat.refus.motif, "doublon_perceptuel");
+  assert.equal(resultat.refus.similaires[0].distance, 2);
+});
+
+test("un eclaircissement de la meme capture reste a distance nulle", () => {
+  const resultat = controlerAuthenticite(
     {
       ...CAPTURE_PROPRE,
-      metadonnees: { ...METADONNEES_PROPRES, logiciel: "ImageGenerator 3" },
-      empreintesConnues: [CAPTURE_PROPRE.empreinte],
+      empreinte: empreinteImage(CAPTURE),
+      empreintesConnues: [empreinteImage(CAPTURE_ECLAIRCIE)],
     },
     REGLES
   );
 
-  assert.equal(refus.motif, "provenance_ia");
+  assert.equal(resultat.refus.motif, "doublon_perceptuel");
+  assert.equal(resultat.refus.similaires[0].distance, 0);
 });
 
-test("la meme capture retouchee et resoumise est reconnue", () => {
-  const refus = controlerAuthenticite(
-    { ...CAPTURE_PROPRE, empreintesConnues: [empreinteImage(CAPTURE_ECLAIRCIE)] },
+test("la provenance est examinee en premier", () => {
+  const resultat = controlerAuthenticite(
+    {
+      ...CAPTURE_PROPRE,
+      metadonnees: { ...METADONNEES_PROPRES, logiciel: "ImageGenerator 3" },
+      empreintesConnues: [A_DEUX_BITS],
+    },
     REGLES
   );
 
-  assert.equal(refus.motif, "capture_deja_soumise");
-  assert.equal(refus.similaires[0].distance, 0);
+  assert.equal(resultat.refus.motif, "provenance_ia");
 });
 
 test("une mise en page approximative est rejetee avec le champ fautif", () => {
-  const refus = controlerAuthenticite(
+  const resultat = controlerAuthenticite(
     { ...CAPTURE_PROPRE, textes: [{ texte: "Remuneration percue", x: 0.7, y: 0.15 }] },
     REGLES
   );
 
-  assert.equal(refus.motif, "gabarit_non_reconnu");
-  assert.ok(refus.gabarit.manquants.includes("total"));
+  assert.equal(resultat.refus.motif, "gabarit_non_reconnu");
+  assert.ok(resultat.refus.gabarit.manquants.includes("total"));
+});
+
+test("un signalement survit au rejet : les deux sont rapportes ensemble", () => {
+  const resultat = controlerAuthenticite(
+    {
+      ...CAPTURE_PROPRE,
+      empreintesConnues: [A_QUATRE_BITS],
+      textes: [{ texte: "Remuneration percue", x: 0.7, y: 0.15 }],
+    },
+    REGLES
+  );
+
+  assert.equal(resultat.refus.motif, "gabarit_non_reconnu");
+  assert.equal(resultat.signalements.length, 1, "la surveillance ne doit rien perdre");
 });
 
 test("sans gabarit calibre, seuls provenance et similarite operent", () => {
-  const refus = controlerAuthenticite(
+  const resultat = controlerAuthenticite(
     { ...CAPTURE_PROPRE, textes: [] },
     { ...REGLES, gabarits: [] }
   );
 
-  assert.equal(refus, null, "l'etat au lancement : le gabarit ne rejette rien");
+  assert.equal(resultat.refus, null, "l'etat au lancement : le gabarit ne rejette rien");
 });
 
 test("les accents sont vraiment neutralises des deux cotes", () => {

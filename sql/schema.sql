@@ -152,6 +152,35 @@ create index if not exists classifications_categorie_idx on classifications (cat
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Signalements
+-- ─────────────────────────────────────────────────────────────────────────────
+--
+-- Ce qui a été remarqué sans être certain. Un signalement n'écarte jamais une
+-- course : il alimente le tableau de surveillance, et c'est tout.
+--
+-- Cette table incarne l'asymétrie de calibrage du projet. Un seuil qui REJETTE
+-- se règle au plus près du cas certain et ne s'élargit que sur mesure, parce
+-- qu'un rejet à tort coûte une course légitime et un livreur découragé. Un seuil
+-- qui SIGNALE peut être large dès le départ : il ne coûte rien au livreur, et
+-- c'est lui qui produit les données sur lesquelles le seuil de rejet sera un
+-- jour déplacé — sur preuve, jamais sur hypothèse.
+
+create table if not exists signalements (
+  id         uuid primary key default gen_random_uuid(),
+  course_id  uuid not null references courses (id) on delete cascade,
+  code       text not null check (code in ('similarite_perceptuelle')),
+  -- La grandeur constatée : pour une similarité, la distance perceptuelle.
+  valeur     numeric(10, 4),
+  -- Ce à quoi la capture ressemblait, pour pouvoir remonter au dossier.
+  reference  text,
+  cree_le    timestamptz not null default now()
+);
+
+create index if not exists signalements_code_idx on signalements (code);
+create index if not exists signalements_course_idx on signalements (course_id);
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Sessions
 -- ─────────────────────────────────────────────────────────────────────────────
 --

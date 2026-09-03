@@ -22,7 +22,8 @@ export const CLES_SYSTEME = {
   tolerancePrix: "tolerance_ocr_prix",
   toleranceDistance: "tolerance_ocr_distance",
   toleranceDureeEstimee: "tolerance_ocr_duree_estimee",
-  distancePerceptuelleMaximale: "distance_perceptuelle_maximale",
+  distancePerceptuelleRejet: "distance_perceptuelle_rejet",
+  distancePerceptuelleSurveillance: "distance_perceptuelle_surveillance",
   toleranceGabarit: "tolerance_position_gabarit",
 } as const;
 

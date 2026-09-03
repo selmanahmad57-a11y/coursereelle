@@ -114,7 +114,8 @@
     "rejet": "Peut rejeter une course",
     "statistique": "Filtre statistique",
     "affichage": "Règle d'affichage",
-    "anti_fraude": "Anti-fraude"
+    "anti_fraude": "Anti-fraude",
+    "surveillance": "Journalisé pour surveillance — n'écarte jamais une course"
   },
   "etats_source": {
     "verifiee": "Source vérifiée",
@@ -230,6 +231,10 @@
       "controles": "Ce que nous contrôlons malgré tout : la concordance entre les chiffres saisis et ceux lus sur la capture ; les métadonnées de provenance, que les grands générateurs d'images inscrivent dans leurs fichiers ; la similarité avec les captures déjà reçues, y compris recadrées ou retouchées ; et, une fois les gabarits calibrés, la conformité de la mise en page au récapitulatif attendu. Chacun de ces contrôles est contournable par quelqu'un de compétent. Ensemble, ils écartent les tentatives paresseuses, qui sont la majorité.",
       "protection": "Ce qui protège réellement les chiffres publiés est ailleurs, et ne dépend pas de la détection. Les statistiques publiques sont des médianes, pas des moyennes : sur cinq cents courses, vingt soumissions fabriquées, même extravagantes, ne déplacent pas une médiane, alors qu'elles déplacent une moyenne. Les valeurs qui s'écartent de plus de trois écarts-types sortent des statistiques. Les limites par appareil plafonnent le débit d'une campagne. Et aucune statistique n'est publiée avant que la ville atteigne son seuil de courses, ce qui empêche un petit lot de fausses données de dominer un chiffre.",
       "conclusion": "Autrement dit : une fraude isolée est sans effet sur ce que le site publie, et une fraude massive devient coûteuse, lente, et visible dans le tableau de surveillance — rafales, similarités, distribution anormale. Si vous testez le site avec une fausse capture, elle est peut-être passée. Elle n'a rien changé."
+    },
+    "calibrage": {
+      "titre": "Comment nous réglons nos seuils",
+      "texte": "Un seuil qui écarte une course se règle au plus près du cas certain, et ne s'élargit que sur mesure : un rejet à tort coûte une course légitime et un livreur découragé, ce qui est le pire échec possible pour un site qui vit de la participation. Un seuil qui se contente de signaler peut au contraire être large dès le départ, puisqu'il ne change rien pour celui qui envoie sa course. C'est pourquoi certains contrôles de cette page ne rejettent rien aujourd'hui : ils observent, et le seuil de rejet ne bougera que quand les données réelles diront où le placer."
     }
   },
   "statuts": {
@@ -262,7 +267,10 @@
   },
   "motifs_authenticite": {
     "provenance_ia": "Métadonnées de génération automatique détectées",
-    "capture_deja_soumise": "Capture déjà reçue, éventuellement retouchée",
+    "doublon_perceptuel": "Capture quasi identique à une capture déjà reçue",
     "gabarit_non_reconnu": "Mise en page non conforme au récapitulatif attendu"
+  },
+  "signalements": {
+    "similarite_perceptuelle": "Capture ressemblante à une capture déjà reçue, sans certitude"
   }
 }

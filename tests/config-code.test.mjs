@@ -27,7 +27,7 @@ import { calculer } from "../lib/calculs.ts";
 import { MOTIFS_REFUS } from "../lib/validation/anti-fraude.ts";
 import { CHAMPS_VERIFIES, MOTIFS_OCR } from "../lib/validation/ocr.ts";
 import { MOTIFS_CAPTURE } from "../lib/validation/capture.ts";
-import { MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
+import { CODES_SIGNALEMENT, MOTIFS_AUTHENTICITE } from "../lib/validation/authenticite.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
 const chemin = (nom) => process.env[nom.env] ?? new URL(nom.defaut, import.meta.url);
@@ -463,4 +463,48 @@ test("la page Methode annonce la limite avant les controles", () => {
     /aucune vérification ne peut prouver/i,
     "la limite doit etre enoncee en clair, c'est ce qui rend le reste credible"
   );
+});
+
+/* ------------------------------------------------------------------ */
+/* Asymetrie de calibrage                                               */
+/* ------------------------------------------------------------------ */
+
+test("chaque code de signalement a un libelle", () => {
+  assert.deepEqual([...CODES_SIGNALEMENT].sort(), Object.keys(libelles.signalements).sort());
+});
+
+test("les codes de signalement du SQL et du code sont la meme liste", () => {
+  const [liste] = listesCheck("code");
+
+  assert.ok(liste, "aucune contrainte de code trouvee dans sql/schema.sql");
+  assert.deepEqual(liste, [...CODES_SIGNALEMENT].sort());
+});
+
+test("le seuil qui rejette est plus strict que celui qui surveille", () => {
+  const seuil = (cle) => baremes.parametres_systeme.find((e) => e.cle === cle);
+
+  const rejet = seuil(CLES_SYSTEME.distancePerceptuelleRejet);
+  const surveillance = seuil(CLES_SYSTEME.distancePerceptuelleSurveillance);
+
+  assert.equal(rejet.usage, "rejet");
+  assert.equal(surveillance.usage, "surveillance");
+  assert.ok(
+    rejet.valeur < surveillance.valeur,
+    "un seuil de rejet plus large que la bande de surveillance n'aurait aucun sens"
+  );
+});
+
+test("aucun seuil d'usage surveillance ne peut ecarter une course", () => {
+  /* L'asymetrie, verifiee plutot que promise : ce qui surveille ne rejette pas. */
+  const surveillance = baremes.parametres_systeme.filter((e) => e.usage === "surveillance");
+
+  assert.ok(surveillance.length > 0);
+
+  for (const parametre of surveillance) {
+    assert.notEqual(parametre.usage, "rejet");
+    assert.ok(
+      parametre.justification.length > 0,
+      `${parametre.cle} : un seuil de surveillance doit dire pourquoi il peut etre large`
+    );
+  }
 });
