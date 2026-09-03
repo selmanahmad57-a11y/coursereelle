@@ -22,6 +22,10 @@ import {
   evaluerSoumission,
 } from "../lib/validation/anti-fraude.ts";
 import {
+  controlerCapture,
+  formatRefuseReconnu,
+} from "../lib/validation/capture.ts";
+import {
   CHAMPS_VERIFIES,
   comparerCapture,
   resumerMotif,
@@ -337,4 +341,78 @@ test("une course miserable dont la capture concorde est acceptee", () => {
     true,
     "l'OCR verifie que le livreur n'a pas invente ses chiffres, jamais que ces chiffres sont acceptables"
   );
+});
+
+/* ------------------------------------------------------------------ */
+/* Controle du fichier de capture                                       */
+/* ------------------------------------------------------------------ */
+
+const FORMATS = [
+  { type_mime: "image/png", extensions: [".png"] },
+  { type_mime: "image/jpeg", extensions: [".jpg", ".jpeg"] },
+  { type_mime: "image/webp", extensions: [".webp"] },
+];
+
+const CONTRAINTES = {
+  formatsAcceptes: FORMATS,
+  tailleMinimaleOctets: 10 * 1024,
+  tailleMaximaleOctets: 10 * 1024 * 1024,
+};
+
+const fichier = (surcharges) => ({
+  type: "image/png",
+  nom: "capture.png",
+  taille: 800 * 1024,
+  ...surcharges,
+});
+
+test("une capture d'ecran ordinaire passe", () => {
+  assert.equal(controlerCapture(fichier({}), CONTRAINTES), null);
+});
+
+test("un fichier trop lourd est refuse avec sa limite", () => {
+  const refus = controlerCapture(fichier({ taille: 12 * 1024 * 1024 }), CONTRAINTES);
+
+  assert.equal(refus.motif, "fichier_trop_volumineux");
+  assert.equal(refus.limite, CONTRAINTES.tailleMaximaleOctets);
+});
+
+test("un fichier trop leger n'est pas une capture lisible", () => {
+  const refus = controlerCapture(fichier({ taille: 3 * 1024 }), CONTRAINTES);
+
+  assert.equal(refus.motif, "fichier_trop_leger");
+});
+
+test("une capture de 6 Mo, comme en produisent les ecrans haute densite, passe", () => {
+  assert.equal(controlerCapture(fichier({ taille: 6 * 1024 * 1024 }), CONTRAINTES), null);
+});
+
+test("un HEIC est refuse, et reconnu comme un cas explicable", () => {
+  const photo = fichier({ type: "image/heic", nom: "IMG_0421.HEIC", taille: 2 * 1024 * 1024 });
+
+  assert.equal(controlerCapture(photo, CONTRAINTES).motif, "format_non_pris_en_charge");
+
+  const reconnu = formatRefuseReconnu(photo, [
+    { type_mime: "image/heic", extensions: [".heic", ".heif"] },
+  ]);
+
+  assert.ok(reconnu, "le HEIC doit etre identifie pour pouvoir expliquer le refus");
+});
+
+test("l'extension prend le relais quand le navigateur n'annonce aucun type", () => {
+  assert.equal(controlerCapture(fichier({ type: "", nom: "Capture.PNG" }), CONTRAINTES), null);
+  assert.equal(
+    controlerCapture(fichier({ type: "", nom: "photo.heic" }), CONTRAINTES).motif,
+    "format_non_pris_en_charge"
+  );
+});
+
+test("l'absence de fichier a son propre motif", () => {
+  assert.equal(controlerCapture(null, CONTRAINTES).motif, "aucun_fichier");
+});
+
+test("le controle de capture ne regarde jamais ce qui est ecrit dessus", () => {
+  /* Le contenant, jamais le contenu : aucun montant ne peut motiver un refus ici. */
+  assert.equal(controlerCapture(fichier({}), { ...CONTRAINTES }), null);
+  assert.deepEqual(Object.keys(fichier({})).sort(), ["nom", "taille", "type"]);
 });

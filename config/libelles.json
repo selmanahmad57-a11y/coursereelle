@@ -91,6 +91,16 @@
       "symbole": "octets",
       "decimales_min": 0,
       "decimales_max": 0
+    },
+    "KILOOCTETS": {
+      "symbole": "Ko",
+      "decimales_min": 0,
+      "decimales_max": 0
+    },
+    "MEGAOCTETS": {
+      "symbole": "Mo",
+      "decimales_min": 0,
+      "decimales_max": 1
     }
   },
   "usages": {
@@ -184,7 +194,18 @@
       "bouton": "Envoyer la course",
       "indisponible": "L'envoi n'est pas encore branché : il attend la base de données et le dépôt de la capture d'écran, qui viennent à la même étape. Le calcul ci-dessous fonctionne déjà."
     },
-    "anciennete_depassee": "Cette course a plus de {limite}. Le site n'accepte que les courses assez récentes pour que la capture reste vérifiable et le temps réel encore en mémoire."
+    "anciennete_depassee": "Cette course a plus de {limite}. Le site n'accepte que les courses assez récentes pour que la capture reste vérifiable et le temps réel encore en mémoire.",
+    "capture": {
+      "intitule": "Capture du récapitulatif de la course",
+      "aide": "Elle sert uniquement à vérifier vos chiffres automatiquement. Elle n'est jamais publiée, et elle est supprimée ou caviardée après vérification.",
+      "bouton": "Choisir une capture",
+      "remplacer": "Choisir une autre capture",
+      "retirer": "Retirer",
+      "apercu": "Aperçu de la capture jointe",
+      "formats_acceptes": "Formats acceptés",
+      "taille_acceptee": "Taille acceptée",
+      "heic": "Les photos d'écran prises avec l'appareil photo d'un iPhone sont au format HEIC, que nous ne savons pas lire. Envoyez la capture d'écran d'origine plutôt qu'une photo de l'écran."
+    }
   },
   "methode": {
     "pourboire": {
@@ -220,5 +241,11 @@
     "valeur_absente_de_la_capture": "Valeur introuvable sur la capture",
     "valeur_non_saisie": "Valeur lue sur la capture mais absente du formulaire",
     "valeur_divergente": "Valeur saisie différente de celle lue sur la capture"
+  },
+  "motifs_capture": {
+    "aucun_fichier": "Aucune capture n'a été jointe",
+    "format_non_pris_en_charge": "Format d'image non pris en charge",
+    "fichier_trop_volumineux": "Fichier trop lourd",
+    "fichier_trop_leger": "Fichier trop léger pour être une capture lisible"
   }
 }

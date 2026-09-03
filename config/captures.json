@@ -1,0 +1,35 @@
+{
+  "decision": {
+    "libelle": "Formats de capture acceptés au lancement",
+    "regle": "Seules les captures d'écran d'origine sont acceptées : PNG, JPEG et WebP couvrent ce que produisent Android et iOS. Les tailles limites sont des barèmes datés, pas des valeurs de ce fichier.",
+    "heic": "Le HEIC est refusé au lancement plutôt que converti côté serveur. Une capture d'écran iOS n'est jamais en HEIC : un fichier HEIC signifie presque toujours une photo de l'écran, prise avec l'appareil photo, que ni les navigateurs ni le lecteur automatique ne savent lire. Ajouter une conversion serveur ajouterait une dépendance et de la surface d'attaque pour un cas que le motif de rejet normalisé nous permettra de chiffrer : si le refus s'avère fréquent, le tableau de surveillance le montrera et la conversion sera ajoutée en connaissance de cause."
+  },
+  "formats_acceptes": [
+    {
+      "type_mime": "image/png",
+      "extensions": [".png"],
+      "libelle": "PNG",
+      "note": "Format natif des captures d'écran Android et iOS."
+    },
+    {
+      "type_mime": "image/jpeg",
+      "extensions": [".jpg", ".jpeg"],
+      "libelle": "JPEG",
+      "note": "Produit par beaucoup de téléphones quand la capture passe par la galerie ou une compression."
+    },
+    {
+      "type_mime": "image/webp",
+      "extensions": [".webp"],
+      "libelle": "WebP",
+      "note": "Produit par certains Android récents et par la plupart des partages via applications."
+    }
+  ],
+  "formats_refuses": [
+    {
+      "type_mime": "image/heic",
+      "extensions": [".heic", ".heif"],
+      "libelle": "HEIC",
+      "cle_explication": "heic"
+    }
+  ]
+}

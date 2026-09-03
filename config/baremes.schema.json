@@ -4,7 +4,12 @@
   "title": "Barèmes datés — Course Réelle",
   "description": "Source unique de vérité des valeurs du projet. Trois familles strictement séparées, selon QUI décide de la valeur : les règles ANNONCÉES par les plateformes (références de comparaison, jamais critères de rejet), les règles LÉGALES (imposées par le droit, ni annoncées ni choisies par nous), et les PARAMÈTRES du système (les seuls que nous choisissons, les seuls qui peuvent rejeter). Toute valeur est datée : une course est toujours jugée selon les règles en vigueur à sa date. Convention de période : valable_du et valable_au sont INCLUSIFS ; valable_au = null signifie « toujours en vigueur » ; valable_du = null signifie « en vigueur depuis une date antérieure inconnue » et n'est admis que pour une valeur constatée dont on ignore la date d'entrée en vigueur.",
   "type": "object",
-  "required": ["version_schema", "regles_annoncees", "regles_legales", "parametres_systeme"],
+  "required": [
+    "version_schema",
+    "regles_annoncees",
+    "regles_legales",
+    "parametres_systeme"
+  ],
   "additionalProperties": false,
   "properties": {
     "version_schema": {
@@ -15,20 +20,31 @@
     "regles_annoncees": {
       "type": "array",
       "description": "Ce que les plateformes annoncent publiquement. Sert UNIQUEMENT de référence de comparaison et de classification. Aucune de ces valeurs ne peut provoquer le rejet d'une course : une course payée sous le minimum annoncé est une preuve à publier, pas une erreur à filtrer.",
-      "x-portee": ["plateformes", "zone"],
-      "items": { "$ref": "#/$defs/regle_annoncee" }
+      "x-portee": [
+        "plateformes",
+        "zone"
+      ],
+      "items": {
+        "$ref": "#/$defs/regle_annoncee"
+      }
     },
     "regles_legales": {
       "type": "array",
       "description": "Valeurs imposées par le droit (cotisations, seuils réglementaires). Ni annoncées par une plateforme, ni choisies par le projet : elles servent au calcul, jamais au rejet.",
       "x-portee": [],
-      "items": { "$ref": "#/$defs/regle_legale" }
+      "items": {
+        "$ref": "#/$defs/regle_legale"
+      }
     },
     "parametres_systeme": {
       "type": "array",
       "description": "Les réglages décidés et assumés par le projet, publiés intégralement sur la page Méthode. Seule famille autorisée à rejeter une course.",
-      "x-portee": ["vehicule"],
-      "items": { "$ref": "#/$defs/parametre_systeme" }
+      "x-portee": [
+        "vehicule"
+      ],
+      "items": {
+        "$ref": "#/$defs/parametre_systeme"
+      }
     }
   },
   "$defs": {
@@ -38,7 +54,14 @@
       "description": "Date au format AAAA-MM-JJ."
     },
     "date_ou_null": {
-      "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }]
+      "oneOf": [
+        {
+          "$ref": "#/$defs/date"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "cle": {
       "type": "string",
@@ -62,23 +85,38 @@
         "SECONDES",
         "SOUMISSIONS",
         "TENTATIVES",
+        "KILOOCTETS",
+        "MEGAOCTETS",
         "OCTETS"
       ],
       "description": "Liste fermée : ajouter une unité est une modification délibérée du schéma, pas un effet de bord. Les pourcentages s'écrivent en points (21.2 et non 0.212) — une seule convention pour tout le fichier, pour éviter les erreurs de facteur 100."
     },
     "plateforme": {
       "type": "string",
-      "enum": ["uber_eats", "deliveroo", "stuart"],
+      "enum": [
+        "uber_eats",
+        "deliveroo",
+        "stuart"
+      ],
       "description": "Liste fermée : ajouter une plateforme est une décision explicite."
     },
     "vehicule": {
       "type": "string",
-      "enum": ["a_pied", "velo", "velo_electrique", "scooter_moto", "voiture"],
+      "enum": [
+        "a_pied",
+        "velo",
+        "velo_electrique",
+        "scooter_moto",
+        "voiture"
+      ],
       "description": "Liste fermée, partagée par le formulaire et le filtre de cohérence physique."
     },
     "zone": {
       "type": "string",
-      "enum": ["paris", "hors_paris"],
+      "enum": [
+        "paris",
+        "hors_paris"
+      ],
       "description": "Zone tarifaire, quand une plateforme fait varier une valeur géographiquement."
     },
     "precision_date": {
@@ -89,7 +127,11 @@
     "source": {
       "type": "object",
       "description": "D'où vient la valeur. C'est ce champ qui rend la page Méthode inattaquable.",
-      "required": ["libelle", "url", "consultee_le"],
+      "required": [
+        "libelle",
+        "url",
+        "consultee_le"
+      ],
       "additionalProperties": false,
       "properties": {
         "libelle": {
@@ -98,7 +140,10 @@
           "description": "Désignation lisible de la source (accord, communiqué, page d'aide…)."
         },
         "url": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Lien public vers l'annonce ou l'accord. null tant qu'il n'est pas renseigné — une règle sans URL ne doit pas être présentée comme sourcée."
         },
         "consultee_le": {
@@ -122,30 +167,53 @@
       ],
       "additionalProperties": false,
       "properties": {
-        "cle": { "$ref": "#/$defs/cle" },
-        "libelle": { "type": "string", "minLength": 1 },
+        "cle": {
+          "$ref": "#/$defs/cle"
+        },
+        "libelle": {
+          "type": "string",
+          "minLength": 1
+        },
         "plateformes": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/plateforme" }
+          "items": {
+            "$ref": "#/$defs/plateforme"
+          }
         },
-        "zone": { "$ref": "#/$defs/zone" },
+        "zone": {
+          "$ref": "#/$defs/zone"
+        },
         "groupe": {
           "$ref": "#/$defs/cle",
           "description": "Relie plusieurs entrées scalaires qui forment ensemble une même grille tarifaire. Permet de les présenter groupées sans les fusionner en un objet unique — chaque composante garde ainsi sa propre unité, sa propre date et sa propre source."
         },
-        "valeur": { "type": "number" },
-        "unite": { "$ref": "#/$defs/unite" },
+        "valeur": {
+          "type": "number"
+        },
+        "unite": {
+          "$ref": "#/$defs/unite"
+        },
         "usage": {
           "const": "comparaison",
           "description": "Valeur constante, volontairement non modifiable : une règle annoncée ne sert QU'À comparer. Le schéma interdit structurellement d'en faire un critère de rejet."
         },
-        "valable_du": { "$ref": "#/$defs/date_ou_null" },
-        "valable_au": { "$ref": "#/$defs/date_ou_null" },
-        "precision_date": { "$ref": "#/$defs/precision_date" },
-        "source": { "$ref": "#/$defs/source" },
-        "note": { "type": "string" }
+        "valable_du": {
+          "$ref": "#/$defs/date_ou_null"
+        },
+        "valable_au": {
+          "$ref": "#/$defs/date_ou_null"
+        },
+        "precision_date": {
+          "$ref": "#/$defs/precision_date"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "note": {
+          "type": "string"
+        }
       }
     },
     "regle_legale": {
@@ -163,10 +231,19 @@
       ],
       "additionalProperties": false,
       "properties": {
-        "cle": { "$ref": "#/$defs/cle" },
-        "libelle": { "type": "string", "minLength": 1 },
-        "valeur": { "type": "number" },
-        "unite": { "$ref": "#/$defs/unite" },
+        "cle": {
+          "$ref": "#/$defs/cle"
+        },
+        "libelle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "valeur": {
+          "type": "number"
+        },
+        "unite": {
+          "$ref": "#/$defs/unite"
+        },
         "usage": {
           "const": "calcul",
           "description": "Constante : une règle légale alimente un calcul affiché, jamais un rejet."
@@ -176,11 +253,21 @@
           "minLength": 1,
           "description": "Ce que la valeur recouvre exactement, et surtout ce qu'elle ne recouvre PAS. Publiée telle quelle à côté du chiffre sur la page Méthode."
         },
-        "valable_du": { "$ref": "#/$defs/date_ou_null" },
-        "valable_au": { "$ref": "#/$defs/date_ou_null" },
-        "precision_date": { "$ref": "#/$defs/precision_date" },
-        "source": { "$ref": "#/$defs/source" },
-        "note": { "type": "string" }
+        "valable_du": {
+          "$ref": "#/$defs/date_ou_null"
+        },
+        "valable_au": {
+          "$ref": "#/$defs/date_ou_null"
+        },
+        "precision_date": {
+          "$ref": "#/$defs/precision_date"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "note": {
+          "type": "string"
+        }
       }
     },
     "parametre_systeme": {
@@ -197,27 +284,47 @@
       ],
       "additionalProperties": false,
       "properties": {
-        "cle": { "$ref": "#/$defs/cle" },
-        "libelle": { "type": "string", "minLength": 1 },
+        "cle": {
+          "$ref": "#/$defs/cle"
+        },
+        "libelle": {
+          "type": "string",
+          "minLength": 1
+        },
         "vehicule": {
           "$ref": "#/$defs/vehicule",
           "description": "Présent uniquement pour les paramètres qui dépendent du véhicule déclaré."
         },
-        "valeur": { "type": "number" },
-        "unite": { "$ref": "#/$defs/unite" },
+        "valeur": {
+          "type": "number"
+        },
+        "unite": {
+          "$ref": "#/$defs/unite"
+        },
         "usage": {
           "type": "string",
-          "enum": ["rejet", "statistique", "affichage", "anti_fraude"],
+          "enum": [
+            "rejet",
+            "statistique",
+            "affichage",
+            "anti_fraude"
+          ],
           "description": "Seuls les paramètres système peuvent avoir l'usage « rejet »."
         },
-        "valable_du": { "$ref": "#/$defs/date_ou_null" },
-        "valable_au": { "$ref": "#/$defs/date_ou_null" },
+        "valable_du": {
+          "$ref": "#/$defs/date_ou_null"
+        },
+        "valable_au": {
+          "$ref": "#/$defs/date_ou_null"
+        },
         "justification": {
           "type": "string",
           "minLength": 1,
           "description": "Pourquoi cette valeur. Repris tel quel sur la page Méthode."
         },
-        "note": { "type": "string" }
+        "note": {
+          "type": "string"
+        }
       }
     }
   }

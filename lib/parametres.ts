@@ -9,12 +9,15 @@
  * fonctions d'ici prennent donc une date, jamais « aujourd'hui » implicitement.
  */
 
+import captures from "@/config/captures.json";
 import villes from "@/config/villes.json";
 
-import { baremes } from "./baremes";
-import { CLES_LEGALES, CLES_SYSTEME } from "./cles";
+import { baremes, formaterValeur } from "./baremes";
+import { CLES_LEGALES, CLES_SYSTEME, UNITES } from "./cles";
 import { uniqueEnVigueur } from "./periodes";
-import type { SeuilsPhysiques } from "./validation/regles-physiques";
+import type { ContraintesCapture } from "./validation/capture.ts";
+import type { Tolerances } from "./validation/ocr.ts";
+import type { SeuilsPhysiques } from "./validation/regles-physiques.ts";
 
 export interface Ville {
   slug: string;
@@ -97,3 +100,69 @@ export const tauxCotisations = (date: string): number | null =>
 
 export const ancienneteMaximale = (date: string): number | null =>
   parametreSysteme(CLES_SYSTEME.ancienneteMaximale, date);
+
+/* ------------------------------------------------------------------ */
+/* Capture                                                             */
+/* ------------------------------------------------------------------ */
+
+/* Conversions d'unités, pas des réglages : les tailles vivent en Ko et Mo dans
+   la configuration, parce que c'est ce qui se lit sur la page Méthode, et le
+   navigateur raisonne en octets. */
+const OCTETS_PAR_KILOOCTET = 1024;
+const OCTETS_PAR_MEGAOCTET = 1024 * 1024;
+
+const enOctets = (valeur: number | null, facteur: number): number | null =>
+  valeur === null ? null : valeur * facteur;
+
+export const formatsAcceptes = captures.formats_acceptes;
+export const formatsRefuses = captures.formats_refuses;
+export const decisionCaptures = captures.decision;
+
+export const contraintesCapture = (date: string): ContraintesCapture => ({
+  formatsAcceptes: captures.formats_acceptes,
+  tailleMaximaleOctets: enOctets(
+    parametreSysteme(CLES_SYSTEME.tailleMaximaleCapture, date),
+    OCTETS_PAR_MEGAOCTET
+  ),
+  tailleMinimaleOctets: enOctets(
+    parametreSysteme(CLES_SYSTEME.tailleMinimaleCapture, date),
+    OCTETS_PAR_KILOOCTET
+  ),
+});
+
+/* ------------------------------------------------------------------ */
+/* Tolérances du filtre OCR                                            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Une tolérance par champ, parce que les sources d'erreur diffèrent : zéro sur
+ * le prix, qui est la valeur probante du site, et de simples marges d'arrondi
+ * sur la distance et le temps estimé.
+ */
+export const tolerancesOcr = (date: string): Tolerances => ({
+  prixEuros: parametreSysteme(CLES_SYSTEME.tolerancePrix, date),
+  distanceKm: parametreSysteme(CLES_SYSTEME.toleranceDistance, date),
+  dureeEstimeeMinutes: parametreSysteme(CLES_SYSTEME.toleranceDureeEstimee, date),
+});
+
+/**
+ * De quoi expliquer les contraintes au livreur, dans les unités de la
+ * configuration plutôt qu'en octets.
+ */
+export const descriptionContraintes = (
+  date: string
+): { formats: string; typesMime: string; taille: string | null } => {
+  const maximum = parametreSysteme(CLES_SYSTEME.tailleMaximaleCapture, date);
+  const minimum = parametreSysteme(CLES_SYSTEME.tailleMinimaleCapture, date);
+
+  const bornes = [
+    minimum === null ? null : formaterValeur(minimum, UNITES.kilooctets),
+    maximum === null ? null : formaterValeur(maximum, UNITES.megaoctets),
+  ].filter((borne): borne is string => borne !== null);
+
+  return {
+    formats: captures.formats_acceptes.map((format) => format.libelle).join(", "),
+    typesMime: captures.formats_acceptes.map((format) => format.type_mime).join(","),
+    taille: bornes.length === 2 ? `de ${bornes[0]} à ${bornes[1]}` : (bornes[0] ?? null),
+  };
+};

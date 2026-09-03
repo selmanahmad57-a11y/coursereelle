@@ -17,6 +17,7 @@ import {
 import { controlerCoherencePhysique } from "@/lib/validation/regles-physiques.ts";
 
 import CalculEnDirect from "./CalculEnDirect";
+import ChampCapture from "./ChampCapture";
 
 const textes = libelles.formulaire;
 
@@ -343,6 +344,12 @@ export default function FormulaireCourse() {
           />
         </Champ>
       </section>
+
+      {dateCourse === "" ? null : (
+        <section>
+          <ChampCapture dateCourse={dateCourse} />
+        </section>
+      )}
 
       <CalculEnDirect anomalies={anomalies} resultat={resultat} />
 

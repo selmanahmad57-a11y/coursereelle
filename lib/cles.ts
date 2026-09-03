@@ -17,6 +17,11 @@ export const CLES_SYSTEME = {
   vitesseMinimale: "vitesse_moyenne_minimale",
   vitesseMaximale: "vitesse_moyenne_maximale",
   ancienneteMaximale: "anciennete_maximale_course",
+  tailleMaximaleCapture: "taille_maximale_capture",
+  tailleMinimaleCapture: "taille_minimale_capture",
+  tolerancePrix: "tolerance_ocr_prix",
+  toleranceDistance: "tolerance_ocr_distance",
+  toleranceDureeEstimee: "tolerance_ocr_duree_estimee",
 } as const;
 
 export const CLES_LEGALES = {
@@ -40,4 +45,6 @@ export const UNITES = {
   kilometreParHeure: "KM_PAR_HEURE",
   minutes: "MINUTES",
   jours: "JOURS",
+  kilooctets: "KILOOCTETS",
+  megaoctets: "MEGAOCTETS",
 } as const;

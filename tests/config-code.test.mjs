@@ -26,6 +26,7 @@ import {
 import { calculer } from "../lib/calculs.ts";
 import { MOTIFS_REFUS } from "../lib/validation/anti-fraude.ts";
 import { CHAMPS_VERIFIES, MOTIFS_OCR } from "../lib/validation/ocr.ts";
+import { MOTIFS_CAPTURE } from "../lib/validation/capture.ts";
 import { estEnVigueur } from "../lib/periodes.ts";
 
 const chemin = (nom) => process.env[nom.env] ?? new URL(nom.defaut, import.meta.url);
@@ -353,4 +354,44 @@ test("les champs verifies par l'OCR sont ceux qui figurent sur un recapitulatif"
     "dureeEstimeeMinutes",
     "prixEuros",
   ]);
+});
+
+test("chaque motif de refus de capture a un libelle", () => {
+  assert.deepEqual([...MOTIFS_CAPTURE].sort(), Object.keys(libelles.motifs_capture).sort());
+});
+
+test("les formats de capture declarent tous un type MIME et des extensions", async () => {
+  const captures = await lireJson(
+    process.env.CAPTURES_FICHIER ?? new URL("../config/captures.json", import.meta.url)
+  );
+
+  const tous = [...captures.formats_acceptes, ...captures.formats_refuses];
+
+  for (const format of tous) {
+    assert.match(format.type_mime, /^image\/[a-z0-9+.-]+$/, `type MIME invalide : ${format.type_mime}`);
+    assert.ok(format.extensions.length > 0, `${format.type_mime} : aucune extension`);
+    for (const extension of format.extensions) {
+      assert.match(extension, /^\.[a-z0-9]+$/, `extension non normalisee : ${extension}`);
+    }
+  }
+
+  const acceptes = new Set(captures.formats_acceptes.map((f) => f.type_mime));
+  for (const refuse of captures.formats_refuses) {
+    assert.ok(
+      !acceptes.has(refuse.type_mime),
+      `${refuse.type_mime} ne peut pas etre a la fois accepte et refuse`
+    );
+    assert.ok(
+      captures.decision[refuse.cle_explication],
+      `${refuse.type_mime} : cle_explication "${refuse.cle_explication}" absente de decision`
+    );
+  }
+});
+
+test("les tolerances OCR sont declarees par champ, prix a zero", () => {
+  const tolerance = (cle) => baremes.parametres_systeme.find((e) => e.cle === cle);
+
+  assert.equal(tolerance(CLES_SYSTEME.tolerancePrix).valeur, 0, "le prix est la valeur probante");
+  assert.ok(tolerance(CLES_SYSTEME.toleranceDistance).valeur > 0);
+  assert.ok(tolerance(CLES_SYSTEME.toleranceDureeEstimee).valeur > 0);
 });

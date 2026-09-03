@@ -332,6 +332,56 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Couvre la pause de 24 h déclenchée par les échecs OCR, plus le passage d'un jour à l'autre. Au-delà, le sel du jour est supprimé et les empreintes calculées avec lui deviennent irréversibles : plus personne, nous compris, ne peut les relier à une adresse. Plus cette fenêtre est courte, mieux c'est ; elle ne peut simplement pas descendre sous la plus longue des limites anti-fraude."
+    },
+    {
+      "cle": "taille_maximale_capture",
+      "libelle": "Taille maximale acceptée pour une capture d'écran",
+      "valeur": 10,
+      "unite": "MEGAOCTETS",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Une capture de téléphone récent pèse de 0,5 à 5 Mo, et un écran haute densité peut sortir un PNG de 4 à 6 Mo. Sous 8 Mo on rejetterait des captures parfaitement légitimes ; au-delà de 15 Mo on n'accepte plus des captures mais des fichiers anormaux."
+    },
+    {
+      "cle": "taille_minimale_capture",
+      "libelle": "Taille minimale en deçà de laquelle le fichier n'est pas une capture lisible",
+      "valeur": 10,
+      "unite": "KILOOCTETS",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Une image de trois kilooctets n'est pas une capture d'écran : c'est du bruit, ou un essai pour tester la limite."
+    },
+    {
+      "cle": "tolerance_ocr_prix",
+      "libelle": "Écart toléré entre le prix lu sur la capture et le prix saisi",
+      "valeur": 0,
+      "unite": "EUR_PAR_COURSE",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Égalité au centime, sans tolérance. C'est LA valeur probante du site : une course classée « sous le minimum » sur la foi d'un prix mal lu serait la faille qui décrédibilise tout le reste. Le prix d'un récapitulatif est court, net et contrasté ; si l'OCR ne le lit pas exactement, la bonne réponse n'est pas de tolérer, c'est de demander une capture plus lisible."
+    },
+    {
+      "cle": "tolerance_ocr_distance",
+      "libelle": "Écart toléré entre la distance lue sur la capture et la distance saisie",
+      "valeur": 0.1,
+      "unite": "KM",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Absorbe les arrondis d'affichage — l'application peut afficher « 12,2 km » là où le livreur saisit 12,25 — et rien d'autre. Ce n'est pas une marge pour les erreurs de lecture."
+    },
+    {
+      "cle": "tolerance_ocr_duree_estimee",
+      "libelle": "Écart toléré entre le temps estimé lu sur la capture et celui saisi",
+      "valeur": 1,
+      "unite": "MINUTES",
+      "usage": "rejet",
+      "valable_du": "2026-09-03",
+      "valable_au": null,
+      "justification": "Même logique d'arrondi : « 16 min » affiché peut recouvrir 15,6 comme 16,4."
     }
   ]
 }
