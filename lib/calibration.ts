@@ -254,9 +254,74 @@ export interface GabaritCandidat {
   typeCapture: string | null;
   /** Ce qui a fondé la déduction, pour qu'un classement douteux se relise. */
   champsAncres: string[];
+  /**
+   * Marque les candidats reconstruits depuis l'ancien modèle à zones absolues.
+   * Leurs colonnes et leur ordre sont des mesures réelles ; leurs spécimens,
+   * eux, ont été détruits et ne peuvent pas être relus.
+   */
+  convertiDepuisZonesAbsolues?: true;
+  /**
+   * Le type déclaré à la main lors d'un import ancien. Ce n'est pas une
+   * déduction, et il ne doit pas s'en donner l'air : les ancrages d'un converti
+   * ont été relevés sous des motifs qui ont changé depuis, si bien qu'y relire
+   * un type mesurerait une absence périmée plutôt que l'écran.
+   */
+  typeDeclareALorigine?: string;
   champs: ChampGabarit[];
   relations: Relation[];
 }
+
+export const MOTIFS_PROMOTION = ["trop_peu_d_ancrages", "aucun_champ_probant"] as const;
+
+export type MotifPromotion = (typeof MOTIFS_PROMOTION)[number];
+
+export interface ReglesPromotion {
+  /** Depuis le barème daté `ancrages_minimum_gabarit`. */
+  ancragesMinimum: number;
+  /** Depuis `politique_verification.probants` : les champs qui prouvent quelque chose. */
+  champsProbants: readonly string[];
+}
+
+export interface VerdictPromotion {
+  promouvable: boolean;
+  motifs: MotifPromotion[];
+}
+
+/**
+ * Un candidat a-t-il de quoi devenir un gabarit ?
+ *
+ * DEUX CONDITIONS, ET ELLES NE SONT PAS DE MÊME NATURE.
+ *
+ * La première est un nombre, et elle se règle : le barème daté
+ * `ancrages_minimum_gabarit` porte le seuil et sa justification. Un gabarit à un
+ * ancrage accepte toute image portant ce champ ; à deux, la seule relation qui
+ * les lie est un segment, satisfait par hasard aussi bien que fabriqué. Trois
+ * ancrages garantissent deux relations indépendantes, c'est-à-dire une véritable
+ * structure.
+ *
+ * La seconde ne se règle pas, et c'est délibéré : un gabarit qui ne reconnaît
+ * aucun champ probant ne peut pas être promu, quel que soit son nombre
+ * d'ancrages. Il certifierait la mise en page d'écrans qui ne prouvent rien —
+ * un contrôle d'authenticité sur une image sans prix ni distance valide une
+ * apparence et rien de plus. Aucune valeur de configuration ne doit pouvoir
+ * lever cette condition, donc elle n'en est pas une : elle est écrite ici.
+ */
+export const promouvable = (
+  candidat: GabaritCandidat,
+  regles: ReglesPromotion
+): VerdictPromotion => {
+  const motifs: MotifPromotion[] = [];
+
+  if (candidat.champs.length < regles.ancragesMinimum) motifs.push("trop_peu_d_ancrages");
+
+  const probants = candidat.champsAncres.filter((champ) =>
+    regles.champsProbants.includes(champ)
+  );
+
+  if (probants.length === 0) motifs.push("aucun_champ_probant");
+
+  return { promouvable: motifs.length === 0, motifs };
+};
 
 export const gabaritCandidat = (
   identite: { id: string; plateforme: string; description: string },

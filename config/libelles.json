@@ -111,6 +111,11 @@
       "symbole": "courses/h",
       "decimales_min": 0,
       "decimales_max": 1
+    },
+    "ANCRAGES": {
+      "symbole": "ancrages",
+      "decimales_min": 0,
+      "decimales_max": 0
     }
   },
   "usages": {
@@ -481,5 +486,9 @@
     "prixEuros": "Prix payé par la plateforme",
     "distanceKm": "Distance parcourue",
     "dureeEstimeeMinutes": "Durée affichée par l'application"
+  },
+  "motifs_promotion": {
+    "trop_peu_d_ancrages": "Trop peu d'ancrages pour que la structure vérifiée veuille dire quelque chose",
+    "aucun_champ_probant": "Aucun champ probant : ce gabarit ne reconnaîtrait que des écrans qui ne prouvent rien"
   }
 }

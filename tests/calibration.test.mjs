@@ -13,7 +13,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { deduireType, enChamps, gabaritCandidat, reperer } from "../lib/calibration.ts";
+import {
+  deduireType,
+  enChamps,
+  gabaritCandidat,
+  promouvable,
+  reperer,
+} from "../lib/calibration.ts";
 import { TYPES_RELATION } from "../lib/validation/gabarit.ts";
 
 /* Tolerance d'alignement du gabarit de test. En production elle vient du bareme
@@ -286,4 +292,60 @@ test("un champ ancre par libelle seul ne prouve rien", () => {
   const parLibelle = reperer([mot("Durée", 0.1, 0.4), mot("Distance", 0.5, 0.4)], REGLES);
 
   assert.deepEqual(deduireType(parLibelle, REGLES_TYPE).champsAncres, []);
+});
+
+/* Le plancher de promotion : trois ancrages, dont au moins un champ probant. En
+   production le nombre vient du bareme date `ancrages_minimum_gabarit` et la
+   liste des probants de `politique_verification.probants`. */
+const REGLES_PROMOTION = { ancragesMinimum: 3, champsProbants: ["prixEuros", "distanceKm"] };
+
+const candidatDe = (nombreDAncrages, champsAncres) => ({
+  id: "essai",
+  plateforme: "uber_eats",
+  description: "specimen",
+  typeCapture: null,
+  champsAncres,
+  champs: Array.from({ length: nombreDAncrages }, (_, index) => ({
+    cle: `champ_${index}`,
+    libelles: [],
+    x: 0.1 * (index + 1),
+  })),
+  relations: [],
+});
+
+test("trois ancrages dont un champ probant : le candidat est promouvable", () => {
+  const verdict = promouvable(candidatDe(3, ["prixEuros"]), REGLES_PROMOTION);
+
+  assert.equal(verdict.promouvable, true);
+  assert.deepEqual(verdict.motifs, []);
+});
+
+test("deux ancrages ne verifient qu'un segment, ce qui ne verifie rien", () => {
+  /* Deux ancrages ne sont lies que par une relation : une structure satisfaite
+     par hasard aussi bien que fabriquee a dessein. */
+  const verdict = promouvable(candidatDe(2, ["prixEuros", "distanceKm"]), REGLES_PROMOTION);
+
+  assert.equal(verdict.promouvable, false);
+  assert.deepEqual(verdict.motifs, ["trop_peu_d_ancrages"]);
+});
+
+test("un gabarit sans champ probant certifierait une apparence", () => {
+  const verdict = promouvable(candidatDe(9, ["dureeEstimeeMinutes"]), REGLES_PROMOTION);
+
+  assert.equal(verdict.promouvable, false);
+  assert.deepEqual(verdict.motifs, ["aucun_champ_probant"]);
+});
+
+test("aucun reglage ne peut lever l'exigence d'un champ probant", () => {
+  /*
+   * Le nombre d'ancrages est un bareme : il se regle, et il pourrait un jour
+   * tomber a zero. L'exigence d'un champ probant, elle, est ecrite dans le
+   * modele — un gabarit qui ne reconnait que des champs declaratifs validerait
+   * la mise en page d'ecrans qui ne prouvent rien. Ce test interdit qu'une
+   * valeur de configuration la contourne.
+   */
+  const permissif = { ancragesMinimum: 0, champsProbants: ["prixEuros", "distanceKm"] };
+
+  assert.equal(promouvable(candidatDe(9, []), permissif).promouvable, false);
+  assert.deepEqual(promouvable(candidatDe(0, []), permissif).motifs, ["aucun_champ_probant"]);
 });

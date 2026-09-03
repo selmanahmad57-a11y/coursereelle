@@ -89,7 +89,8 @@
         "KILOOCTETS",
         "MEGAOCTETS",
         "OCTETS",
-        "BITS"
+        "BITS",
+        "ANCRAGES"
       ],
       "description": "Liste fermée : ajouter une unité est une modification délibérée du schéma, pas un effet de bord. Les pourcentages s'écrivent en points (21.2 et non 0.212) — une seule convention pour tout le fichier, pour éviter les erreurs de facteur 100."
     },

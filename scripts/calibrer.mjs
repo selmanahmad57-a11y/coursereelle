@@ -44,62 +44,28 @@
  * vérifie sur des lectures piégées.
  */
 
-import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
 import { createWorker } from "tesseract.js";
 
-import { deduireType, gabaritCandidat, reperer } from "../lib/calibration.ts";
-import { CHAMPS_VERIFIES } from "../lib/validation/ocr.ts";
+import { deduireType, gabaritCandidat, promouvable, reperer } from "../lib/calibration.ts";
+import { chargerRegles, racine } from "./regles-calibration.mjs";
 
-const racine = new URL("../", import.meta.url).pathname;
+const {
+  interfaceUber,
+  plateformesConnues,
+  typesConnus,
+  regles,
+  reglesType,
+  reglesPromotion,
+  toleranceLigne,
+} = await chargerRegles();
+
 const entrees = path.join(racine, "calibration", "entrees");
 const candidats = path.join(racine, "calibration", "candidats");
 const cache = path.join(racine, "calibration");
-
-const lireJson = async (chemin) => JSON.parse(await readFile(chemin, "utf8"));
-
-const interfaceUber = await lireJson(path.join(racine, "config", "interface-uber.json"));
-const schema = await lireJson(path.join(racine, "config", "baremes.schema.json"));
-const captures = await lireJson(path.join(racine, "config", "captures.json"));
-
-const plateformesConnues = schema.$defs.plateforme.enum;
-const typesConnus = captures.types.liste.map((type) => type.cle);
-
-/* Quel motif de forme lit quel champ. On ne retient que les vraies clés de champ :
-   la table porte aussi une note et le nom du champ indispensable. */
-const motifsParChamp = Object.fromEntries(
-  CHAMPS_VERIFIES.filter(
-    (champ) => typeof interfaceUber.champs_verifiables[champ] === "string"
-  ).map((champ) => [champ, interfaceUber.champs_verifiables[champ]])
-);
-
-const reglesType = {
-  motifsParChamp,
-  champsProuves: Object.fromEntries(
-    captures.types.liste.map((type) => [type.cle, type.champs_prouves])
-  ),
-};
-
-/* La note explicative vit a cote des motifs dans la configuration : on la retire
-   avant de traiter le reste comme des expressions. */
-const motifs = Object.fromEntries(
-  Object.entries(interfaceUber.motifs).filter(([nom]) => nom !== "note")
-);
-
-const regles = {
-  libellesAttendus: interfaceUber.libelles_attendus,
-  motifs,
-  confianceMinimale: interfaceUber.confiance_minimale,
-};
-
-/* La tolerance d'alignement vient de la configuration datee, comme le reste. */
-const baremes = await lireJson(path.join(racine, "config", "baremes.json"));
-const toleranceLigne =
-  (baremes.parametres_systeme.find(
-    (entree) => entree.cle === "tolerance_meme_ligne" && entree.valable_au === null
-  )?.valeur ?? 2) / 100;
 
 /** Assemble les mots d'une même ligne : un montant est souvent coupé en deux. */
 const lignesEtMots = (tsv, largeur, hauteur) => {
@@ -262,6 +228,11 @@ if (depuis.length > 0) {
   let copiees = 0;
   let vides = 0;
 
+  /* Les numéros d'import repartaient de 1 à chaque exécution : une seconde série
+     écrasait silencieusement les candidats de la première. Ils reprennent donc
+     après ce qui existe déjà. */
+  const deja = (await readdir(candidats)).filter((nom) => nom.endsWith(".json")).length;
+
   for (const [index, origine] of sources.entries()) {
     /* Un dossier de téléchargements contient des fichiers de zéro octet : des
        transferts interrompus, des espaces réservés attendant une synchronisation.
@@ -272,7 +243,7 @@ if (depuis.length > 0) {
     }
 
     const extension = origine.slice(origine.lastIndexOf("."));
-    const segments = [plateforme, ...(type === null ? [] : [type]), `importe-${index + 1}`];
+    const segments = [plateforme, ...(type === null ? [] : [type]), `importe-${deja + index + 1}`];
     await copyFile(origine, path.join(entrees, `${segments.join("__")}${extension}`));
     copiees += 1;
   }
@@ -297,6 +268,7 @@ if (fichiers.length === 0) {
 
 const worker = await createWorker("fra", 1, { cachePath: cache, logger: () => {} });
 let traites = 0;
+let auBanc = 0;
 let illisibles = 0;
 let sansAncrage = 0;
 
@@ -358,23 +330,29 @@ for (const nom of fichiers) {
         console.log(`    ${quoi.padEnd(30)} ${ou}   confiance ${Math.round(ancrage.confiance)}`);
       }
 
+      const candidat = gabaritCandidat(
+        { id, plateforme: qui.plateforme, description: qui.description },
+        ancrages,
+        toleranceLigne,
+        reglesType
+      );
+
       await writeFile(
         path.join(candidats, `${id}.json`),
-        `${JSON.stringify(
-          gabaritCandidat(
-            { id, plateforme: qui.plateforme, description: qui.description },
-            ancrages,
-            toleranceLigne,
-            reglesType
-          ),
-          null,
-          2
-        )}\n`,
+        `${JSON.stringify(candidat, null, 2)}\n`,
         "utf8"
       );
 
+      const verdictPromotion = promouvable(candidat, reglesPromotion);
+
       traites += 1;
-      console.log("    candidat écrit");
+      console.log(
+        verdictPromotion.promouvable
+          ? "    candidat écrit — promouvable"
+          : `    candidat écrit — au banc : ${verdictPromotion.motifs.join(", ")}`
+      );
+
+      if (!verdictPromotion.promouvable) auBanc += 1;
     }
   } catch (erreur) {
     /* On nomme le fichier et la cause, jamais son contenu. */
@@ -394,6 +372,7 @@ const restants = (await readdir(entrees)).filter((nom) => EXTENSIONS.test(nom));
 
 console.log(
   `\n${traites} gabarit(s) candidat(s) écrit(s)` +
+    (auBanc > 0 ? `, dont ${auBanc} au banc faute d'assez d'ancrages ou de champ probant` : "") +
     (sansAncrage > 0 ? `, ${sansAncrage} image(s) sans ancrage` : "") +
     (illisibles > 0 ? `, ${illisibles} illisible(s)` : "") +
     "."
