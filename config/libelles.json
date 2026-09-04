@@ -337,8 +337,8 @@
     },
     "remplissage": {
       "titre": "Le temps que ce formulaire vous prend",
-      "texte": "Nous mesurons le temps de remplissage pour tenir la promesse des quatre-vingt-dix secondes ; c'est un nombre, il n'identifie rien. Le formulaire compte les secondes entre le premier champ que vous touchez et l'envoi, et ce nombre part avec votre course.",
-      "portee": "Rien d'autre n'est mesuré : aucun outil d'analyse tiers, aucun identifiant, aucune trace de navigation, aucun enregistrement de ce que vous tapez. S'y ajoute seulement le type d'appareil, réduit à deux valeurs — téléphone ou ordinateur — parce que l'exigence des quatre-vingt-dix secondes porte sur le téléphone.",
+      "texte": "Nous mesurons le temps de remplissage pour tenir la promesse des {objectif_remplissage} secondes ; c'est un nombre, il n'identifie rien. Le formulaire compte les secondes entre le premier champ que vous touchez et l'envoi, et ce nombre part avec votre course.",
+      "portee": "Rien d'autre n'est mesuré : aucun outil d'analyse tiers, aucun identifiant, aucune trace de navigation, aucun enregistrement de ce que vous tapez. S'y ajoute seulement le type d'appareil, réduit à deux valeurs — téléphone ou ordinateur — parce que l'exigence des {objectif_remplissage} secondes porte sur le téléphone.",
       "consequence": "Ce chiffre ne juge jamais une course : un remplissage lent ne rejette rien et n'écarte rien. Il juge le formulaire. S'il dépasse l'objectif, c'est notre travail qui est en cause, pas votre envoi."
     }
   },

@@ -371,10 +371,10 @@ export default async function PageMethode() {
               {libelles.methode.remplissage.titre}
             </h3>
             <p className="mt-2 text-sm text-neutral-700">
-              {libelles.methode.remplissage.texte}
+              {remplacer(libelles.methode.remplissage.texte, valeursDesJetons(aujourdhui()))}
             </p>
             <p className="mt-2 text-sm text-neutral-700">
-              {libelles.methode.remplissage.portee}
+              {remplacer(libelles.methode.remplissage.portee, valeursDesJetons(aujourdhui()))}
             </p>
             <p className="mt-2 border-l-2 border-neutral-300 pl-3 text-sm text-neutral-700">
               {libelles.methode.remplissage.consequence}

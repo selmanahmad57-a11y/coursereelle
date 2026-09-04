@@ -99,6 +99,7 @@ export const UNITES = {
 export const JETONS_TEXTE = {
   delai_suppression: CLES_SYSTEME.delaiSuppressionCapture,
   retention_empreintes: CLES_SYSTEME.retentionEmpreintes,
+  objectif_remplissage: CLES_SYSTEME.objectifTempsRemplissage,
 } as const;
 
 /**
