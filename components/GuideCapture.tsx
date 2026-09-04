@@ -14,6 +14,8 @@ const libelle = (recherche: string, defaut: string) =>
   attendus.find((entree) => entree.toLowerCase().includes(recherche)) ?? defaut;
 
 const TITRE = libelle("détails de la course", "Détails de la course");
+const PRIX_TOTAL = libelle("prix total du trajet", "Prix total du trajet");
+const GAINS = "Gains";
 const ESTIMATION = libelle("estimation", "L'estimation pour cette course");
 const DUREE = libelle("durée", "Durée");
 const DISTANCE = libelle("distance", "Distance");
@@ -39,6 +41,100 @@ const REVENUS = libelle("revenus", "Vos revenus");
  */
 const CADRE = { largeur: 90, hauteur: 190 };
 
+/**
+ * La carte, dessinée une fois pour les deux vignettes.
+ *
+ * L'écran « Détails » montre la même carte que l'écran de navigation, en plus
+ * petit : mêmes rues, même tracé, même point de départ et même point d'arrivée.
+ * Les dessiner de deux façons rendait la vignette du récapitulatif abstraite là
+ * où l'autre était fidèle. Un seul moteur visuel, deux échelles.
+ *
+ * COULEURS D'ILLUSTRATION, PAS COULEURS DE RÔLE. Le vert de départ et le rouge
+ * d'arrivée n'appartiennent pas aux quatre rôles du site : ils appartiennent au
+ * vocabulaire commun des applications de navigation, et c'est lui que le livreur
+ * reconnaît. Ils vivent dans cette citation, jamais dans un composant.
+ */
+function Carte({
+  x,
+  y,
+  largeur,
+  hauteur,
+  epaisseur = 1,
+}: {
+  x: number;
+  y: number;
+  largeur: number;
+  hauteur: number;
+  epaisseur?: number;
+}) {
+  const px = (part: number) => x + largeur * part;
+  const py = (part: number) => y + hauteur * part;
+
+  return (
+    <>
+      <g stroke="white" strokeOpacity="0.12" strokeWidth={2.2 * epaisseur} fill="none">
+        <path d={`M${x} ${py(0.32)} L${x + largeur} ${py(0.26)}`} />
+        <path d={`M${x} ${py(0.72)} L${x + largeur} ${py(0.78)}`} />
+        <path d={`M${px(0.24)} ${y} L${px(0.18)} ${y + hauteur}`} />
+        <path d={`M${px(0.68)} ${y} L${px(0.74)} ${y + hauteur}`} />
+      </g>
+      <g stroke="white" strokeOpacity="0.06" strokeWidth={1.1 * epaisseur} fill="none">
+        <path d={`M${x} ${py(0.53)} L${x + largeur} ${py(0.5)}`} />
+        <path d={`M${px(0.46)} ${y} L${px(0.44)} ${y + hauteur}`} />
+      </g>
+
+      {/*
+        * Les deux extrémités restent à l'écart de ce qui les entoure : le départ
+        * au-dessus de la barre d'instructions, l'arrivée hors du badge de refus.
+        * Un point posé sur un autre élément se lit comme une erreur de dessin.
+        */}
+      <path
+        d={`M${px(0.2)} ${py(0.78)} L${px(0.2)} ${py(0.52)} L${px(0.53)} ${py(0.46)} L${px(0.56)} ${py(0.26)}`}
+        fill="none"
+        className="stroke-mesure"
+        strokeWidth={3 * epaisseur}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx={px(0.2)} cy={py(0.78)} r={3 * epaisseur} fill="#3fa34d" />
+      <circle cx={px(0.56)} cy={py(0.26)} r={3 * epaisseur} className="fill-ecart" />
+    </>
+  );
+}
+
+/**
+ * D'où l'on vient : la liste des gains, une course touchée.
+ *
+ * Le récapitulatif n'apparaît jamais seul — on y arrive depuis une liste. Sans
+ * ce contexte, la vignette montre une destination sans son chemin, et c'est le
+ * chemin que personne ne connaît.
+ */
+function VignetteGains() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="w-full rounded"
+      viewBox="0 0 90 46"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="90" height="46" rx="4" className="fill-encre" />
+      <text x="8" y="12" fill="white" fillOpacity="0.9" fontSize="5.2" fontWeight="600">
+        {GAINS}
+      </text>
+
+      <rect x="6" y="17" width="78" height="10" rx="2" fill="white" fillOpacity="0.05" />
+      <rect x="10" y="20" width="34" height="3" rx="1.5" fill="white" fillOpacity="0.28" />
+      <rect x="66" y="20" width="14" height="3" rx="1.5" fill="white" fillOpacity="0.28" />
+
+      {/* La ligne touchée : c'est elle qui mène au récapitulatif. */}
+      <rect x="6" y="29" width="78" height="11" rx="2" fill="white" fillOpacity="0.16" />
+      <rect x="10" y="32.5" width="30" height="3.4" rx="1.7" fill="white" fillOpacity="0.5" />
+      <rect x="62" y="32.5" width="16" height="3.4" rx="1.7" fill="white" fillOpacity="0.6" />
+      <path d="M80.5 33 L82.5 34.7 L80.5 36.4" fill="none" stroke="white" strokeOpacity="0.6" strokeWidth="0.9" />
+    </svg>
+  );
+}
+
 /** L'écran « Détails de la course » : celui qui porte la preuve. */
 function VignetteBonne() {
   return (
@@ -50,69 +146,60 @@ function VignetteBonne() {
     >
       <rect width="90" height="190" rx="6" className="fill-encre" />
 
-      {/* Barre de titre, avec le retour et le nom de l'écran. */}
       <path d="M9 11 L6 8 L9 5" fill="none" stroke="white" strokeOpacity="0.7" strokeWidth="1.2" />
       <text x="15" y="10" fill="white" fillOpacity="0.9" fontSize="5.2" fontWeight="500">
         {TITRE}
       </text>
 
-      <text x="8" y="24" fill="white" fillOpacity="0.45" fontSize="4.2">
+      <text x="8" y="23" fill="white" fillOpacity="0.45" fontSize="4.2">
         XX/XX/XXXX
       </text>
 
-      {/* Le montant, en très gros : c'est lui qu'on doit reconnaître. */}
-      <text x="8" y="46" fill="white" fontSize="16" fontWeight="600">
+      <text x="8" y="44" fill="white" fontSize="16" fontWeight="600">
         X,XX €
       </text>
 
-      {/* L'encart d'estimation. */}
-      <rect x="8" y="53" width="74" height="15" rx="3" fill="white" fillOpacity="0.08" />
-      <text x="12" y="62" fill="white" fillOpacity="0.5" fontSize="4">
+      <rect x="8" y="51" width="74" height="14" rx="3" fill="white" fillOpacity="0.08" />
+      <text x="12" y="60" fill="white" fillOpacity="0.5" fontSize="4">
         {ESTIMATION}
       </text>
 
-      {/* La carte du trajet. */}
-      <rect x="8" y="73" width="74" height="30" rx="3" fill="white" fillOpacity="0.06" />
-      <path
-        d="M14 98 C 28 92, 30 82, 44 80 S 68 76, 76 79"
-        fill="none"
-        stroke="white"
-        strokeOpacity="0.3"
-        strokeWidth="1.6"
-      />
-      <circle cx="14" cy="98" r="2" fill="white" fillOpacity="0.5" />
-      <circle cx="76" cy="79" r="2" fill="white" fillOpacity="0.5" />
+      {/* La même carte que l'écran de navigation, en petit. */}
+      <rect x="8" y="70" width="74" height="30" rx="3" fill="white" fillOpacity="0.05" />
+      <Carte x={8} y={70} largeur={74} hauteur={30} epaisseur={0.62} />
 
-      {/* Durée et distance, côte à côte : les deux champs que la lecture cherche. */}
-      <text x="8" y="115" fill="white" fillOpacity="0.5" fontSize="4.2">
+      <text x="8" y="112" fill="white" fillOpacity="0.5" fontSize="4.2">
         {DUREE}
       </text>
-      <text x="8" y="124" fill="white" fontSize="5.6" fontWeight="500">
+      <text x="8" y="121" fill="white" fontSize="5.6" fontWeight="500">
         XX min XX s
       </text>
-      <text x="48" y="115" fill="white" fillOpacity="0.5" fontSize="4.2">
+      <text x="48" y="112" fill="white" fillOpacity="0.5" fontSize="4.2">
         {DISTANCE}
       </text>
-      <text x="48" y="124" fill="white" fontSize="5.6" fontWeight="500">
+      <text x="48" y="121" fill="white" fontSize="5.6" fontWeight="500">
         XX,XX km
       </text>
 
-      <rect x="8" y="131" width="74" height="0.6" fill="white" fillOpacity="0.12" />
+      <rect x="8" y="128" width="74" height="0.6" fill="white" fillOpacity="0.12" />
 
-      {/* Le trajet, en deux points. */}
-      <circle cx="11" cy="141" r="1.8" fill="white" fillOpacity="0.55" />
-      <path d="M11 143 L11 152" stroke="white" strokeOpacity="0.25" strokeWidth="0.8" />
-      <circle cx="11" cy="154" r="1.8" fill="white" fillOpacity="0.55" />
-      <rect x="17" y="139" width="52" height="3.4" rx="1.7" fill="white" fillOpacity="0.16" />
-      <rect x="17" y="152" width="44" height="3.4" rx="1.7" fill="white" fillOpacity="0.16" />
+      {/* Le trajet : un rond au départ, un carré à l'arrivée, reliés. */}
+      <circle cx="11.5" cy="138" r="2.2" fill="none" stroke="white" strokeOpacity="0.7" strokeWidth="1.2" />
+      <path d="M11.5 141 L11.5 149" stroke="white" strokeOpacity="0.35" strokeWidth="1" />
+      <rect x="9.3" y="149.8" width="4.4" height="4.4" rx="0.6" fill="white" fillOpacity="0.7" />
+      <rect x="19" y="136" width="58" height="3.6" rx="1.8" fill="white" fillOpacity="0.22" />
+      <rect x="19" y="150" width="41" height="3.6" rx="1.8" fill="white" fillOpacity="0.22" />
 
-      <rect x="8" y="163" width="74" height="0.6" fill="white" fillOpacity="0.12" />
+      <rect x="8" y="161" width="74" height="0.6" fill="white" fillOpacity="0.12" />
 
-      {/* « Vos revenus », en bas. */}
-      <text x="8" y="175" fill="white" fillOpacity="0.5" fontSize="4.2">
+      {/* « Vos revenus » : titre en gras, puis la ligne du prix total. */}
+      <text x="8" y="172" fill="white" fontSize="5.4" fontWeight="600">
         {REVENUS}
       </text>
-      <text x="62" y="175" fill="white" fontSize="5.2" fontWeight="500">
+      <text x="8" y="182" fill="white" fillOpacity="0.5" fontSize="4.2">
+        {PRIX_TOTAL}
+      </text>
+      <text x="82" y="182" fill="white" fontSize="5" fontWeight="500" textAnchor="end">
         X,XX €
       </text>
     </svg>
@@ -130,65 +217,32 @@ function VignetteMauvaise() {
     >
       <rect width="90" height="190" rx="6" className="fill-encre" />
 
-      {/* Le fond de carte : des rues claires sur fond sombre. */}
-      <g stroke="white" strokeOpacity="0.13" strokeWidth="2.4" fill="none">
-        <path d="M-5 46 L95 38" />
-        <path d="M-5 96 L95 104" />
-        <path d="M-5 148 L95 140" />
-        <path d="M22 -5 L14 195" />
-        <path d="M58 -5 L66 195" />
-      </g>
-      <g stroke="white" strokeOpacity="0.07" strokeWidth="1.2" fill="none">
-        <path d="M-5 70 L95 66" />
-        <path d="M-5 122 L95 126" />
-        <path d="M40 -5 L38 195" />
-      </g>
+      <Carte x={0} y={0} largeur={90} hauteur={190} />
 
-      {/*
-        * COULEUR D'ILLUSTRATION, PAS COULEUR DE RÔLE.
-        *
-        * Le vert de départ n'appartient pas à la palette du site, et il n'a pas
-        * à y entrer : les quatre rôles gouvernent l'INTERFACE — ce qui mesure,
-        * ce qui se déclare, ce qui alerte. Une vignette qui évoque l'écran d'une
-        * autre application est une citation visuelle, pas un composant. Le vert
-        * de départ et le rouge d'arrivée sont le vocabulaire commun de toutes
-        * les applications de navigation ; les remplacer par du blanc coûterait
-        * exactement la reconnaissance que ces vignettes existent pour obtenir.
-        *
-        * Cette couleur ne se réutilise nulle part ailleurs. Elle vit ici, dans
-        * une citation, et le test de palette continue de garder l'interface.
-        */}
-      {/* Le tracé de l'itinéraire, et ses deux extrémités. */}
-      <path
-        d="M20 150 L20 104 L64 100 L66 52"
-        fill="none"
-        className="stroke-mesure"
-        strokeWidth="3.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="20" cy="150" r="3.4" fill="#3fa34d" />
-      <circle cx="66" cy="52" r="3.4" className="fill-ecart" />
-
-      {/* La barre de recherche, et le bandeau de course en bas. */}
       <rect x="8" y="8" width="74" height="12" rx="6" fill="white" fillOpacity="0.14" />
       <rect x="14" y="13" width="34" height="2.4" rx="1.2" fill="white" fillOpacity="0.3" />
-      <rect x="6" y="156" width="78" height="28" rx="4" fill="white" fillOpacity="0.12" />
-      <rect x="12" y="163" width="40" height="3.4" rx="1.7" fill="white" fillOpacity="0.3" />
-      <rect x="12" y="172" width="26" height="3.4" rx="1.7" fill="white" fillOpacity="0.22" />
+
+      {/* La barre d'instructions, en bas : c'est elle qui dit « je conduis ». */}
+      <rect x="6" y="154" width="78" height="30" rx="4" fill="white" fillOpacity="0.16" />
+      <rect x="12" y="160" width="44" height="4" rx="2" fill="white" fillOpacity="0.45" />
+      <rect x="12" y="169" width="28" height="3.4" rx="1.7" fill="white" fillOpacity="0.3" />
+      <rect x="64" y="160" width="14" height="14" rx="3" fill="white" fillOpacity="0.22" />
 
       {/*
-        * La croix vient APRÈS la reconnaissance, pas avant : il faut d'abord
-        * reconnaître « l'écran où je conduis », et seulement ensuite comprendre
-        * qu'il ne convient pas. Trop épaisse, elle masquait la carte et ne
-        * laissait voir qu'un refus sans objet.
+        * LE REFUS EN COIN, ET NON EN TRAVERS.
+        *
+        * Une croix jetée sur toute la vignette croisait l'itinéraire et le point
+        * d'arrivée — tous deux rouges — et l'œil mettait une seconde à démêler
+        * le dessin du verdict. Un badge laisse la carte entièrement lisible :
+        * on reconnaît l'écran où l'on conduit, puis on voit qu'il est écarté.
         */}
+      <circle cx="72" cy="40" r="14" className="fill-ecart" />
+      <circle cx="72" cy="40" r="14" fill="none" stroke="white" strokeOpacity="0.9" strokeWidth="1.6" />
       <path
-        d="M22 34 L68 156 M68 34 L22 156"
-        className="stroke-ecart"
-        strokeWidth="4"
+        d="M66 34 L78 46 M78 34 L66 46"
+        stroke="white"
+        strokeWidth="3"
         strokeLinecap="round"
-        strokeOpacity="0.72"
       />
     </svg>
   );
@@ -226,11 +280,27 @@ export default function GuideCapture({
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
+          <VignetteGains />
+          <svg aria-hidden="true" className="mx-auto my-1 block h-3 w-3" viewBox="0 0 12 12">
+            <path
+              d="M6 1 L6 9 M2.5 6 L6 10 L9.5 6"
+              fill="none"
+              className="stroke-declare"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           <VignetteBonne />
           <p className="mt-1.5 text-xs font-semibold text-mesure">✓ {textes.bon_titre}</p>
           <p className="provenance mt-0.5">{textes.bon_aide}</p>
         </div>
         <div>
+          {/* Décalage exactement égal à la vignette de contexte et à sa flèche —
+              par le même rapport de forme, donc juste à toutes les largeurs.
+              Comparer deux images décalées coûte une seconde de lecture. */}
+          <div aria-hidden="true" className="aspect-[90/46] w-full" />
+          <div aria-hidden="true" className="my-1 h-3" />
           <VignetteMauvaise />
           <p className="mt-1.5 text-xs font-semibold text-ecart">✗ {textes.mauvais_titre}</p>
           <p className="provenance mt-0.5">{textes.mauvais_aide}</p>
