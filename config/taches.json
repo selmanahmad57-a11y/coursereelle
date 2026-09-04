@@ -7,7 +7,9 @@
       "libelle": "Mesure locale sur les spécimens de calibration, 4 septembre 2026",
       "url": null,
       "consultee_le": "2026-09-04"
-    }
+    },
+    "agrandissement_second_essai": 2,
+    "justification_agrandissement": "Mesuré sur cinq captures réelles, dont deux refusées : à l'échelle native, la virgule du montant se perd — « 7,18 € » est lu « 718 € » ou « 71.8 € », et le motif refuse à juste titre, parce qu'accepter reviendrait à inventer une décimale. Doublées, les deux captures rendent leur montant : 0 correspondance devient 3 et 1. Agrandir ne fabrique aucune information, cela lit les mêmes pixels de plus près — la valeur doit toujours franchir le motif et la tolérance, qui reste à zéro sur le prix. Le second essai n'est payé que si le premier a échoué sur un champ probant : le chemin qui fonctionne ne ralentit pas."
   },
   "planification": {
     "note": "Les cadences elles-mêmes ne sont pas ici : elles vivent dans .github/workflows/taches.yml, qui est ce qui les exécute vraiment. Les recopier ici donnerait deux vérités dont l'une serait décorative.",

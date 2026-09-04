@@ -83,3 +83,31 @@ export const zonesLues = async (image: Uint8Array<ArrayBuffer>): Promise<ZoneLue
 
   return zones;
 };
+
+/**
+ * Agrandit une capture avant une seconde lecture.
+ *
+ * À l'échelle native d'un écran de téléphone, la virgule d'un montant tient sur
+ * un ou deux pixels : la reconnaissance la perd, et « 7,18 € » devient
+ * « 718 € ». Le motif refuse alors, à juste titre — accepter reviendrait à
+ * placer une décimale que personne n'a lue.
+ *
+ * Agrandir ne fabrique rien : ce sont les mêmes pixels, interpolés, et la valeur
+ * doit toujours franchir le motif puis la tolérance. C'est une loupe, pas une
+ * hypothèse.
+ */
+export const agrandir = async (
+  image: Uint8Array<ArrayBuffer>,
+  facteur: number
+): Promise<Uint8Array<ArrayBuffer>> => {
+  const { width } = await sharp(image).metadata();
+
+  if (!width || facteur <= 1) return image;
+
+  const agrandie = await sharp(image)
+    .resize({ width: Math.round(width * facteur) })
+    .png()
+    .toBuffer();
+
+  return new Uint8Array(agrandie) as Uint8Array<ArrayBuffer>;
+};

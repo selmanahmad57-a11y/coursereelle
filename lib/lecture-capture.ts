@@ -214,3 +214,28 @@ export const lectureConcluante = (
 
   return { concluante: true, motif: null };
 };
+
+/** Combien de champs probants une lecture a confirmés franchement. */
+export const probantsLus = (
+  lecture: Lecture,
+  champsProbants: readonly ChampVerifie[]
+): number =>
+  champsProbants.filter((champ) => lecture.champs[champ]?.issue === "lue").length;
+
+/**
+ * Entre deux lectures de la même capture, celle qui a confirmé le plus de champs
+ * probants.
+ *
+ * L'ÉGALITÉ GARDE LA PREMIÈRE, et ce n'est pas un détail. Une seconde lecture
+ * n'est tentée que parce que la première a échoué ; si elle ne fait pas mieux,
+ * la remplacer reviendrait à préférer une lecture au hasard. On ne change d'avis
+ * que sur un gain constaté.
+ */
+export const meilleureLecture = (
+  premiere: Lecture,
+  seconde: Lecture,
+  champsProbants: readonly ChampVerifie[]
+): Lecture =>
+  probantsLus(seconde, champsProbants) > probantsLus(premiere, champsProbants)
+    ? seconde
+    : premiere;

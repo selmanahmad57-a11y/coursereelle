@@ -37,10 +37,15 @@ const valeur = (baremes: BaremesBruts, cle: string, date: string): number | null
     date
   )?.valeur ?? null;
 
+export interface ReglagesTaches {
+  lecture: { agrandissement_second_essai: number };
+}
+
 export const reglesTraitementDepuis = (
   baremes: BaremesBruts,
   interfacePlateforme: InterfacePlateforme,
   captures: ReglesCaptures,
+  taches: ReglagesTaches,
   date: string
 ): ReglesTraitement => {
   /* La note explicative et le nom du champ indispensable vivent à côté de la
@@ -63,6 +68,7 @@ export const reglesTraitementDepuis = (
     },
     champsFacultatifs: captures.politique_verification.declaratifs,
     champsProbants: captures.politique_verification.probants,
+    agrandissementSecondEssai: taches.lecture.agrandissement_second_essai,
     reglesClassification: (dateCourse, contexte) =>
       reglesClassificationDepuis(baremes, dateCourse, contexte),
   } as ReglesTraitement;

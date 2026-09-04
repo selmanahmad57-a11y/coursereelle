@@ -30,7 +30,8 @@ const aujourdhui = new Date().toISOString().slice(0, 10);
 
 /* Les seuils sont assembles par le meme constructeur que la route periodique :
    deux consommateurs, une seule lecture de la configuration. */
-const regles = reglesTraitementDepuis(baremes, interfaceUber, captures, aujourdhui);
+const taches = await lireJson("config/taches.json");
+const regles = reglesTraitementDepuis(baremes, interfaceUber, captures, taches, aujourdhui);
 
 console.log("Seuils en vigueur :");
 console.log(`  confiance minimale de lecture : ${regles.lecture.confianceMinimale} %`);
@@ -38,7 +39,6 @@ console.log(`  tolerances : prix ${regles.tolerances.prixEuros}, distance ${regl
 
 await demarrerLecteur(path.join(racine, "calibration"));
 
-const taches = await lireJson("config/taches.json");
 const limite = Number(process.argv[2] ?? taches.lecture.courses_par_passage);
 const verdicts = await traiterEnAttente(regles, limite);
 

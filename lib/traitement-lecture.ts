@@ -32,9 +32,11 @@ import type { ContexteCourse } from "./classification-regles.ts";
 import { db } from "./db.ts";
 import {
   lireCapture as extraireValeurs,
+  meilleureLecture,
+  probantsLus,
   type ReglesLecture,
 } from "./lecture-capture.ts";
-import { zonesLues } from "./ocr-tesseract.ts";
+import { agrandir, zonesLues } from "./ocr-tesseract.ts";
 import { lireCapture as telechargerCapture } from "./r2.ts";
 import {
   CHAMPS_VERIFIES,
@@ -88,6 +90,12 @@ export interface ReglesTraitement {
    * distance non vérifiée serait une accusation sans preuve.
    */
   champsProbants: readonly ChampVerifie[];
+  /**
+   * Facteur d'agrandissement de la seconde lecture. Un pour n'en tenter aucune.
+   * Mesuré : à l'échelle native, la virgule d'un montant se perd sur certaines
+   * captures et le prix devient illisible.
+   */
+  agrandissementSecondEssai: number;
   /**
    * Les barèmes annoncés auxquels comparer une course validée, résolus à sa
    * date. Une fonction plutôt qu'une table : chaque course a sa date, sa zone et
@@ -161,9 +169,36 @@ export const lireUneCourse = async (
   regles: ReglesTraitement
 ): Promise<Verdict> => {
   const image = await telechargerCapture(course.cleR2);
-  const zones = await zonesLues(image);
 
-  const lecture = extraireValeurs(CHAMPS_VERIFIES, zones, regles.lecture);
+  const premiere = extraireValeurs(CHAMPS_VERIFIES, await zonesLues(image), regles.lecture);
+
+  /*
+   * UNE SECONDE CHANCE, ET SEULEMENT SI LA PREMIÈRE A MANQUÉ.
+   *
+   * Deux captures réelles ont été refusées parce que la virgule du montant se
+   * perdait à l'échelle native — « 7,18 € » lu « 718 € ». Doublées, elles
+   * rendent leur montant. Agrandir ne fabrique rien : ce sont les mêmes pixels,
+   * et la valeur doit toujours franchir le motif puis la tolérance, qui reste à
+   * zéro sur le prix.
+   *
+   * Le second essai coûte quatre fois plus de calcul : il n'est donc payé que
+   * lorsque le premier a échoué sur un champ probant. Le chemin qui fonctionne
+   * ne ralentit pas.
+   */
+  const complet = probantsLus(premiere, regles.champsProbants) === regles.champsProbants.length;
+
+  const lecture =
+    complet || regles.agrandissementSecondEssai <= 1
+      ? premiere
+      : meilleureLecture(
+          premiere,
+          extraireValeurs(
+            CHAMPS_VERIFIES,
+            await zonesLues(await agrandir(image, regles.agrandissementSecondEssai)),
+            regles.lecture
+          ),
+          regles.champsProbants
+        );
 
   const valeurs = Object.fromEntries(
     CHAMPS_VERIFIES.map((champ) => [champ, lecture.champs[champ].valeur])

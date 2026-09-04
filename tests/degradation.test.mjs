@@ -150,3 +150,37 @@ test("les quatre statuts sont declares une seule fois, dans le code", () => {
     "verifie",
   ]);
 });
+
+test("entre deux lectures, on ne change d'avis que sur un gain constate", async () => {
+  /*
+   * Une seconde lecture n'est tentee que parce que la premiere a echoue sur un
+   * champ probant. Si elle ne fait pas mieux, la retenir reviendrait a preferer
+   * une lecture au hasard : a egalite, la premiere reste.
+   */
+  const { meilleureLecture, probantsLus } = await import("../lib/lecture-capture.ts");
+
+  const lecture = (issues) => ({
+    champs: {
+      prixEuros: { issue: issues[0], valeur: null, confiance: null },
+      distanceKm: { issue: issues[1], valeur: null, confiance: null },
+      dureeEstimeeMinutes: { issue: "absente", valeur: null, confiance: null },
+    },
+    valeurs: {},
+  });
+
+  const probants = ["prixEuros", "distanceKm"];
+
+  const echouee = lecture(["absente", "lue"]);
+  const reussie = lecture(["lue", "lue"]);
+
+  assert.equal(probantsLus(echouee, probants), 1);
+  assert.equal(probantsLus(reussie, probants), 2);
+
+  assert.equal(meilleureLecture(echouee, reussie, probants), reussie, "un gain se retient");
+  assert.equal(meilleureLecture(reussie, echouee, probants), reussie, "une perte se refuse");
+  assert.equal(
+    meilleureLecture(echouee, lecture(["absente", "lue"]), probants),
+    echouee,
+    "a egalite, la premiere lecture reste"
+  );
+});
