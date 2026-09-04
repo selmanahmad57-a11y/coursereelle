@@ -276,7 +276,8 @@
       "mauvais_aide": "La carte, la navigation, la course en cours : ils n'affichent aucun montant, et il n'y a donc rien à vérifier.",
       "note": "Ces vignettes sont des schémas, pas des captures : une vraie capture porterait l'adresse d'un client.",
       "apres_rejet": "L'écran envoyé n'a pas pu être lu. Voici celui qui convient — c'est presque toujours l'écran qui manquait, pas la course."
-    }
+    },
+    "brouillon_restaure": "Vos saisies ont été conservées sur cet appareil : reprenez où vous en étiez. La capture, elle, doit être choisie à nouveau — un fichier ne se conserve pas d'une page à l'autre, et nous ne gardons pas vos images en réserve."
   },
   "methode": {
     "pourboire": {

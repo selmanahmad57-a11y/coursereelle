@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Script from "next/script";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
 import libelles from "@/config/libelles.json";
@@ -28,6 +27,7 @@ import { listeVilles, seuilsSession } from "@/lib/parametres";
 import { controlerSession } from "@/lib/validation/regles-session.ts";
 
 import { Champ, Ligne } from "./Champ";
+import Turnstile from "./Turnstile";
 
 const textes = libelles.formulaire_session;
 const motifs = libelles.motifs_session as Record<string, string>;
@@ -63,19 +63,21 @@ const decrireDetail = (detail: unknown): string => {
   return String(detail);
 };
 
-const reinitialiserTurnstile = () => {
-  try {
-    window.turnstile?.reset();
-  } catch {
-    /* Script absent ou déjà retiré : le prochain envoi le signalera lui-même. */
-  }
-};
+/* Le widget est remonté plutôt que remis à zéro : un seul mécanisme, celui qui
+   fonctionne aussi après un succès. Voir components/Turnstile.tsx. */
 
 export default function FormulaireSession() {
   const memoire = useSyncExternalStore(abonnerStockage, lireStockage, stockageAuRendu);
   const dateDuJour = useSyncExternalStore(sansAbonnement, aujourdhui, dateAuRendu);
 
   const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
+  const [jeton, setJeton] = useState<string | null>(null);
+  const [essaiTurnstile, setEssaiTurnstile] = useState(0);
+
+  const renouvelerJeton = () => {
+    setJeton(null);
+    setEssaiTurnstile((precedent) => precedent + 1);
+  };
   const [envoyee, setEnvoyee] = useState(false);
   const [retourEnvoi, setRetourEnvoi] = useState<{
     reussite: boolean;
@@ -146,11 +148,12 @@ export default function FormulaireSession() {
      */
     const corpsFormulaire = new FormData(evenement.currentTarget);
 
-    const jeton = corpsFormulaire.get("cf-turnstile-response");
-    if (typeof jeton !== "string" || jeton === "") {
+    if (jeton === null || jeton === "") {
       setRetourEnvoi({ reussite: false, message: textes.envoi.turnstile_sans_jeton });
       return;
     }
+
+    corpsFormulaire.set("cf-turnstile-response", jeton);
 
     for (const [nom, valeur] of [
       ["date_session", dateSession],
@@ -195,10 +198,10 @@ export default function FormulaireSession() {
       });
 
       if (reussite) setEnvoyee(true);
-      else reinitialiserTurnstile();
+      else renouvelerJeton();
     } catch {
       setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
-      reinitialiserTurnstile();
+      renouvelerJeton();
     } finally {
       setEnvoi("repos");
     }
@@ -213,7 +216,7 @@ export default function FormulaireSession() {
     setDateSaisie(null);
     setRetourEnvoi(null);
     setEnvoyee(false);
-    reinitialiserTurnstile();
+    renouvelerJeton();
   };
 
   if (envoyee) {
@@ -465,11 +468,7 @@ export default function FormulaireSession() {
           <>
             <p className="etiquette-section">{textes.envoi.verification}</p>
             <p className="provenance mt-1">{textes.envoi.verification_aide}</p>
-            <div className="cf-turnstile mt-2" data-sitekey={cleTurnstile} />
-            <Script
-              src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-              strategy="afterInteractive"
-            />
+            <Turnstile cle={cleTurnstile} key={essaiTurnstile} onJeton={setJeton} />
           </>
         ) : (
           <p className="rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2 text-sm text-ecart">

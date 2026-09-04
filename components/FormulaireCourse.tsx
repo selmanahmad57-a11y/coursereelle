@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Script from "next/script";
 import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import libelles from "@/config/libelles.json";
@@ -33,9 +32,21 @@ import {
 import { controlerCoherencePhysique } from "@/lib/validation/regles-physiques.ts";
 import { appelleLeGuide } from "@/lib/motifs-guide.ts";
 
+import {
+  BROUILLON_VIDE,
+  brouillonAuRendu,
+  brouillonRempli,
+  decoderBrouillon,
+  ecrireBrouillon,
+  effacerBrouillon,
+  lireBrouillon,
+  type Brouillon,
+} from "@/lib/brouillon.ts";
+
 import { Champ } from "./Champ";
 import CalculEnDirect from "./CalculEnDirect";
 import ChampCapture from "./ChampCapture";
+import Turnstile from "./Turnstile";
 import GuideCapture from "./GuideCapture";
 
 const textes = libelles.formulaire;
@@ -67,28 +78,12 @@ const motifs: Record<string, string> = {
 const motifsSoumission: Record<string, string> = libelles.motifs_soumission;
 
 /*
- * Le script Turnstile expose un objet global. On ne declare que ce qu'on utilise
- * plutot que d'importer une definition complete pour une seule methode.
+ * UN SEUL MÉCANISME POUR LE JETON. Il y en avait deux : une remise à zéro après
+ * échec, et le rendu automatique du script au chargement. Le second ne
+ * fonctionnait qu'une fois — le formulaire remonté après un succès n'obtenait
+ * jamais de widget, donc jamais de jeton. Remonter le composant à chaque essai
+ * couvre les deux cas avec la même opération.
  */
-declare global {
-  interface Window {
-    turnstile?: { reset: (widget?: string) => void };
-  }
-}
-
-/*
- * Un jeton Turnstile ne sert qu'une fois. Apres un echec — erreur serveur,
- * capture refusee, champ oublie — le jeton est consomme, et sans cette remise a
- * zero le livreur devrait recharger la page pour reessayer. Les
- * quatre-vingt-dix secondes n'y survivraient pas.
- */
-const reinitialiserTurnstile = () => {
-  try {
-    window.turnstile?.reset();
-  } catch {
-    /* Script absent ou deja retire : le prochain envoi le signalera lui-meme. */
-  }
-};
 
 /* Publique par nature : le prefixe NEXT_PUBLIC_ est ce qui autorise son passage
    au navigateur. La cle secrete, elle, ne quitte jamais le serveur. */
@@ -108,14 +103,35 @@ export default function FormulaireCourse() {
   const dateDuJour = useSyncExternalStore(sansAbonnement, aujourdhui, dateAuRendu);
 
   const [contexteSaisi, setContexteSaisi] = useState<Contexte | null>(null);
-  const [dateSaisie, setDateSaisie] = useState<string | null>(null);
-  const [autreVille, setAutreVille] = useState("");
+  /*
+   * LE BROUILLON. Un livreur a perdu huit champs sur un rechargement suggéré par
+   * un message d'erreur — « personne ne répétera ». Chaque frappe est désormais
+   * conservée sur l'appareil, et relue au chargement : aucune erreur, quelle
+   * qu'elle soit, ne peut plus coûter une saisie.
+   *
+   * Le brouillon vient du stockage tant que rien n'a été tapé dans cette
+   * session — le même motif que le contexte juste au-dessus.
+   */
+  const memoireBrouillon = useSyncExternalStore(
+    abonnerStockage,
+    lireBrouillon,
+    brouillonAuRendu
+  );
+  const [saisies, setSaisies] = useState<Brouillon | null>(null);
+  const brouillon = saisies ?? decoderBrouillon(memoireBrouillon);
 
-  const [distance, setDistance] = useState("");
-  const [prixPaye, setPrixPaye] = useState("");
-  const [pourboire, setPourboire] = useState("");
-  const [dureeEstimee, setDureeEstimee] = useState("");
-  const [dureeReelle, setDureeReelle] = useState("");
+  const majBrouillon = (champ: keyof Brouillon, valeur: string) => {
+    const suivant = { ...brouillon, [champ]: valeur };
+    setSaisies(suivant);
+    ecrireBrouillon(suivant);
+  };
+
+  const { autreVille, distance, prixPaye, pourboire, dureeEstimee, dureeReelle } =
+    brouillon;
+
+  /* Vrai quand le formulaire s'ouvre sur une saisie retrouvée : l'écran le dit,
+     parce que la capture, elle, n'a pas pu être conservée. */
+  const brouillonRestaure = saisies === null && brouillonRempli(brouillon);
 
   const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
 
@@ -128,6 +144,19 @@ export default function FormulaireCourse() {
 
   /* Change a chaque remise a zero, pour vider le champ capture par remontage. */
   const [essai, setEssai] = useState(0);
+
+  /*
+   * Le jeton anti-robot, et le compteur qui remonte le widget. Séparé de
+   * `essai` : après un simple champ oublié, il faut un jeton neuf mais surtout
+   * pas reperdre la capture déjà choisie.
+   */
+  const [jeton, setJeton] = useState<string | null>(null);
+  const [essaiTurnstile, setEssaiTurnstile] = useState(0);
+
+  const renouvelerJeton = () => {
+    setJeton(null);
+    setEssaiTurnstile((precedent) => precedent + 1);
+  };
   const [retourEnvoi, setRetourEnvoi] = useState<{
     reussite: boolean;
     message: string;
@@ -136,7 +165,7 @@ export default function FormulaireCourse() {
   } | null>(null);
 
   const contexte = contexteSaisi ?? decoder(memoire);
-  const dateCourse = dateSaisie ?? dateDuJour;
+  const dateCourse = brouillon.dateCourse !== "" ? brouillon.dateCourse : dateDuJour;
 
   const majContexte = (champ: keyof Contexte, valeur: string) => {
     const suivant = { ...contexte, [champ]: valeur };
@@ -218,11 +247,14 @@ export default function FormulaireCourse() {
      * que le script ne s'est pas exécuté — un bloqueur, une coupure — et non que
      * la vérification a échoué. Le dire ici évite de laisser croire à un refus.
      */
-    const jeton = formulaire.get("cf-turnstile-response");
-    if (typeof jeton !== "string" || jeton === "") {
+    if (jeton === null || jeton === "") {
       setRetourEnvoi({ reussite: false, message: textes.envoi.turnstile_sans_jeton });
       return;
     }
+
+    /* Le widget est rendu explicitement : son jeton n'est pas déposé dans le
+       formulaire, il est passé ici. */
+    formulaire.set("cf-turnstile-response", jeton);
 
     setEnvoi("en_cours");
     setRetourEnvoi(null);
@@ -256,15 +288,18 @@ export default function FormulaireCourse() {
       });
 
       if (reussite) {
+        /* Le brouillon a fait son travail : la course est partie. Il s'efface
+           ici, jamais avant — ni à l'envoi, ni après un échec. */
+        effacerBrouillon();
         setEnvoyee(true);
       } else {
         /* Le jeton vient d'etre consomme : sans nouvelle validation, le prochain
            essai echouerait pour une raison sans rapport avec la premiere. */
-        reinitialiserTurnstile();
+        renouvelerJeton();
       }
     } catch {
       setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
-      reinitialiserTurnstile();
+      renouvelerJeton();
     } finally {
       setEnvoi("repos");
     }
@@ -276,16 +311,13 @@ export default function FormulaireCourse() {
    * soiree en serie.
    */
   const reprendre = () => {
-    setDistance("");
-    setPrixPaye("");
-    setPourboire("");
-    setDureeEstimee("");
-    setDureeReelle("");
-    setDateSaisie(null);
+    setSaisies(BROUILLON_VIDE);
+    effacerBrouillon();
+    /* La date repart du jour, comme le reste du brouillon. */
     setRetourEnvoi(null);
     setEnvoyee(false);
     setEssai((precedent) => precedent + 1);
-    reinitialiserTurnstile();
+    renouvelerJeton();
   };
 
   const limiteAnciennete = dateDuJour === "" ? null : ancienneteMaximale(dateDuJour);
@@ -345,6 +377,12 @@ export default function FormulaireCourse() {
       onFocusCapture={noterPremierContact}
       onInputCapture={noterPremierContact}
     >
+      {brouillonRestaure ? (
+        <p className="rounded-md border border-mesure/40 bg-mesure-clair px-3 py-2 text-sm text-mesure">
+          {textes.brouillon_restaure}
+        </p>
+      ) : null}
+
       <section className="carte space-y-4">
         <div>
           <h2 className="etiquette-section">{textes.section_contexte}</h2>
@@ -375,7 +413,7 @@ export default function FormulaireCourse() {
               className="champ"
               id="autre-ville"
             name="ville_libre"
-              onChange={(evenement) => setAutreVille(evenement.target.value)}
+              onChange={(evenement) => majBrouillon("autreVille", evenement.target.value)}
               type="text"
               value={autreVille}
             />
@@ -434,7 +472,7 @@ export default function FormulaireCourse() {
             id="date-course"
             name="date_course"
             max={dateDuJour}
-            onChange={(evenement) => setDateSaisie(evenement.target.value)}
+            onChange={(evenement) => majBrouillon("dateCourse", evenement.target.value)}
             type="date"
             value={dateCourse}
           />
@@ -456,7 +494,7 @@ export default function FormulaireCourse() {
               id="distance"
             name="distance_km"
               inputMode="decimal"
-              onChange={(evenement) => setDistance(evenement.target.value)}
+              onChange={(evenement) => majBrouillon("distance", evenement.target.value)}
               type="text"
               value={distance}
             />
@@ -468,7 +506,7 @@ export default function FormulaireCourse() {
               id="prix-paye"
             name="prix_paye_euros"
               inputMode="decimal"
-              onChange={(evenement) => setPrixPaye(evenement.target.value)}
+              onChange={(evenement) => majBrouillon("prixPaye", evenement.target.value)}
               type="text"
               value={prixPaye}
             />
@@ -481,7 +519,7 @@ export default function FormulaireCourse() {
               placeholder={textes.exemples.duree}
             name="duree_estimee_minutes"
               inputMode="numeric"
-              onChange={(evenement) => setDureeEstimee(evenement.target.value)}
+              onChange={(evenement) => majBrouillon("dureeEstimee", evenement.target.value)}
               type="text"
               value={dureeEstimee}
             />
@@ -498,7 +536,7 @@ export default function FormulaireCourse() {
               placeholder={textes.exemples.duree}
             name="duree_reelle_minutes"
               inputMode="numeric"
-              onChange={(evenement) => setDureeReelle(evenement.target.value)}
+              onChange={(evenement) => majBrouillon("dureeReelle", evenement.target.value)}
               type="text"
               value={dureeReelle}
             />
@@ -515,7 +553,7 @@ export default function FormulaireCourse() {
             id="pourboire"
             name="pourboire_euros"
             inputMode="decimal"
-            onChange={(evenement) => setPourboire(evenement.target.value)}
+            onChange={(evenement) => majBrouillon("pourboire", evenement.target.value)}
             type="text"
             value={pourboire}
           />
@@ -544,11 +582,7 @@ export default function FormulaireCourse() {
           <>
             <p className="etiquette-section">{textes.envoi.verification}</p>
             <p className="text-xs text-neutral-600">{textes.envoi.verification_aide}</p>
-            <div className="cf-turnstile mt-2" data-sitekey={cleTurnstile} />
-            <Script
-              src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-              strategy="afterInteractive"
-            />
+            <Turnstile cle={cleTurnstile} key={essaiTurnstile} onJeton={setJeton} />
           </>
         ) : (
           <p className="rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2 text-sm text-ecart">
