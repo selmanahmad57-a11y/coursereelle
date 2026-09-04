@@ -16,6 +16,7 @@ import {
 } from "@/lib/parametres";
 import { etatPublication } from "@/lib/publication.ts";
 import { remplacer } from "@/lib/textes.ts";
+import { TRIS, triValide, type Tri } from "@/lib/tri-courses.ts";
 import { aujourdhui } from "@/lib/contexte-livreur.ts";
 
 const textes = libelles.courses;
@@ -222,11 +223,15 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
   const parametres = await searchParams;
   const page = numeroDePage(parametres.page);
   const parPage = reglagesListeCourses.par_page;
+  const tri = triValide(parametres.tri);
 
   const [liste, donnees] = await Promise.all([
-    lireCoursesPubliees({ page, parPage }),
+    lireCoursesPubliees({ page, parPage, tri }),
     lireDonneesPubliques(),
   ]);
+
+  /** Un lien qui change l'ordre repart de la première page. */
+  const lienTri = (vers: Tri) => (vers === "date" ? "/courses" : `/courses?tri=${vers}`);
 
   /*
    * Le compteur passe par le même calcul que l'accueil et la page Statistiques.
@@ -301,7 +306,7 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
             {page > 1 ? (
               <Link
                 className="text-sm text-neutral-900 underline underline-offset-2"
-                href={`/courses?page=${page - 1}`}
+                href={`/courses?page=${page - 1}${tri === "date" ? "" : `&tri=${tri}`}`}
               >
                 {textes.pagination.precedente}
               </Link>
@@ -317,7 +322,7 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
             {page < pages ? (
               <Link
                 className="text-sm text-neutral-900 underline underline-offset-2"
-                href={`/courses?page=${page + 1}`}
+                href={`/courses?page=${page + 1}${tri === "date" ? "" : `&tri=${tri}`}`}
               >
                 {textes.pagination.suivante}
               </Link>
@@ -326,7 +331,24 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
         </>
       )}
 
-      <p className="mt-8 max-w-2xl text-sm text-neutral-600">{textes.ordre}</p>
+      <p className="mt-8 max-w-2xl text-sm text-neutral-800">
+        {remplacer(textes.ordre_courant, { ordre: textes.tris[tri] })}
+      </p>
+
+      <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {TRIS.filter((autre) => autre !== tri).map((autre) => (
+          <Link
+            key={autre}
+            className="text-mesure underline underline-offset-2"
+            href={lienTri(autre)}
+          >
+            {textes.tris[autre]}
+          </Link>
+        ))}
+      </p>
+
+      <p className="mt-3 max-w-2xl text-sm text-neutral-600">{textes.ordre_choisi}</p>
+      <p className="mt-2 max-w-2xl text-sm text-neutral-600">{textes.ordre}</p>
       <p className="mt-2 max-w-2xl text-sm text-neutral-600">{textes.granularite}</p>
 
       <p className="mt-6 text-sm">

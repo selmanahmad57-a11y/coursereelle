@@ -337,6 +337,11 @@
           "titre": "Aucune moyenne en tête de liste",
           "texte": "La liste des courses ne porte aucun résumé, aucun total et aucune moyenne. Un chiffre agrégé placé au-dessus de données brutes est lu comme leur conclusion, alors qu'il en est une interprétation.",
           "consequence": "Les chiffres agrégés vivent sur la page Statistiques, ne sont publiés qu'au-delà d'un effectif minimal, et sont des médianes — jamais des moyennes."
+        },
+        {
+          "titre": "Une page « pires courses » a été abandonnée",
+          "texte": "Le dossier fondateur prévoyait une page dédiée aux courses les plus éloignées des barèmes annoncés. Elle n'existera pas. Un tri ordonne un ensemble que le lecteur voit en entier ; une page dédiée fabrique un corpus permanent qui ne montre jamais le reste, et que personne ne citera en précisant sur quel ensemble il a été prélevé. Elle publierait par ailleurs, cas par cas, ce que la page Statistiques refuse d'agréger sous son seuil — la règle contournée par sa propre annexe.",
+          "consequence": "La fonction est conservée sans le piège : le registre des courses se trie, y compris par écart au barème, et l'ordre choisi est affiché en toutes lettres. Le lecteur qui cherche les pires cas les obtient en un clic, sur une page qui montre aussi tout le reste."
         }
       ]
     },
@@ -780,7 +785,14 @@
       "precedente": "Page précédente",
       "suivante": "Page suivante",
       "position": "Page {page} sur {pages}"
-    }
+    },
+    "tris": {
+      "date": "de la plus récente à la plus ancienne",
+      "taux": "du taux horaire le plus bas au plus élevé",
+      "conformite": "du plus grand écart au barème annoncé au plus petit"
+    },
+    "ordre_courant": "Ordre : {ordre}.",
+    "ordre_choisi": "Trier ne retire rien : les mêmes courses sont là, dans un autre ordre, et l'ordre choisi est écrit ci-dessus. Un classement n'est pas une sélection."
   },
   "appareils": {
     "mobile": "Téléphone",

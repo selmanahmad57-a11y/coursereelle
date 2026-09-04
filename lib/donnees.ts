@@ -25,6 +25,7 @@
  * annoncés, puisqu'une course se juge selon les règles en vigueur à sa date.
  */
 import type { CaptureSuivie } from "./cycle-capture.ts";
+import type { Tri } from "./tri-courses.ts";
 
 export interface CourseVerifiee {
   dateCourse: string;
@@ -201,8 +202,27 @@ const enDate = (valeur: string | Date): string =>
  * serait une thèse. La date décroissante ne choisit rien : elle montre ce qui
  * vient d'arriver.
  */
+/*
+ * LES ORDRES POSSIBLES, ÉCRITS ICI ET NULLE PART AILLEURS.
+ *
+ * Le tri vient de l'URL ; sa valeur, elle, ne l'atteint jamais. `triValide` la
+ * ramène à l'une des trois clés de cette table, et c'est la table qui fournit le
+ * fragment SQL. Une clé inconnue retombe sur la date : il n'existe aucun chemin
+ * par lequel une chaîne du visiteur pourrait devenir de l'ordonnancement.
+ *
+ * « Taux croissant » met les courses les moins bien payées en tête, et « écart
+ * décroissant » celles qui s'éloignent le plus du barème annoncé. Ce sont les
+ * ordres que le dossier voulait offrir par une page dédiée ; ils vivent ici,
+ * dans un registre qui montre aussi tout le reste.
+ */
+const ORDRES: Record<Tri, string> = {
+  date: "c.date_course desc, c.soumise_le desc",
+  taux: "(c.prix_paye_euros / nullif(c.duree_reelle_minutes, 0)) asc nulls last, c.date_course desc",
+  conformite: "ecart_max desc nulls last, c.date_course desc",
+};
+
 export const lireCoursesPubliees = async (
-  { page, parPage }: { page: number; parPage: number }
+  { page, parPage, tri }: { page: number; parPage: number; tri: Tri }
 ): Promise<PageDeCourses> => {
   if (!baseConfiguree()) return { courses: [], total: 0, disponible: false };
 
@@ -212,14 +232,29 @@ export const lireCoursesPubliees = async (
   const debut = Math.max(0, (page - 1) * parPage);
 
   const [lignes, total] = await Promise.all([
-    sql`
-      select id, date_course, ville_slug, zone, plateforme, vehicule,
-             distance_km, prix_paye_euros, duree_reelle_minutes, duree_estimee_minutes
-      from courses
-      where statut = 'validee_auto'
-      order by date_course desc, soumise_le desc
-      limit ${parPage} offset ${debut}
+    sql.query(
+      `
+      select c.id, c.date_course, c.ville_slug, c.zone, c.plateforme, c.vehicule,
+             c.distance_km, c.prix_paye_euros, c.duree_reelle_minutes,
+             c.duree_estimee_minutes
+      from courses c
+      left join lateral (
+        select max(cl.valeur_bareme - cl.valeur_constatee) as ecart_max
+        from classifications cl
+        where cl.course_id = c.id
+          and cl.unite = 'EUR_PAR_COURSE'
+          and cl.valeur_bareme is not null
+          and cl.valeur_constatee is not null
+          and cl.calculee_le = (
+            select max(calculee_le) from classifications where course_id = c.id
+          )
+      ) e on true
+      where c.statut = 'validee_auto'
+      order by ${ORDRES[tri]}
+      limit $1 offset $2
     `,
+      [parPage, debut]
+    ),
     sql`select count(*)::int as nombre from courses where statut = 'validee_auto'`,
   ]);
 
