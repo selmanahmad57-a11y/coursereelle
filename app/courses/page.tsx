@@ -115,6 +115,64 @@ function Conformite({ course }: { course: CoursePubliee }) {
   );
 }
 
+/** Une course en fiche : la même information que la ligne, empilée. */
+function Fiche({ course }: { course: CoursePubliee }) {
+  const ville = villeParSlug(course.villeSlug);
+
+  const resultat = calculer(
+    {
+      prixPaye: course.prixEuros,
+      pourboire: null,
+      distanceKm: course.distanceKm,
+      dureeReelleMinutes: course.dureeReelleMinutes,
+      dureeEstimeeMinutes: course.dureeEstimeeMinutes,
+    },
+    tauxCotisations(course.dateCourse)
+  );
+
+  return (
+    <li className="rounded-lg border border-neutral-200 bg-white p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <span className="text-sm font-medium text-neutral-900">
+          {ville === null ? libelles.formulaire.autre_ville : ville.libelle}
+        </span>
+        <span className="font-mono text-xs tabular-nums text-neutral-500">
+          {course.dateCourse}
+        </span>
+      </div>
+
+      <p className="mt-0.5 text-xs text-neutral-600">
+        {traduire(libelles.plateformes, course.plateforme)} ·{" "}
+        {traduire(libelles.vehicules, course.vehicule)}
+      </p>
+
+      <div className="mt-3 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs text-neutral-600">{textes.colonnes.taux}</p>
+          <p className="font-mono text-2xl font-semibold tabular-nums text-mesure">
+            {resultat.tauxPlateforme === null
+              ? "—"
+              : formaterValeur(resultat.tauxPlateforme, UNITES.euroParHeure)}
+          </p>
+        </div>
+        <p className="text-right font-mono text-xs tabular-nums text-neutral-700">
+          {formaterValeur(course.prixEuros, UNITES.euroParCourse)}
+          <br />
+          {formaterValeur(course.distanceKm, UNITES.kilometre)}
+        </p>
+      </div>
+
+      <div className="mt-3 border-t border-neutral-100 pt-3">
+        <Conformite course={course} />
+      </div>
+
+      <div className="mt-3">
+        <Verification course={course} />
+      </div>
+    </li>
+  );
+}
+
 function Ligne({ course }: { course: CoursePubliee }) {
   const ville = villeParSlug(course.villeSlug);
 
@@ -204,7 +262,23 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
         </p>
       ) : (
         <>
-          <div className="mt-8 overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+          {/*
+            * SUR TÉLÉPHONE, LE TABLEAU MENT PAR OMISSION. Neuf colonnes tiennent
+            * sur soixante-quatre rem ; un écran de trottoir en montre quatre. Le
+            * prix, le taux, la conformité et la vérification — c'est-à-dire tout
+            * ce que cette page existe pour montrer — sortaient du cadre, sans
+            * qu'aucun signe n'indique qu'on pouvait faire défiler.
+            *
+            * Chaque course devient donc une fiche empilée en dessous de 640 px,
+            * et redevient une ligne de registre au-dessus.
+            */}
+          <ul className="mt-6 space-y-3 sm:hidden">
+            {liste.courses.map((course) => (
+              <Fiche key={course.id} course={course} />
+            ))}
+          </ul>
+
+          <div className="mt-8 hidden overflow-x-auto rounded-lg border border-neutral-200 bg-white sm:block">
             <table className="w-full min-w-[64rem] text-left text-sm">
               <thead>
                 <tr className="text-xs font-medium text-neutral-600">
