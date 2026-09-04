@@ -34,6 +34,32 @@
 import { vitesseMoyenne } from "./calculs.ts";
 import { CLES_ANNONCEES, CLES_SYSTEME, GROUPES_ANNONCES, UNITES } from "./cles.ts";
 
+/**
+ * UNE CATÉGORIE MANQUE, ET UNE COURSE RÉELLE L'A RÉVÉLÉE.
+ *
+ * Le 4 septembre 2026, une course de 7,32 km payée 8,92 € en 36 min 23 s. La
+ * grille annoncée en donnait 8,76 € : elle est donc CONFORME, et aucune des
+ * quatre catégories ci-dessous n'a rien à en dire. Pourtant elle rapporte
+ * 14,71 €/h là où la plateforme garantit 19 €/h — la garantie dépasse le vécu
+ * de 29 %.
+ *
+ * L'écart ne vient pas d'un barème contourné : il vient du temps. Un barème
+ * horaire peut être respecté à la lettre et manqué en substance, parce que le
+ * temps qu'il compte n'est pas le temps qui passe. C'est l'argument que ce site
+ * existe pour porter, et il n'a aujourd'hui aucune case où se ranger.
+ *
+ * CE QUI REND CETTE CATÉGORIE POSSIBLE, et qui n'allait pas de soi : la durée à
+ * employer est celle que la PLATEFORME affiche sur son récapitulatif — lue sur
+ * la capture, vérifiée par l'OCR — jamais le temps réel déclaré par le livreur.
+ * Avec la sienne, la catégorie mettrait en doute une donnée déclarative course
+ * par course, ce que « temps estimé incohérent » s'interdit déjà. Avec celle de
+ * la plateforme, elle confronte ses chiffres à sa propre promesse : rien n'y est
+ * contestable sans qu'elle se contredise.
+ *
+ * À construire quand la page Statistiques aura son volume. Elle demandera le
+ * barème `garantie_horaire_brute`, que la classification ne consulte pas encore,
+ * et une durée lue sur la capture — donc un champ probant de plus.
+ */
 export const CATEGORIES = [
   "conforme",
   "sous_minimum_annonce",
