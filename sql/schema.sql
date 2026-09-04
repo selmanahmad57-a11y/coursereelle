@@ -446,3 +446,19 @@ alter table courses add constraint appareil_connu
 alter table courses drop constraint if exists duree_remplissage_positive;
 alter table courses add constraint duree_remplissage_positive
   check (duree_remplissage_secondes is null or duree_remplissage_secondes > 0);
+
+-- Le temps passé en course, dans une session.
+--
+-- C'est le numérateur de la statistique que le dossier appelle décisive : le
+-- rapport entre le temps payé et le temps connecté. Le formulaire le demande
+-- déjà — facultatif, parce que toutes les applications ne le donnent pas — mais
+-- la colonne n'existait pas, si bien que la donnée se serait perdue le jour où
+-- l'envoi des sessions sera branché.
+--
+-- Les sessions qui ne le portent pas restent des sessions valides : elles
+-- alimentent le reste, et sortent du seul sous-échantillon de ce ratio.
+alter table sessions add column if not exists temps_en_course_minutes numeric(8, 2);
+
+alter table sessions drop constraint if exists temps_en_course_positif;
+alter table sessions add constraint temps_en_course_positif
+  check (temps_en_course_minutes is null or temps_en_course_minutes > 0);

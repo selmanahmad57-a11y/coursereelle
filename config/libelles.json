@@ -116,6 +116,11 @@
       "symbole": "ancrages",
       "decimales_min": 0,
       "decimales_max": 0
+    },
+    "SESSIONS": {
+      "symbole": "sessions",
+      "decimales_min": 0,
+      "decimales_max": 0
     }
   },
   "usages": {
@@ -440,7 +445,26 @@
     "pourquoi": "Avant ce seuil, publier un chiffre construit sur quelques dizaines de courses ferait plus de mal qu'un site vide : il suffirait d'un petit lot de fausses données pour le faire basculer. Le compteur, lui, ne ment pas.",
     "base_absente": "La base de données n'est pas encore branchée : aucune course ne peut être reçue pour le moment. Ce compteur affiche donc zéro, et non une estimation.",
     "provenance_compteur": "{validees} validées sur {recues} reçues",
-    "provenance_seuil": "Seuil publié sur la page Méthode, comme toutes les valeurs du site."
+    "provenance_seuil": "Seuil publié sur la page Méthode, comme toutes les valeurs du site.",
+    "conformite": {
+      "titre": "Conformité aux barèmes annoncés",
+      "introduction": "La répartition des courses vérifiées selon ce qu'elles montrent des barèmes que la plateforme publie. Chaque catégorie porte la clé du barème invoqué et les deux valeurs comparées — la page Les courses les affiche course par course.",
+      "colonne_categorie": "Catégorie",
+      "colonne_effectif": "Courses",
+      "colonne_ecart": "Écart médian",
+      "attente": "En attente du seuil",
+      "note_ecart": "L'écart est la différence entre ce que le barème annoncé donnait et ce qui a été payé. Médiane, jamais moyenne : une seule course très basse déplacerait une moyenne, pas une médiane."
+    },
+    "sessions": {
+      "titre": "Temps payé, temps connecté",
+      "introduction": "La donnée que les accords ignorent : la part du temps de connexion réellement passée en course. C'est elle qui dira ce que vaut une heure de disponibilité, et non une heure de livraison.",
+      "intitule_ratio": "Part du temps connecté passée en course",
+      "intitule_effectif": "Sessions publiées",
+      "attente": "En attente du seuil",
+      "sous_echantillon": "Ce rapport ne porte que sur les sessions dont l'application a donné le temps en course. Les autres restent des sessions valides et alimentent le reste : un sous-échantillon annoncé vaut mieux qu'un chiffre qui prétend porter sur tout.",
+      "aucune_session": "Aucune session n'a encore été publiée. L'envoi du formulaire de session n'est pas encore branché ; cette page attend donc une donnée qui n'existe pas plutôt que de prétendre le contraire.",
+      "provenance_seuil": "Seuil publié sur la page Méthode, comme toutes les valeurs du site."
+    }
   },
   "surveillance": {
     "titre": "Surveillance",

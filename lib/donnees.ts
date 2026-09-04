@@ -272,3 +272,122 @@ export const lireCoursesPubliees = async (
     disponible: true,
   };
 };
+
+/* ------------------------------------------------------------------ */
+/* Les statistiques de conformité et de sessions                       */
+/* ------------------------------------------------------------------ */
+
+export interface CompteCategorie {
+  categorie: string;
+  effectif: number;
+}
+
+export interface EcartConstate {
+  categorie: string;
+  /** Ce qui manque, en euros : le barème annoncé moins ce qui a été payé. */
+  ecart: number;
+}
+
+export interface DonneesConformite {
+  disponible: boolean;
+  repartition: CompteCategorie[];
+  ecarts: EcartConstate[];
+}
+
+/**
+ * La classification en vigueur de chaque course validée.
+ *
+ * Une course porte plusieurs générations de classification — l'historique des
+ * reclassifications — et seule la dernière décrit ce que le site conclut
+ * aujourd'hui. Compter les autres reviendrait à publier d'anciens avis comme
+ * s'ils étaient encore les siens.
+ */
+export const lireConformite = async (): Promise<DonneesConformite> => {
+  if (!baseConfiguree()) return { disponible: false, repartition: [], ecarts: [] };
+
+  const { db } = await import("./db.ts");
+  const sql = db();
+
+  const [repartition, ecarts] = await Promise.all([
+    sql`
+      select c.categorie, count(*)::int as nombre
+      from classifications c
+      join courses co on co.id = c.course_id
+      where co.statut = 'validee_auto'
+        and c.calculee_le = (
+          select max(calculee_le) from classifications where course_id = c.course_id
+        )
+      group by c.categorie
+    `,
+    sql`
+      select c.categorie, (c.valeur_bareme - c.valeur_constatee) as ecart
+      from classifications c
+      join courses co on co.id = c.course_id
+      where co.statut = 'validee_auto'
+        and c.unite = 'EUR_PAR_COURSE'
+        and c.valeur_bareme is not null
+        and c.valeur_constatee is not null
+        and c.calculee_le = (
+          select max(calculee_le) from classifications where course_id = c.course_id
+        )
+    `,
+  ]);
+
+  return {
+    disponible: true,
+    repartition: (repartition as { categorie: string; nombre: number }[]).map((ligne) => ({
+      categorie: ligne.categorie,
+      effectif: Number(ligne.nombre),
+    })),
+    ecarts: (ecarts as { categorie: string; ecart: string | number }[]).map((ligne) => ({
+      categorie: ligne.categorie,
+      ecart: Number(ligne.ecart),
+    })),
+  };
+};
+
+export interface DonneesSessions {
+  disponible: boolean;
+  /** Toutes les sessions validées. */
+  effectif: number;
+  /**
+   * Le rapport entre le temps passé en course et le temps connecté, en points
+   * de pourcentage. Sous-échantillon : seules les sessions dont l'application a
+   * donné le temps en course y figurent, ce que la page Méthode annonce.
+   */
+  ratios: number[];
+}
+
+export const lireDonneesSessions = async (): Promise<DonneesSessions> => {
+  if (!baseConfiguree()) return { disponible: false, effectif: 0, ratios: [] };
+
+  const { db } = await import("./db.ts");
+  const sql = db();
+
+  const [total, lignes] = await Promise.all([
+    sql`select count(*)::int as nombre from sessions where statut = 'validee_auto'`,
+    sql`
+      select temps_en_course_minutes,
+             extract(epoch from (deconnexion_le - connexion_le)) / 60 as minutes_connectees
+      from sessions
+      where statut = 'validee_auto' and temps_en_course_minutes is not null
+    `,
+  ]);
+
+  const ratios = (lignes as {
+    temps_en_course_minutes: string | number;
+    minutes_connectees: string | number;
+  }[])
+    .map((ligne) => ({
+      course: Number(ligne.temps_en_course_minutes),
+      connecte: Number(ligne.minutes_connectees),
+    }))
+    .filter(({ course, connecte }) => Number.isFinite(course) && connecte > 0)
+    .map(({ course, connecte }) => (course / connecte) * 100);
+
+  return {
+    disponible: true,
+    effectif: Number((total as { nombre: number }[])[0].nombre),
+    ratios,
+  };
+};

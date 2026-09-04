@@ -298,3 +298,7 @@ export const reglesClassification = (
 /* ------------------------------------------------------------------ */
 
 export const reglagesListeCourses = reglagesInterface.liste_courses;
+
+/** Le seuil propre aux sessions : une session n'est pas une course. */
+export const seuilSessions = (date: string): number | null =>
+  parametreSysteme(CLES_SYSTEME.seuilPublicationSessions, date);

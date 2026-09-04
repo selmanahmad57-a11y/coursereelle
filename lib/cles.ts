@@ -34,6 +34,7 @@ export const CLES_SYSTEME = {
   dureeSessionMaximale: "duree_session_maximale",
   cadenceMaximaleCourses: "cadence_maximale_courses",
   seuilPublication: "seuil_publication_statistiques",
+  seuilPublicationSessions: "seuil_publication_sessions",
   seuilOutliers: "seuil_outliers_ecarts_types",
   retentionEmpreintes: "retention_empreintes",
   soumissionsParHeure: "soumissions_maximales_par_heure",
@@ -85,6 +86,7 @@ export const UNITES = {
   bits: "BITS",
   coursesParHeure: "COURSES_PAR_HEURE",
   courses: "COURSES",
+  sessions: "SESSIONS",
 } as const;
 
 /**

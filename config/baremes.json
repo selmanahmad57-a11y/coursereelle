@@ -502,6 +502,16 @@
       "valable_du": "2026-09-04",
       "valable_au": null,
       "justification": "Le dossier en fait un critère absolu : le formulaire doit se remplir en moins de quatre-vingt-dix secondes sur téléphone, entre deux courses. Un livreur qui s'arrête pour publier ne dispose pas de plus. Ce seuil ne rejette rien et ne peut rien rejeter — il surveille : dépassé, il ne dit pas que la soumission est mauvaise, il dit que le formulaire l'est. C'est la seule exigence du dossier qui porte sur nous et non sur les plateformes, et elle était jusqu'ici invérifiable faute d'être mesurée."
+    },
+    {
+      "cle": "seuil_publication_sessions",
+      "libelle": "Nombre de sessions en deçà duquel aucune statistique de session n'est publiée",
+      "valeur": 30,
+      "unite": "SESSIONS",
+      "usage": "affichage",
+      "valable_du": "2026-09-04",
+      "valable_au": null,
+      "justification": "PROPOSITION, en attente de confirmation. Le seuil des courses vaut cent, et il ne s'applique pas tel quel : une session couvre une demi-journée de travail et plusieurs courses, si bien que cent sessions représenteraient un corpus bien plus grand que cent courses — et arriveraient bien plus tard. Trente est le point où une médiane cesse de dépendre d'un cas particulier sans exiger un an de collecte. Ce seuil ne rejette rien : il retarde une publication, donc il peut être resserré plus tard sans rien invalider de ce qui aura été publié — l'inverse ne serait pas vrai."
     }
   ]
 }
