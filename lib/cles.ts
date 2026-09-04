@@ -27,6 +27,7 @@ export const CLES_SYSTEME = {
   reliefMinimalEmpreinte: "relief_minimal_empreinte",
   delaiSuppressionCapture: "delai_suppression_capture",
   confianceMinimaleLecture: "confiance_minimale_lecture",
+  objectifTempsRemplissage: "objectif_temps_remplissage",
   toleranceGabarit: "tolerance_position_gabarit",
   toleranceMemeLigne: "tolerance_meme_ligne",
   dureeSessionMinimale: "duree_session_minimale",
@@ -77,6 +78,7 @@ export const UNITES = {
   kilometre: "KM",
   kilometreParHeure: "KM_PAR_HEURE",
   minutes: "MINUTES",
+  secondes: "SECONDES",
   jours: "JOURS",
   kilooctets: "KILOOCTETS",
   megaoctets: "MEGAOCTETS",
@@ -97,4 +99,17 @@ export const UNITES = {
 export const JETONS_TEXTE = {
   delai_suppression: CLES_SYSTEME.delaiSuppressionCapture,
   retention_empreintes: CLES_SYSTEME.retentionEmpreintes,
+} as const;
+
+/**
+ * Les deux valeurs de type d'appareil, telles que le code les emploie.
+ *
+ * La déduction se fait sur une seule capacité du navigateur — un pointeur
+ * grossier, c'est-à-dire un doigt. `tests/remplissage.test.mjs` vérifie que ces
+ * deux valeurs sont exactement celles que la configuration déclare : le
+ * formulaire ne peut donc pas envoyer un mot que la base refuserait.
+ */
+export const APPAREILS = {
+  tactile: "mobile",
+  autre: "ordinateur",
 } as const;

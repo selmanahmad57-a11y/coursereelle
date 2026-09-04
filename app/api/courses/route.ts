@@ -48,6 +48,8 @@ import { controlerCapture } from "@/lib/validation/capture.ts";
 import { empreintesCandidates, evaluerSoumission } from "@/lib/validation/anti-fraude.ts";
 import { controlerCoherencePhysique } from "@/lib/validation/regles-physiques.ts";
 import { analyserSoumissionCourse } from "@/lib/validation/soumission.ts";
+import { analyserAppareil, analyserDureeRemplissage } from "@/lib/remplissage.ts";
+import reglagesInterface from "@/config/interface.json";
 import { VILLE_AUTRE } from "@/lib/contexte-livreur.ts";
 import { verifierTurnstile } from "@/lib/turnstile.ts";
 import { deposerCapture, supprimerCapture } from "@/lib/r2.ts";
@@ -103,6 +105,20 @@ export async function POST(requete: Request) {
       403
     );
   }
+
+  /*
+   * Le temps de remplissage est lu À PART, et c'est structurel : il n'entre pas
+   * dans l'analyse de la soumission, donc il ne peut pas produire d'erreur de
+   * champ ni contribuer à un rejet. Absent, illisible ou absurde, il vaut null
+   * et la course passe exactement comme avant.
+   */
+  const dureeRemplissage = analyserDureeRemplissage(
+    texte(formulaire, "duree_remplissage_secondes")
+  );
+  const appareil = analyserAppareil(
+    texte(formulaire, "appareil"),
+    reglagesInterface.formulaire.appareils
+  );
 
   /* 2. Les champs ------------------------------------------------------ */
 
@@ -194,11 +210,13 @@ export async function POST(requete: Request) {
         date_course, ville_slug, zone, plateforme, vehicule,
         distance_km, prix_paye_euros, pourboire_euros,
         duree_estimee_minutes, duree_reelle_minutes,
+        duree_remplissage_secondes, appareil,
         statut, motif_rejet, filtre_rejet, verdict_le
       ) values (
         ${course.dateCourse}, ${course.villeSlug}, ${zone}, ${course.plateforme}, ${course.vehicule},
         ${course.distanceKm}, ${course.prixPayeEuros}, ${course.pourboireEuros},
         ${course.dureeEstimeeMinutes}, ${course.dureeReelleMinutes},
+        ${dureeRemplissage}, ${appareil},
         'rejetee_auto', ${motif}, ${filtre}, now()
       ) returning id
     `) as { id: string }[];
@@ -291,12 +309,14 @@ export async function POST(requete: Request) {
         date_course, ville_slug, zone, plateforme, vehicule,
         distance_km, prix_paye_euros, pourboire_euros,
         duree_estimee_minutes, duree_reelle_minutes,
+        duree_remplissage_secondes, appareil,
         capture_cle_r2, capture_hash, capture_phash,
         type_capture, provenance_indice, statut
       ) values (
         ${course.dateCourse}, ${course.villeSlug}, ${zone}, ${course.plateforme}, ${course.vehicule},
         ${course.distanceKm}, ${course.prixPayeEuros}, ${course.pourboireEuros},
         ${course.dureeEstimeeMinutes}, ${course.dureeReelleMinutes},
+        ${dureeRemplissage}, ${appareil},
         ${cleR2}, ${hashExact}, ${perceptuelle.empreinte},
         ${null}, ${null}, 'en_attente_ocr'
       ) returning id

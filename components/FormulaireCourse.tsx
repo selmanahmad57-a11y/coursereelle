@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import libelles from "@/config/libelles.json";
 import { formaterValeur } from "@/lib/baremes";
 import { calculer } from "@/lib/calculs.ts";
 import { analyserDuree } from "@/lib/duree.ts";
-import { UNITES } from "@/lib/cles.ts";
+import { APPAREILS, UNITES } from "@/lib/cles.ts";
 import {
   abonnerStockage,
   aujourdhui,
@@ -165,10 +165,41 @@ export default function FormulaireCourse() {
     );
   }, [course, dateCourse, contexte.vehicule]);
 
+  /*
+   * L'instant du premier champ touché. Une référence et non un état : le noter
+   * ne doit rien redessiner, et sa valeur ne sert qu'une fois, à l'envoi.
+   */
+  const premierContact = useRef<number | null>(null);
+
+  const noterPremierContact = () => {
+    premierContact.current ??= Date.now();
+  };
+
   const envoyer = async (evenement: React.FormEvent<HTMLFormElement>) => {
     evenement.preventDefault();
 
     const formulaire = new FormData(evenement.currentTarget);
+
+    /*
+     * Le temps de remplissage, et rien d'autre : un nombre de secondes, et un
+     * type d'appareil réduit à deux valeurs. Le dossier exige un formulaire
+     * rempli en moins de quatre-vingt-dix secondes sur téléphone ; sans mesure,
+     * cette exigence ne serait qu'une intention. Ce chiffre juge le formulaire,
+     * jamais la course : le serveur ne s'en sert pour aucun verdict.
+     */
+    if (premierContact.current !== null) {
+      formulaire.append(
+        "duree_remplissage_secondes",
+        String((Date.now() - premierContact.current) / 1000)
+      );
+    }
+
+    /* Une seule capacité interrogée — un pointeur grossier, c'est-à-dire un
+       doigt. Ni modèle, ni système, ni taille d'écran. */
+    formulaire.append(
+      "appareil",
+      window.matchMedia("(pointer: coarse)").matches ? APPAREILS.tactile : APPAREILS.autre
+    );
 
     /* Le contrôle du navigateur ne protège rien : celui du serveur fait foi.
        Celui-ci n'existe que pour éviter un aller-retour inutile. */
@@ -303,7 +334,12 @@ export default function FormulaireCourse() {
   }
 
   return (
-    <form className="space-y-8" onSubmit={envoyer}>
+    <form
+      className="space-y-8"
+      onSubmit={envoyer}
+      onFocusCapture={noterPremierContact}
+      onInputCapture={noterPremierContact}
+    >
       <section className="space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-neutral-900">{textes.section_contexte}</h2>

@@ -34,6 +34,8 @@ export interface EtatSurveillance {
   typesCapture: Compte[];
   captures: Compte[];
   lectures: Compte[];
+  /** Les temps de remplissage bruts, par appareil. Le résumé se fait ailleurs. */
+  remplissages: { appareil: string; secondes: number }[];
 }
 
 const VIDE: EtatSurveillance = {
@@ -46,6 +48,7 @@ const VIDE: EtatSurveillance = {
   typesCapture: [],
   captures: [],
   lectures: [],
+  remplissages: [],
 };
 
 /** Un motif de rejet peut en contenir plusieurs, séparés par des virgules. */
@@ -69,7 +72,7 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
 
   const sql = db();
 
-  const [statuts, rejets, signalements, villesLibres, empreintes, soumissions, pauses, suivies, types, lectures] =
+  const [statuts, rejets, signalements, villesLibres, empreintes, soumissions, pauses, suivies, types, lectures, remplissages] =
     await Promise.all([
       sql`select statut, count(*)::int as nombre from courses group by statut order by statut`,
       sql`select motif_rejet as motif, count(*)::int as nombre from courses where statut = 'rejetee_auto' group by motif_rejet`,
@@ -102,6 +105,11 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
         from lectures_capture
         group by champ, statut_lecture
         order by champ, statut_lecture
+      `,
+      sql`
+        select appareil, duree_remplissage_secondes as secondes
+        from courses
+        where duree_remplissage_secondes is not null and appareil is not null
       `,
     ]);
 
@@ -154,5 +162,8 @@ export const lireSurveillance = async (): Promise<EtatSurveillance> => {
       { cle: "soumissions_24h", nombre: Number((soumissions as { nombre: number }[])[0].nombre) },
       { cle: "appareils_en_pause", nombre: Number((pauses as { nombre: number }[])[0].nombre) },
     ],
+    remplissages: (remplissages as { appareil: string; secondes: string | number }[]).map(
+      (ligne) => ({ appareil: ligne.appareil, secondes: Number(ligne.secondes) })
+    ),
   };
 };

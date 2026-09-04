@@ -328,6 +328,12 @@
           "consequence": "Les chiffres agrégés vivent sur la page Statistiques, ne sont publiés qu'au-delà d'un effectif minimal, et sont des médianes — jamais des moyennes."
         }
       ]
+    },
+    "remplissage": {
+      "titre": "Le temps que ce formulaire vous prend",
+      "texte": "Nous mesurons le temps de remplissage pour tenir la promesse des quatre-vingt-dix secondes ; c'est un nombre, il n'identifie rien. Le formulaire compte les secondes entre le premier champ que vous touchez et l'envoi, et ce nombre part avec votre course.",
+      "portee": "Rien d'autre n'est mesuré : aucun outil d'analyse tiers, aucun identifiant, aucune trace de navigation, aucun enregistrement de ce que vous tapez. S'y ajoute seulement le type d'appareil, réduit à deux valeurs — téléphone ou ordinateur — parce que l'exigence des quatre-vingt-dix secondes porte sur le téléphone.",
+      "consequence": "Ce chiffre ne juge jamais une course : un remplissage lent ne rejette rien et n'écarte rien. Il juge le formulaire. S'il dépasse l'objectif, c'est notre travail qui est en cause, pas votre envoi."
     }
   },
   "statuts": {
@@ -466,7 +472,17 @@
       "supprimees": "Captures déjà supprimées"
     },
     "captures_note": "Une capture est supprimée définitivement après son délai. « À supprimer sans délai » doit rester à zéro : toute autre valeur signale que l'entretien ne tourne plus.",
-    "lectures_note": "Une répartition qui bascule vers « lecture hésitante » sur un champ signale un gabarit qui lit mal en série, pas des livreurs négligents."
+    "lectures_note": "Une répartition qui bascule vers « lecture hésitante » sur un champ signale un gabarit qui lit mal en série, pas des livreurs négligents.",
+    "remplissage": {
+      "titre": "Temps de remplissage",
+      "note": "Médiane par type d'appareil, et part des envois sous l'objectif. La médiane, ici comme ailleurs : une moyenne bougerait sur un seul onglet laissé ouvert.",
+      "colonne_appareil": "Appareil",
+      "colonne_effectif": "Mesurés",
+      "colonne_mediane": "Médiane",
+      "colonne_part": "Sous l'objectif",
+      "vide": "Aucun temps de remplissage mesuré pour l'instant.",
+      "objectif": "Objectif : {objectif}"
+    }
   },
   "types_capture": {
     "recapitulatif_details": "Récapitulatif « Détails » d'après course",
@@ -722,5 +738,9 @@
       "suivante": "Page suivante",
       "position": "Page {page} sur {pages}"
     }
+  },
+  "appareils": {
+    "mobile": "Téléphone",
+    "ordinateur": "Ordinateur"
   }
 }

@@ -492,6 +492,16 @@
       "valable_du": "2026-09-03",
       "valable_au": null,
       "justification": "Un gabarit à un seul ancrage accepte toute image portant ce champ : c'est un filtre décoratif, qui donne l'apparence d'un contrôle sans en exercer aucun. À deux ancrages, une seule relation les lie — la structure vérifiée est un segment, satisfait par hasard aussi bien que fabriqué à dessein. À trois ancrages, il existe au moins deux relations indépendantes : un alignement et un empilement, ou deux empilements. C'est le minimum pour que « la mise en page attendue » désigne quelque chose plutôt qu'une coïncidence. Usage de rejet, parce que ce nombre conditionne ce qui aura le droit de rejeter : un gabarit promu trop tôt écarterait des courses authentiques au nom d'une structure qui n'en est pas une. Il va donc dans le sens exigeant, et se relâchera si la mesure sur un parc plus large montre qu'un écran légitime ne peut pas l'atteindre."
+    },
+    {
+      "cle": "objectif_temps_remplissage",
+      "libelle": "Temps de remplissage du formulaire visé, du premier champ touché à l'envoi",
+      "valeur": 90,
+      "unite": "SECONDES",
+      "usage": "surveillance",
+      "valable_du": "2026-09-04",
+      "valable_au": null,
+      "justification": "Le dossier en fait un critère absolu : le formulaire doit se remplir en moins de quatre-vingt-dix secondes sur téléphone, entre deux courses. Un livreur qui s'arrête pour publier ne dispose pas de plus. Ce seuil ne rejette rien et ne peut rien rejeter — il surveille : dépassé, il ne dit pas que la soumission est mauvaise, il dit que le formulaire l'est. C'est la seule exigence du dossier qui porte sur nous et non sur les plateformes, et elle était jusqu'ici invérifiable faute d'être mesurée."
     }
   ]
 }

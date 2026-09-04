@@ -363,6 +363,21 @@ export default async function PageMethode() {
 
           <div className="rounded-lg border border-neutral-200 bg-white p-4">
             <h3 className="text-sm font-medium text-neutral-900">
+              {libelles.methode.remplissage.titre}
+            </h3>
+            <p className="mt-2 text-sm text-neutral-700">
+              {libelles.methode.remplissage.texte}
+            </p>
+            <p className="mt-2 text-sm text-neutral-700">
+              {libelles.methode.remplissage.portee}
+            </p>
+            <p className="mt-2 border-l-2 border-neutral-300 pl-3 text-sm text-neutral-700">
+              {libelles.methode.remplissage.consequence}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-neutral-900">
               {libelles.methode.anti_fraude.titre}
             </h3>
             <p className="mt-2 text-sm text-neutral-700">

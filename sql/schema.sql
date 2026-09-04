@@ -424,3 +424,25 @@ alter table classifications add column if not exists unite text;
 alter table classifications drop constraint if exists unite_avec_bareme;
 alter table classifications add constraint unite_avec_bareme
   check ((cle_bareme is null) = (unite is null));
+
+-- Le temps que le formulaire prend, et sur quel type d'appareil.
+--
+-- Le dossier pose une exigence chronométrable — moins de quatre-vingt-dix
+-- secondes sur téléphone, entre deux courses — qui était invérifiable faute
+-- d'être mesurée. Deux colonnes suffisent : un nombre de secondes, et un mot
+-- pris dans une liste de deux. Ni modèle d'appareil, ni système, ni taille
+-- d'écran, ni chaîne d'agent : combinées, ces informations désignent un
+-- appareil, et ces deux-là ne le peuvent pas.
+--
+-- Toutes deux facultatives : une soumission qui ne les porte pas est une
+-- soumission valide. Ce chiffre juge le formulaire, jamais la course.
+alter table courses add column if not exists duree_remplissage_secondes numeric(9, 2);
+alter table courses add column if not exists appareil text;
+
+alter table courses drop constraint if exists appareil_connu;
+alter table courses add constraint appareil_connu
+  check (appareil is null or appareil in ('mobile', 'ordinateur'));
+
+alter table courses drop constraint if exists duree_remplissage_positive;
+alter table courses add constraint duree_remplissage_positive
+  check (duree_remplissage_secondes is null or duree_remplissage_secondes > 0);

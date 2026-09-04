@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 
 import libelles from "@/config/libelles.json";
-import { formaterNombre } from "@/lib/baremes";
+import { formaterNombre, formaterValeur } from "@/lib/baremes";
+import { aujourdhui } from "@/lib/contexte-livreur.ts";
+import { UNITES } from "@/lib/cles.ts";
+import { parametreSysteme } from "@/lib/parametres";
+import { resumerRemplissage } from "@/lib/remplissage.ts";
+import { CLES_SYSTEME } from "@/lib/cles.ts";
 import { lireSurveillance, type EtatSurveillance } from "@/lib/surveillance-db.ts";
 import { accesAutorise, jetonAcces, NOM_COOKIE } from "@/lib/surveillance.ts";
 
@@ -183,6 +188,9 @@ export default async function PageSurveillance({
 
   const etat = await lireSurveillance();
 
+  const objectif = parametreSysteme(CLES_SYSTEME.objectifTempsRemplissage, aujourdhui());
+  const resumes = resumerRemplissage(etat.remplissages, objectif);
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-2xl font-semibold text-neutral-900">{textes.titre}</h1>
@@ -219,6 +227,70 @@ export default async function PageSurveillance({
           </div>
         </section>
       ))}
+
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold text-neutral-900">
+          {textes.remplissage.titre}
+        </h2>
+        <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
+          {resumes.length === 0 ? (
+            <p className="text-sm text-neutral-600">{textes.remplissage.vide}</p>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-xs font-medium text-neutral-600">
+                  <th className="pb-1" scope="col">{textes.remplissage.colonne_appareil}</th>
+                  <th className="pb-1 text-right" scope="col">
+                    {textes.remplissage.colonne_effectif}
+                  </th>
+                  <th className="pb-1 text-right" scope="col">
+                    {textes.remplissage.colonne_mediane}
+                  </th>
+                  <th className="pb-1 text-right" scope="col">
+                    {textes.remplissage.colonne_part}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {resumes.map((resume) => (
+                  <tr key={resume.appareil} className="border-t border-neutral-100">
+                    <td className="py-1.5 text-neutral-900">
+                      {libelles.appareils[resume.appareil as keyof typeof libelles.appareils] ??
+                        resume.appareil}
+                    </td>
+                    <td className="py-1.5 text-right font-mono tabular-nums text-neutral-700">
+                      {formaterNombre(resume.effectif)}
+                    </td>
+                    <td className="py-1.5 text-right font-mono tabular-nums text-neutral-900">
+                      {resume.mediane === null
+                        ? "—"
+                        : formaterValeur(resume.mediane, UNITES.secondes)}
+                    </td>
+                    <td className="py-1.5 text-right font-mono tabular-nums text-neutral-900">
+                      {resume.partSousObjectif === null
+                        ? "—"
+                        : formaterValeur(resume.partSousObjectif, UNITES.pourcent)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {objectif === null ? null : (
+            <p className="mt-3 text-xs font-medium text-neutral-800">
+              {textes.remplissage.objectif.replace(
+                "{objectif}",
+                formaterValeur(objectif, UNITES.secondes)
+              )}
+            </p>
+          )}
+
+          <p className="mt-2 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
+            {textes.remplissage.note}
+          </p>
+        </div>
+      </section>
 
       <section className="mt-8">
         <h2 className="text-sm font-semibold text-neutral-900">

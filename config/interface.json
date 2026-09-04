@@ -3,5 +3,12 @@
   "liste_courses": {
     "par_page": 50,
     "justification": "La page sert deux publics. Le livreur qui vient voir si des courses ressemblent aux siennes regarde le haut de l'écran, et vingt lui suffiraient ; celui qui veut parcourir le corpus a besoin de tout. Cinquante donne au défilement une impression honnête de l'ensemble tout en gardant la page rapide sur un téléphone en 4G, qui reste le critère de ce site. Au-delà, une pagination numérotée plutôt qu'un défilement infini : une page numérotée se cite, se partage et se retrouve."
+  },
+  "formulaire": {
+    "note": "Le type d'appareil est déduit d'une seule capacité du navigateur — un pointeur grossier, c'est-à-dire un doigt — et réduit à deux valeurs. Ni modèle, ni système, ni taille d'écran, ni chaîne d'agent : ces informations, combinées, identifient un appareil, et deux valeurs ne le peuvent pas. La distinction n'existe que parce que l'objectif du dossier porte sur le téléphone.",
+    "appareils": [
+      "mobile",
+      "ordinateur"
+    ]
   }
 }
