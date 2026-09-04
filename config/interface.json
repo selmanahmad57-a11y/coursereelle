@@ -10,5 +10,9 @@
       "mobile",
       "ordinateur"
     ]
+  },
+  "envois": {
+    "memorises_maximum": 100,
+    "justification": "Combien d'envois ce navigateur garde en mémoire pour en suivre le sort. Cent couvre plusieurs semaines de soirées denses ; au-delà, une course a été publiée, jugée et classée depuis longtemps, et son suivi n'apprend plus rien. La borne existe surtout pour que cette liste ne grossisse pas indéfiniment sur l'appareil de quelqu'un qui ne l'a pas demandé."
   }
 }

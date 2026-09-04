@@ -43,6 +43,15 @@ import {
   type Brouillon,
 } from "@/lib/brouillon.ts";
 
+import reglagesInterface from "@/config/interface.json";
+import {
+  ajouterEnvoi,
+  decoderEnvois,
+  ecrireEnvois,
+  estIdentifiant,
+  lireEnvois,
+} from "@/lib/envois.ts";
+
 import { Champ } from "./Champ";
 import CalculEnDirect from "./CalculEnDirect";
 import ChampCapture from "./ChampCapture";
@@ -286,6 +295,7 @@ export default function FormulaireCourse() {
         statut?: string;
         motif?: string;
         details?: unknown;
+        id?: string;
       };
 
       const reussite = reponse.ok && corps.statut !== "rejetee_auto";
@@ -309,6 +319,23 @@ export default function FormulaireCourse() {
       });
 
       if (reussite) {
+        /*
+         * L'identifiant est retenu ICI, sur l'appareil, et nulle part ailleurs.
+         * C'est la seule façon dont ce livreur apprendra le sort d'une lecture
+         * qui se fera un quart d'heure plus tard : le site n'a ni compte, ni
+         * adresse, et ne peut le joindre d'aucune manière.
+         */
+        if (estIdentifiant(corps.id)) {
+          const maximum = reglagesInterface.envois.memorises_maximum;
+          ecrireEnvois(
+            ajouterEnvoi(
+              decoderEnvois(lireEnvois(), maximum),
+              { id: corps.id, envoyeLe: new Date().toISOString() },
+              maximum
+            )
+          );
+        }
+
         /* Le brouillon a fait son travail : la course est partie. Il s'efface
            ici, jamais avant — ni à l'envoi, ni après un échec. */
         effacerBrouillon();
@@ -379,6 +406,15 @@ export default function FormulaireCourse() {
             {textes.succes.autre}
           </button>
           <p className="text-xs text-neutral-600">{textes.succes.autre_aide}</p>
+
+          {/* Le sort de cet envoi se lira là, et nulle part ailleurs : la lecture
+              est différée et le site n'a aucun moyen de prévenir. */}
+          <Link
+            className="block text-sm font-medium text-mesure underline underline-offset-2"
+            href="/envois"
+          >
+            {textes.succes.suivi}
+          </Link>
 
           <Link
             className="block text-sm underline underline-offset-2 hover:text-neutral-900"

@@ -261,11 +261,12 @@
     },
     "succes": {
       "titre": "Course reçue",
-      "explication": "Elle attend la lecture automatique de sa capture avant d'entrer dans les statistiques. Vous n'avez rien d'autre à faire.",
+      "explication": "Elle sera lue dans le quart d'heure : la capture est comparée à vos chiffres, puis supprimée. Son sort s'affichera sur la page « Mes envois » — c'est là qu'il faudra regarder, le site n'ayant aucun moyen de vous prévenir.",
       "recapitulatif": "Ce que vous venez d'envoyer",
       "autre": "Publier une autre course",
       "autre_aide": "Votre ville, votre plateforme et votre véhicule sont conservés.",
-      "statistiques": "Voir les statistiques"
+      "statistiques": "Voir les statistiques",
+      "suivi": "Suivre le sort de cet envoi"
     },
     "guide_capture": {
       "resume": "Quel écran capturer ?",
@@ -706,6 +707,10 @@
         "libelle": "Publier une session"
       },
       {
+        "href": "/envois",
+        "libelle": "Mes envois"
+      },
+      {
         "href": "/courses",
         "libelle": "Les courses"
       },
@@ -830,5 +835,23 @@
   "appareils": {
     "mobile": "Téléphone",
     "ordinateur": "Ordinateur"
+  },
+  "envois": {
+    "titre": "Mes envois",
+    "introduction": "Le sort des courses envoyées depuis cet appareil. La lecture de la capture est différée d'un quart d'heure environ : c'est ici que son résultat s'affiche, puisque le site n'a aucun moyen de vous joindre.",
+    "aucun": "Aucun envoi depuis ce navigateur. Cette page se remplira dès votre première course.",
+    "limite": "Cette liste vit sur cet appareil, et nulle part ailleurs. Changer de téléphone ou vider votre navigateur fait perdre le suivi — jamais les courses, qui restent publiées. C'est le prix de l'absence de compte, et c'est un prix choisi : sans compte, il n'y a rien à voler, rien à recouper, et personne à désactiver.",
+    "chargement": "Lecture du sort de vos envois…",
+    "introuvable": "Cet envoi n'existe plus, ou n'a jamais abouti. Rien n'a été publié.",
+    "colonne_envoye": "Envoyé",
+    "colonne_statut": "État",
+    "attente": "En attente de lecture. La capture sera lue dans le quart d'heure ; revenez ici.",
+    "validee": "Validée et publiée.",
+    "divergence_titre": "Les chiffres lus ne sont pas ceux saisis",
+    "divergence_aide": "Vérifiez que la capture correspond bien à cette course : deux captures se ressemblent dans une galerie. Vous pouvez la renvoyer avec la bonne image.",
+    "colonne_champ": "Champ",
+    "colonne_saisi": "Saisi",
+    "colonne_lu": "Lu sur la capture",
+    "renvoyer": "Publier cette course à nouveau"
   }
 }
