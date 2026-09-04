@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import Script from "next/script";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
 import libelles from "@/config/libelles.json";
@@ -39,13 +41,51 @@ const unitesAnomalie: Record<string, string> = {
   temps_paye_superieur_au_connecte: UNITES.minutes,
 };
 
+const cleTurnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+const motifsTechniques: Record<string, string> = {
+  ...libelles.motifs_technique,
+  ...libelles.motifs_anti_fraude,
+  ...libelles.motifs_session,
+};
+const motifsSoumission: Record<string, string> = libelles.motifs_soumission;
+const champsLisibles: Record<string, string> = libelles.champs_soumission;
+
+/** Un détail est soit un code normalisé, soit une erreur de champ. */
+const decrireDetail = (detail: unknown): string => {
+  if (typeof detail === "string") return motifsTechniques[detail] ?? detail;
+
+  if (detail && typeof detail === "object" && "champ" in detail && "motif" in detail) {
+    const { champ, motif } = detail as { champ: string; motif: string };
+    return `${champsLisibles[champ] ?? champ} : ${motifsSoumission[motif] ?? motif}`;
+  }
+
+  return String(detail);
+};
+
+const reinitialiserTurnstile = () => {
+  try {
+    window.turnstile?.reset();
+  } catch {
+    /* Script absent ou déjà retiré : le prochain envoi le signalera lui-même. */
+  }
+};
+
 export default function FormulaireSession() {
   const memoire = useSyncExternalStore(abonnerStockage, lireStockage, stockageAuRendu);
   const dateDuJour = useSyncExternalStore(sansAbonnement, aujourdhui, dateAuRendu);
 
+  const [envoi, setEnvoi] = useState<"repos" | "en_cours">("repos");
+  const [envoyee, setEnvoyee] = useState(false);
+  const [retourEnvoi, setRetourEnvoi] = useState<{
+    reussite: boolean;
+    message: string;
+  } | null>(null);
+
   const [contexteSaisi, setContexteSaisi] = useState<Contexte | null>(null);
   const [dateSaisie, setDateSaisie] = useState<string | null>(null);
 
+  const [villeLibre, setVilleLibre] = useState("");
   const [connexion, setConnexion] = useState("");
   const [deconnexion, setDeconnexion] = useState("");
   const [nombreCourses, setNombreCourses] = useState("");
@@ -96,8 +136,113 @@ export default function FormulaireSession() {
 
   const rienACalculer = resultat.dureeConnecteeMinutes === null;
 
+  const envoyer = async (evenement: React.FormEvent<HTMLFormElement>) => {
+    evenement.preventDefault();
+
+    /*
+     * Les champs ne portent pas de `name` : ils sont pilotés par l'état. Le
+     * corps est donc assemblé ici, et le jeton anti-robot récupéré du
+     * formulaire, où le script de Cloudflare l'a déposé.
+     */
+    const corpsFormulaire = new FormData(evenement.currentTarget);
+
+    const jeton = corpsFormulaire.get("cf-turnstile-response");
+    if (typeof jeton !== "string" || jeton === "") {
+      setRetourEnvoi({ reussite: false, message: textes.envoi.turnstile_sans_jeton });
+      return;
+    }
+
+    for (const [nom, valeur] of [
+      ["date_session", dateSession],
+      ["ville", contexte.ville],
+      ["ville_libre", villeLibre],
+      ["plateforme", contexte.plateforme],
+      ["vehicule", contexte.vehicule],
+      ["heure_connexion", connexion],
+      ["heure_deconnexion", deconnexion],
+      ["nombre_courses", nombreCourses],
+      ["revenu_total_euros", revenu],
+      ["minutes_en_course", minutesEnCourse],
+    ] as const) {
+      corpsFormulaire.append(nom, valeur);
+    }
+
+    setEnvoi("en_cours");
+    setRetourEnvoi(null);
+
+    try {
+      const reponse = await fetch("/api/sessions", {
+        method: "POST",
+        body: corpsFormulaire,
+      });
+      const corps = (await reponse.json()) as {
+        statut?: string;
+        motif?: string;
+        details?: unknown;
+      };
+
+      const reussite = reponse.ok && corps.statut !== "rejetee_auto";
+
+      const precision = Array.isArray(corps.details)
+        ? ` — ${corps.details.map(decrireDetail).join(" ; ")}`
+        : "";
+
+      setRetourEnvoi({
+        reussite,
+        message: reussite
+          ? textes.envoi.reussite
+          : `${textes.envoi.rejet} ${motifsTechniques[corps.motif ?? ""] ?? corps.motif ?? ""}${precision}`.trim(),
+      });
+
+      if (reussite) setEnvoyee(true);
+      else reinitialiserTurnstile();
+    } catch {
+      setRetourEnvoi({ reussite: false, message: textes.envoi.erreur_reseau });
+      reinitialiserTurnstile();
+    } finally {
+      setEnvoi("repos");
+    }
+  };
+
+  const reprendre = () => {
+    setConnexion("");
+    setDeconnexion("");
+    setNombreCourses("");
+    setRevenu("");
+    setMinutesEnCourse("");
+    setDateSaisie(null);
+    setRetourEnvoi(null);
+    setEnvoyee(false);
+    reinitialiserTurnstile();
+  };
+
+  if (envoyee) {
+    return (
+      <div className="space-y-4">
+        <section className="carte border-mesure/40 bg-mesure-clair">
+          <h2 className="text-base font-semibold text-mesure">{textes.succes.titre}</h2>
+          <p className="mt-2 text-sm text-encre">{textes.succes.explication}</p>
+        </section>
+
+        <section className="space-y-3">
+          <button className="bouton-principal" onClick={reprendre} type="button">
+            {textes.succes.autre}
+          </button>
+          <p className="provenance">{textes.succes.autre_aide}</p>
+
+          <Link
+            className="block text-sm text-mesure underline underline-offset-2"
+            href="/statistiques"
+          >
+            {textes.succes.statistiques}
+          </Link>
+        </section>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
+    <form className="space-y-4" onSubmit={envoyer}>
       <section className="carte space-y-4">
         <div>
           <h2 className="etiquette-section">{textes.section_contexte}</h2>
@@ -120,6 +265,21 @@ export default function FormulaireSession() {
             <option value={VILLE_AUTRE}>{libelles.formulaire.autre_ville}</option>
           </select>
         </Champ>
+
+        {contexte.ville === VILLE_AUTRE ? (
+          <Champ
+            identifiant="session-ville-libre"
+            intitule={libelles.formulaire.autre_ville_champ}
+          >
+            <input
+              className="champ"
+              id="session-ville-libre"
+              onChange={(evenement) => setVilleLibre(evenement.target.value)}
+              type="text"
+              value={villeLibre}
+            />
+          </Champ>
+        ) : null}
 
         <Champ identifiant="session-plateforme" intitule={libelles.formulaire.champs.plateforme}>
           <select
@@ -300,16 +460,43 @@ export default function FormulaireSession() {
         ) : null}
       </div>
 
-      <section>
+      <section className="carte">
+        {cleTurnstile ? (
+          <>
+            <p className="etiquette-section">{textes.envoi.verification}</p>
+            <p className="provenance mt-1">{textes.envoi.verification_aide}</p>
+            <div className="cf-turnstile mt-2" data-sitekey={cleTurnstile} />
+            <Script
+              src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+              strategy="afterInteractive"
+            />
+          </>
+        ) : (
+          <p className="rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2 text-sm text-ecart">
+            {textes.envoi.turnstile_absent}
+          </p>
+        )}
+
         <button
-          className="bouton-principal"
-          disabled
-          type="button"
+          className="bouton-principal mt-4"
+          disabled={!cleTurnstile || envoi === "en_cours"}
+          type="submit"
         >
-          {textes.envoi.bouton}
+          {envoi === "en_cours" ? textes.envoi.en_cours : textes.envoi.bouton}
         </button>
-        <p className="mt-2 text-xs text-neutral-600">{textes.envoi.indisponible}</p>
+
+        {retourEnvoi ? (
+          <p
+            className={`mt-3 rounded-md border px-3 py-2 text-sm ${
+              retourEnvoi.reussite
+                ? "border-mesure/40 bg-mesure-clair text-mesure"
+                : "border-ecart/40 bg-ecart-clair text-ecart"
+            }`}
+          >
+            {retourEnvoi.message}
+          </p>
+        ) : null}
       </section>
-    </div>
+    </form>
   );
 }

@@ -34,6 +34,7 @@ export const MOTIFS_SOUMISSION = [
   "champ_absent",
   "nombre_invalide",
   "duree_invalide",
+  "heure_invalide",
   "date_invalide",
   "valeur_hors_vocabulaire",
   "ville_absente",

@@ -446,9 +446,24 @@
     "anomalies_titre": "À vérifier avant d'envoyer",
     "envoi": {
       "bouton": "Envoyer la session",
-      "indisponible": "L'envoi n'est pas encore branché : il attend la base de données. Le calcul ci-dessous fonctionne déjà."
+      "en_cours": "Envoi…",
+      "verification": "Vérification anti-robot",
+      "verification_aide": "Elle se fait le plus souvent toute seule, sans rien afficher. Une case n'apparaît que si Cloudflare juge utile de vous poser la question.",
+      "turnstile_absent": "La clé Turnstile n'est pas configurée : l'envoi est fermé.",
+      "turnstile_sans_jeton": "La vérification anti-robot ne s'est pas exécutée. Un bloqueur de contenu ou une coupure réseau l'empêche de se charger — réessayez, ou désactivez le bloqueur sur cette page.",
+      "reussite": "Session reçue. Elle entre directement dans les statistiques : il n'y a rien à lire plus tard, une session n'a pas de capture.",
+      "rejet": "Session refusée par les filtres.",
+      "erreur_reseau": "L'envoi n'a pas abouti. Réessayez."
     },
-    "sans_capture": "Une session ne demande aucune capture d'écran : le temps connecté n'apparaît sur aucun récapitulatif."
+    "sans_capture": "Une session ne demande aucune capture d'écran : le temps connecté n'apparaît sur aucun récapitulatif.",
+    "succes": {
+      "titre": "Session reçue",
+      "explication": "Elle est enregistrée telle quelle : une session ne porte aucune preuve, et le site le dit plutôt que de laisser croire qu'il l'a vérifiée. Sa fiabilité viendra du nombre — médianes, exclusion des valeurs aberrantes, seuil de publication.",
+      "recapitulatif": "Ce que vous venez d'envoyer",
+      "autre": "Publier une autre session",
+      "autre_aide": "Votre ville, votre plateforme et votre véhicule sont conservés.",
+      "statistiques": "Voir les statistiques"
+    }
   },
   "statistiques": {
     "titre": "Statistiques",
@@ -549,7 +564,8 @@
     "duree_invalide": "Durée non lisible : écrivez-la 16:34, 16 min 34 s, ou 17",
     "date_invalide": "Date invalide",
     "valeur_hors_vocabulaire": "Valeur inattendue",
-    "ville_absente": "Ville non renseignée"
+    "ville_absente": "Ville non renseignée",
+    "heure_invalide": "Heure non lisible : écrivez-la 14:30"
   },
   "champs_soumission": {
     "date_course": "Date de la course",
@@ -561,7 +577,13 @@
     "prix_paye_euros": "Prix payé par la plateforme",
     "pourboire_euros": "Pourboire",
     "duree_estimee_minutes": "Durée affichée par l'application",
-    "duree_reelle_minutes": "Temps réel"
+    "duree_reelle_minutes": "Temps réel",
+    "date_session": "Date de la session",
+    "heure_connexion": "Heure de connexion",
+    "heure_deconnexion": "Heure de déconnexion",
+    "nombre_courses": "Nombre de courses effectuées",
+    "revenu_total_euros": "Revenu versé par la plateforme",
+    "minutes_en_course": "Temps passé en course"
   },
   "statuts_lecture": {
     "verifie": "Vérifié sur la capture",

@@ -462,3 +462,23 @@ alter table sessions add column if not exists temps_en_course_minutes numeric(8,
 alter table sessions drop constraint if exists temps_en_course_positif;
 alter table sessions add constraint temps_en_course_positif
   check (temps_en_course_minutes is null or temps_en_course_minutes > 0);
+
+-- Une ville saisie librement peut venir d'une course OU d'une session.
+--
+-- La table n'acceptait que des courses. Une session dont la ville est hors liste
+-- perdait donc la saisie brute — et c'est précisément elle qui permet de
+-- normaliser plus tard, quand on découvre que « St Herblain » et
+-- « Saint-Herblain » sont la même ville. Les deux origines cohabitent, et la
+-- contrainte impose qu'il y en ait exactement une : une ligne rattachée aux
+-- deux, ou à aucune, ne se rattache à rien.
+alter table villes_saisies_libres alter column course_id drop not null;
+
+alter table villes_saisies_libres
+  add column if not exists session_id uuid references sessions (id) on delete cascade;
+
+alter table villes_saisies_libres drop constraint if exists une_seule_origine;
+alter table villes_saisies_libres add constraint une_seule_origine
+  check ((course_id is null) <> (session_id is null));
+
+create index if not exists villes_saisies_libres_session_idx
+  on villes_saisies_libres (session_id);

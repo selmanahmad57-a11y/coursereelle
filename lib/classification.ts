@@ -59,6 +59,19 @@ import { CLES_ANNONCEES, CLES_SYSTEME, GROUPES_ANNONCES, UNITES } from "./cles.t
  * À construire quand la page Statistiques aura son volume. Elle demandera le
  * barème `garantie_horaire_brute`, que la classification ne consulte pas encore,
  * et une durée lue sur la capture — donc un champ probant de plus.
+ *
+ * LA CONSÉQUENCE EN CASCADE, à articuler avec la dégradation existante. Faire de
+ * la durée un champ probant la rendrait bloquante comme le prix et la distance :
+ * une lecture hésitante ferait échouer la course entière. Ce serait excessif, et
+ * contraire à ce qui a été décidé — une durée absente ou mal lue n'empêche pas
+ * de publier une course, elle empêche seulement de la comparer.
+ *
+ * La bonne forme est donc plus fine : la durée reste déclarative pour le verdict
+ * — la course se valide sans elle — et devient probante pour cette catégorie
+ * seule. Non vérifiée, la course est publiée mais n'entre pas dans cette
+ * statistique. C'est le motif du sous-échantillon annoncé, déjà employé pour le
+ * rapport temps payé / temps connecté : un échantillon déclaré vaut mieux qu'un
+ * chiffre qui prétend porter sur tout.
  */
 export const CATEGORIES = [
   "conforme",
