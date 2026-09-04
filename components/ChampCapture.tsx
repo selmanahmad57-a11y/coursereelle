@@ -80,11 +80,11 @@ export default function ChampCapture({
 
   return (
     <div>
-      <p className="block text-sm font-medium text-neutral-800">{textes.intitule}</p>
+      <p className="etiquette-section">{textes.intitule}</p>
       <p className="mt-1 text-xs text-neutral-600">{textes.aide}</p>
 
       <label
-        className="mt-2 flex min-h-12 w-full cursor-pointer items-center justify-center rounded-md border border-dashed border-mesure/50 bg-mesure-clair px-4 py-3 text-base font-medium text-mesure hover:border-mesure"
+        className="bouton-fichier mt-2"
         htmlFor="capture"
       >
         {selection ? textes.remplacer : textes.bouton}
@@ -136,7 +136,7 @@ export default function ChampCapture({
           <figcaption className="mt-1 flex items-center gap-3 text-xs text-neutral-600">
             <span className="truncate">{selection.nom}</span>
             <button
-              className="shrink-0 underline underline-offset-2 hover:text-neutral-900"
+              className="bouton-lien shrink-0"
               onClick={() => {
                 oublier();
                 onChange?.(null);

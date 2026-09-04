@@ -1,39 +1,184 @@
 @import "tailwindcss";
 
 /*
- * Les polices chargées par le composant de mise en page deviennent les polices
- * par défaut des utilitaires `font-sans` et `font-mono`.
+ * LE THÈME DU SITE. Il est écrit ici, une fois, et les pages le consomment.
  *
- * CE FICHIER NE PORTE AUCUNE RÈGLE HORS COUCHE, et c'est délibéré. Il en portait
- * une, héritée du gabarit de départ : `body { background: … }`. Une règle sans
- * couche l'emporte sur tout ce que Tailwind écrit dans `@layer utilities` — le
- * `bg-neutral-50` de la page était donc silencieusement remplacé par du blanc,
- * sans qu'aucune erreur ne le signale. Une classe qui ne s'applique pas est le
- * pire genre de panne : elle ne casse rien, elle ment.
+ * La règle qui gouverne ce fichier : une page n'invente aucun style. Si une
+ * apparence se répète, elle devient une classe de ce fichier ; si elle ne se
+ * répète pas, elle n'a probablement pas lieu d'être. Des classes recopiées de
+ * page en page divergent toujours — c'est ainsi qu'un site finit par avoir sept
+ * nuances de bordure et six tailles de bouton.
+ *
+ * CE FICHIER NE PORTE AUCUNE RÈGLE HORS COUCHE. Il en portait une, héritée du
+ * gabarit de départ : `body { background: … }`. Une règle sans couche l'emporte
+ * sur tout ce que Tailwind écrit dans `@layer utilities`, et le fond de la page
+ * était silencieusement remplacé par du blanc. Une classe qui ne s'applique pas
+ * est le pire genre de panne : elle ne casse rien, elle ment. Un test refuse
+ * désormais toute règle qui ne serait pas dans une couche.
  */
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 /*
- * TROIS COULEURS, ET PAS UNE DE PLUS.
+ * LA PALETTE : QUATRE RÔLES, ET PAS UN DE PLUS.
  *
- * Elles ne décorent pas : elles disent de quelle nature est un nombre, ce que la
- * page Méthode énonce déjà en toutes lettres.
+ * Elle ne décore pas, elle dit de quelle nature est ce qu'on regarde — ce que
+ * la page Méthode énonce déjà en toutes lettres :
  *
- *   mesuré   ce que la capture a confirmé — la seule couleur pleine du site ;
- *   annoncé  ce que la plateforme promet — gris, parce que c'est un dire, pas
- *            une mesure, et que le gris ne se donne pas pour une preuve ;
- *   écart    la différence entre les deux, seul endroit qui alerte.
+ *   mesure    ce qu'une capture a confirmé. Seule couleur pleine du site.
+ *   declare   ce qui est affirmé sans preuve : une saisie, un barème annoncé.
+ *             Gris, parce qu'un dire ne doit pas se donner pour une mesure.
+ *   ecart     la différence entre les deux. Seule couleur d'alerte, et elle ne
+ *             sert qu'à cela — c'est pourquoi elle se remarque encore.
+ *   trait     les bordures, l'encre, le fond.
  *
- * Le bleu de pétrole et la brique sont volontairement sourds. Un instrument de
- * mesure n'a pas de couleur de marque : il a une couleur de lecture. Tout ce
- * qui brille ici ressemblerait à une promesse, et ce site en démonte.
+ * Les deux teintes vives sont sourdes exprès. Un instrument de mesure n'a pas
+ * de couleur de marque : il a une couleur de lecture. Tout ce qui brille ici
+ * ressemblerait à une promesse, et ce site en démonte.
  */
 @theme {
+  --color-fond: #f6f7f8;
+  --color-encre: #14181c;
+  --color-trait: #d8dcdf;
+
   --color-mesure: #1b4965;
   --color-mesure-clair: #e8eef3;
+
   --color-ecart: #a4442f;
-  --color-ecart-clair: #f6ece9;
+  --color-ecart-clair: #f7ece9;
+
+  --color-declare: #5b6570;
+  --color-declare-clair: #eceef0;
+}
+
+@layer components {
+  /*
+   * LES WIDGETS NATIFS SONT INTERDITS D'APPARENCE PAR DÉFAUT.
+   *
+   * Un select gris de système d'exploitation au milieu d'une page dessinée dit
+   * « pas fini » avant que le premier mot ne soit lu — et sur le formulaire de
+   * course, c'est le premier écran qu'un testeur voit. `appearance: none` les
+   * dépouille ; le chevron est un SVG en fond, pas une bibliothèque.
+   */
+  .champ {
+    @apply mt-1.5 block min-h-12 w-full rounded-md border border-trait bg-white px-3 py-3;
+    @apply text-base text-encre;
+    @apply focus:border-mesure focus:ring-2 focus:ring-mesure/20 focus:outline-none;
+  }
+
+  .champ::placeholder {
+    @apply text-declare/60;
+  }
+
+  .champ-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%235b6570' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><path d='M6 8l4 4 4-4'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    @apply pr-10;
+  }
+
+  .champ-date::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-60;
+  }
+
+  /*
+   * Un bouton d'envoi de trottoir : pleine largeur, haut, sans ambiguïté.
+   * Le socle est déclaré une fois pour les trois variantes — Tailwind v4
+   * n'autorise pas `@apply` sur une classe de composant, et un groupe de
+   * sélecteurs dit la même chose sans dupliquer les déclarations.
+   */
+  .bouton-principal,
+  .bouton-second,
+  .bouton-fichier {
+    @apply flex min-h-12 w-full items-center justify-center rounded-md px-4 py-3;
+    @apply text-base font-semibold transition-colors;
+  }
+
+  .bouton-principal {
+    @apply bg-mesure text-white hover:bg-mesure/90;
+    @apply disabled:bg-declare-clair disabled:text-declare;
+  }
+
+  .bouton-second {
+    @apply border border-trait bg-white text-encre hover:border-mesure hover:text-mesure;
+  }
+
+  /* Un bouton textuel — « retirer », « annuler ». Il agit comme un lien, mais
+     il reste un bouton : c'est une action, pas une navigation. */
+  .bouton-lien {
+    @apply cursor-pointer text-xs font-medium text-mesure underline underline-offset-2;
+    @apply hover:text-encre;
+  }
+
+  /* Le choix d'un fichier : une zone, pas un bouton de système. */
+  .bouton-fichier {
+    @apply cursor-pointer border border-dashed border-mesure/50 bg-mesure-clair text-mesure;
+    @apply hover:border-mesure;
+  }
+
+  /*
+   * LA CARTE. Bordure franche et fond blanc sur le gris de la page : c'est elle
+   * qui distingue une page de données d'un document.
+   */
+  .carte,
+  .carte-accent {
+    @apply rounded-lg border border-trait bg-white p-4 sm:p-5;
+  }
+
+  .carte-accent {
+    @apply border-neutral-300 shadow-xs;
+  }
+
+  /* L'intitulé de section : VOUS, LA COURSE, MESURÉ. Un seul style, partout. */
+  .etiquette-section {
+    @apply text-xs font-medium tracking-wide text-declare uppercase;
+  }
+
+  /* Le bandeau de compteur : un chiffre, sa légende, une barre d'accent. */
+  .bandeau {
+    @apply flex flex-wrap items-baseline gap-x-3 gap-y-1 border-l-4 border-mesure bg-white;
+    @apply py-2 pr-3 pl-3 text-sm text-encre;
+  }
+
+  .bandeau-chiffre {
+    @apply font-mono text-2xl font-semibold tabular-nums text-mesure;
+  }
+
+  /* Les étiquettes d'état : trois tons, adossés aux trois natures de donnée. */
+  .puce-mesure,
+  .puce-ecart,
+  .puce-declare {
+    @apply inline-block rounded px-2 py-0.5 text-xs font-medium ring-1 ring-inset;
+  }
+
+  .puce-mesure {
+    @apply bg-mesure-clair text-mesure ring-mesure/25;
+  }
+
+  .puce-ecart {
+    @apply bg-ecart-clair text-ecart ring-ecart/30;
+  }
+
+  .puce-declare {
+    @apply bg-declare-clair text-declare ring-declare/25;
+  }
+
+  /* Un chiffre de donnée, et le chiffre principal d'une page. */
+  .chiffre,
+  .chiffre-principal {
+    @apply font-mono font-semibold tabular-nums text-mesure;
+  }
+
+  .chiffre-principal {
+    @apply text-4xl sm:text-5xl;
+  }
+
+  /* La provenance d'un nombre : toujours présente, jamais bruyante. */
+  .provenance {
+    @apply text-xs text-declare;
+  }
 }

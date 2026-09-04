@@ -1,13 +1,12 @@
 /**
  * Les briques de saisie partagées par les deux formulaires.
  *
- * Les classes sont réunies ici pour que le formulaire de course et celui de
- * session ne divergent pas visuellement, et pour que les tailles de police
- * restent celles qui évitent le zoom automatique sur mobile.
+ * L'APPARENCE N'EST PLUS ICI. Elle vit dans `app/globals.css`, sous les classes
+ * `champ`, `bouton-*`, `carte` : une chaîne d'utilitaires exportée depuis un
+ * composant reste une chaîne recopiée, et deux formulaires qui la recopient
+ * finissent par diverger. Ce module ne garde que la structure — l'étiquette,
+ * le champ, l'aide — et la ligne de résultat.
  */
-
-export const classesSaisie =
-  "mt-1.5 min-h-12 w-full rounded-md border border-neutral-300 bg-white px-3 py-3 text-base text-neutral-900 focus:border-mesure focus:ring-2 focus:ring-mesure/20 focus:outline-none";
 
 export function Champ({
   identifiant,

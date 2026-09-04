@@ -136,10 +136,10 @@ export default async function Accueil() {
     <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
       {/* Le compteur d'abord : ce que le site a vérifié se lit avant ce qu'il affirme. */}
       <Link
-        className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-l-4 border-mesure bg-white py-2 pr-3 pl-3 text-sm text-neutral-700 transition-colors hover:bg-mesure-clair"
+        className="bandeau transition-colors hover:bg-mesure-clair"
         href="/statistiques"
       >
-        <span className="font-mono text-2xl font-semibold tabular-nums text-mesure">
+        <span className="bandeau-chiffre">
           {formaterNombre(etat.effectif)}
         </span>
         <span>
@@ -155,8 +155,8 @@ export default async function Accueil() {
       </h1>
       <p className="mt-4 max-w-2xl text-sm text-neutral-700">{textes.chapeau}</p>
 
-      <section className="mt-8 rounded-lg border border-neutral-300 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+      <section className="carte-accent mt-8">
+        <h2 className="etiquette-section">
           {textes.vitrine.titre}
         </h2>
 

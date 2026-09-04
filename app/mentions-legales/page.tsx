@@ -34,7 +34,7 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
   return (
     <section className="mt-10">
       <h2 className="text-lg font-semibold text-neutral-900">{titre}</h2>
-      <div className="mt-3 rounded-lg border border-neutral-200 bg-white p-4">{children}</div>
+      <div className="carte mt-3">{children}</div>
     </section>
   );
 }
@@ -81,7 +81,7 @@ export default function PageMentionsLegales() {
           {mentions.stockage.liste.map((prestataire) => (
             <li
               key={prestataire.denomination}
-              className="rounded-lg border border-neutral-200 bg-white p-4"
+              className="carte"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                 <h3 className="text-sm font-medium text-neutral-900">
@@ -108,7 +108,7 @@ export default function PageMentionsLegales() {
 
         <ul className="mt-3 space-y-3">
           {mentions.confidentialite.points.map((point) => (
-            <li key={point.titre} className="rounded-lg border border-neutral-200 bg-white p-4">
+            <li key={point.titre} className="carte">
               <h3 className="text-sm font-medium text-neutral-900">{point.titre}</h3>
               <p className="mt-2 text-sm text-neutral-700">{remplacer(point.texte, valeurs)}</p>
             </li>

@@ -28,7 +28,7 @@ export default function Carte({
     >
       {titre === undefined ? null : (
         <div className="mb-4">
-          <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+          <h2 className="etiquette-section">
             {titre}
           </h2>
           {aide === undefined ? null : (

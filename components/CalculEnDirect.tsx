@@ -68,9 +68,9 @@ export default function CalculEnDirect({
     <div className="space-y-4">
       <section
         aria-live="polite"
-        className="rounded-lg border border-neutral-200 bg-white p-4"
+        className="carte"
       >
-        <h2 className="text-sm font-medium text-neutral-900">{textes.titre}</h2>
+        <h2 className="etiquette-section">{textes.titre}</h2>
 
         {rienACalculer ? (
           <p className="mt-2 text-sm text-neutral-600">{textes.attente}</p>

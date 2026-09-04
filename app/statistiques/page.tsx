@@ -39,11 +39,11 @@ export default async function PageStatistiques() {
       <h1 className="text-2xl font-semibold text-neutral-900">{textes.titre}</h1>
       <p className="mt-3 max-w-2xl text-sm text-neutral-700">{textes.introduction}</p>
 
-      <section className="mt-8 rounded-lg border border-neutral-300 bg-white p-5 shadow-xs sm:p-6">
-        <p className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+      <section className="carte-accent mt-8">
+        <p className="etiquette-section">
           {textes.compteur_intitule}
         </p>
-        <p className="mt-1 font-mono text-5xl font-semibold tabular-nums text-mesure">
+        <p className="chiffre-principal mt-1">
           {formaterNombre(etat.effectif)}
         </p>
         <p className="mt-1 text-xs text-neutral-500">

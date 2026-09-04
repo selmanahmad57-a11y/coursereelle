@@ -25,7 +25,7 @@ import { plateformes, vehicules } from "@/lib/enumerations";
 import { listeVilles, seuilsSession } from "@/lib/parametres";
 import { controlerSession } from "@/lib/validation/regles-session.ts";
 
-import { Champ, classesSaisie, Ligne } from "./Champ";
+import { Champ, Ligne } from "./Champ";
 
 const textes = libelles.formulaire_session;
 const motifs = libelles.motifs_session as Record<string, string>;
@@ -98,15 +98,15 @@ export default function FormulaireSession() {
 
   return (
     <div className="space-y-4">
-      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+      <section className="carte space-y-4">
         <div>
-          <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_contexte}</h2>
+          <h2 className="etiquette-section">{textes.section_contexte}</h2>
           <p className="text-xs text-neutral-600">{textes.section_contexte_aide}</p>
         </div>
 
         <Champ identifiant="session-ville" intitule={libelles.formulaire.champs.ville}>
           <select
-            className={classesSaisie}
+            className="champ champ-select"
             id="session-ville"
             onChange={(evenement) => majContexte("ville", evenement.target.value)}
             value={contexte.ville}
@@ -123,7 +123,7 @@ export default function FormulaireSession() {
 
         <Champ identifiant="session-plateforme" intitule={libelles.formulaire.champs.plateforme}>
           <select
-            className={classesSaisie}
+            className="champ champ-select"
             id="session-plateforme"
             onChange={(evenement) => majContexte("plateforme", evenement.target.value)}
             value={contexte.plateforme}
@@ -139,7 +139,7 @@ export default function FormulaireSession() {
 
         <Champ identifiant="session-vehicule" intitule={libelles.formulaire.champs.vehicule}>
           <select
-            className={classesSaisie}
+            className="champ champ-select"
             id="session-vehicule"
             onChange={(evenement) => majContexte("vehicule", evenement.target.value)}
             value={contexte.vehicule}
@@ -154,12 +154,12 @@ export default function FormulaireSession() {
         </Champ>
       </section>
 
-      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
-        <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_session}</h2>
+      <section className="carte space-y-4">
+        <h2 className="etiquette-section">{textes.section_session}</h2>
 
         <Champ identifiant="date-session" intitule={textes.champs.date_session}>
           <input
-            className={classesSaisie}
+            className="champ"
             id="date-session"
             max={dateDuJour}
             onChange={(evenement) => setDateSaisie(evenement.target.value)}
@@ -171,7 +171,7 @@ export default function FormulaireSession() {
         <div className="grid grid-cols-2 gap-4">
           <Champ identifiant="connexion" intitule={textes.champs.connexion}>
             <input
-              className={classesSaisie}
+              className="champ"
               id="connexion"
               onChange={(evenement) => setConnexion(evenement.target.value)}
               type="time"
@@ -185,7 +185,7 @@ export default function FormulaireSession() {
             intitule={textes.champs.deconnexion}
           >
             <input
-              className={classesSaisie}
+              className="champ"
               id="deconnexion"
               onChange={(evenement) => setDeconnexion(evenement.target.value)}
               type="time"
@@ -195,7 +195,7 @@ export default function FormulaireSession() {
 
           <Champ identifiant="nombre-courses" intitule={textes.champs.nombre_courses}>
             <input
-              className={classesSaisie}
+              className="champ"
               id="nombre-courses"
               inputMode="numeric"
               onChange={(evenement) => setNombreCourses(evenement.target.value)}
@@ -210,7 +210,7 @@ export default function FormulaireSession() {
             intitule={textes.champs.revenu_plateforme}
           >
             <input
-              className={classesSaisie}
+              className="champ"
               id="revenu"
               inputMode="decimal"
               onChange={(evenement) => setRevenu(evenement.target.value)}
@@ -226,7 +226,7 @@ export default function FormulaireSession() {
           intitule={textes.champs.minutes_en_course}
         >
           <input
-            className={classesSaisie}
+            className="champ"
             id="minutes-en-course"
             inputMode="numeric"
             onChange={(evenement) => setMinutesEnCourse(evenement.target.value)}
@@ -239,9 +239,9 @@ export default function FormulaireSession() {
       <div className="space-y-4">
         <section
           aria-live="polite"
-          className="rounded-lg border border-neutral-200 bg-white p-4"
+          className="carte"
         >
-          <h2 className="text-sm font-medium text-neutral-900">{textes.resultats.titre}</h2>
+          <h2 className="etiquette-section">{textes.resultats.titre}</h2>
 
           {rienACalculer ? (
             <p className="mt-2 text-sm text-neutral-600">{textes.resultats.attente}</p>
@@ -302,7 +302,7 @@ export default function FormulaireSession() {
 
       <section>
         <button
-          className="w-full rounded-md bg-neutral-300 px-4 py-3 text-base font-medium text-neutral-600"
+          className="bouton-principal"
           disabled
           type="button"
         >

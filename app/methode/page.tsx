@@ -41,10 +41,11 @@ export const metadata: Metadata = {
 
 type Entree = RegleAnnoncee | RegleLegale | ParametreSysteme;
 
+/* Trois natures, trois puces : prouvé, déclaré, manquant. */
 const couleursEtat: Record<ReturnType<typeof etatSource>, string> = {
-  verifiee: "bg-mesure-clair text-mesure ring-mesure/25",
-  citee: "bg-ecart-clair text-ecart ring-ecart/30",
-  absente: "bg-neutral-100 text-neutral-700 ring-neutral-500/20",
+  verifiee: "puce-mesure",
+  citee: "puce-declare",
+  absente: "puce-ecart",
 };
 
 function Provenance({ source }: { source: Source }) {
@@ -53,7 +54,7 @@ function Provenance({ source }: { source: Source }) {
   return (
     <div className="mt-3 border-t border-neutral-200 pt-3 text-xs">
       <span
-        className={`inline-block rounded px-2 py-0.5 font-medium ring-1 ring-inset ${couleursEtat[etat]}`}
+        className={couleursEtat[etat]}
       >
         {libelleEtatSource(etat)}
       </span>
@@ -86,7 +87,7 @@ function Carte({ entree }: { entree: Entree }) {
         : null;
 
   return (
-    <li className="rounded-lg border border-neutral-200 bg-white p-4">
+    <li className="carte">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="text-sm font-medium text-neutral-900">{entree.libelle}</h3>
         <span className="font-mono text-lg font-semibold tabular-nums text-mesure">
@@ -211,7 +212,7 @@ export default async function PageMethode() {
         <h2 className="text-xl font-semibold text-neutral-900">
           {libelles.methode.verification.titre}
         </h2>
-        <div className="mt-4 rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="carte mt-4">
           <p className="text-sm font-medium text-neutral-900">
             {libelles.methode.verification.texte}
           </p>
@@ -228,7 +229,7 @@ export default async function PageMethode() {
         <h2 className="text-xl font-semibold text-neutral-900">
           {libelles.methode.sous_echantillons.titre}
         </h2>
-        <div className="mt-4 rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="carte mt-4">
           <p className="text-sm text-neutral-700">{libelles.methode.sous_echantillons.texte}</p>
           <p className="mt-3 text-sm text-neutral-700">
             {libelles.methode.sous_echantillons.consequence}
@@ -240,7 +241,7 @@ export default async function PageMethode() {
         <h2 className="text-xl font-semibold text-neutral-900">
           {libelles.methode.donnees_invisibles.titre}
         </h2>
-        <div className="mt-4 rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="carte mt-4">
           <p className="text-sm text-neutral-700">
             {libelles.methode.donnees_invisibles.texte}
           </p>
@@ -254,7 +255,7 @@ export default async function PageMethode() {
         <h2 className="text-xl font-semibold text-neutral-900">
           {libelles.methode.authenticite.titre}
         </h2>
-        <div className="mt-4 rounded-lg border border-neutral-300 bg-white p-4">
+        <div className="carte-accent mt-4">
           <p className="text-sm font-medium text-neutral-900">
             {libelles.methode.authenticite.aveu}
           </p>
@@ -269,7 +270,7 @@ export default async function PageMethode() {
           </p>
         </div>
 
-        <div className="mt-3 rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="carte mt-3">
           <h3 className="text-sm font-medium text-neutral-900">
             {libelles.methode.calibrage.titre}
           </h3>
@@ -289,7 +290,7 @@ export default async function PageMethode() {
           {libelles.methode.choix_editoriaux.points.map((point) => (
             <div
               key={point.titre}
-              className="rounded-lg border border-neutral-200 bg-white p-4"
+              className="carte"
             >
               <h3 className="text-sm font-medium text-neutral-900">{point.titre}</h3>
               <p className="mt-2 text-sm text-neutral-700">{point.texte}</p>
@@ -304,7 +305,7 @@ export default async function PageMethode() {
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-neutral-900">Ce que nous ne collectons pas</h2>
         <div className="mt-4 space-y-3">
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <div className="carte">
             <h3 className="text-sm font-medium text-neutral-900">
               {granulariteMaximale.libelle}
             </h3>
@@ -312,7 +313,7 @@ export default async function PageMethode() {
             <p className="mt-2 text-sm text-neutral-600">{granulariteMaximale.portee}</p>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <div className="carte">
             <h3 className="text-sm font-medium text-neutral-900">
               {libelles.methode.captures.titre}
             </h3>
@@ -329,8 +330,8 @@ export default async function PageMethode() {
               {libelles.methode.captures.controle}
             </p>
 
-            <div className="mt-3 rounded-lg border border-neutral-300 bg-white p-4 shadow-xs">
-              <p className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+            <div className="carte-accent mt-3">
+              <p className="etiquette-section">
                 {libelles.methode.captures.compteur_intitule}
               </p>
 
@@ -363,7 +364,7 @@ export default async function PageMethode() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <div className="carte">
             <h3 className="text-sm font-medium text-neutral-900">
               {libelles.methode.remplissage.titre}
             </h3>
@@ -378,7 +379,7 @@ export default async function PageMethode() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <div className="carte">
             <h3 className="text-sm font-medium text-neutral-900">
               {libelles.methode.anti_fraude.titre}
             </h3>
@@ -393,7 +394,7 @@ export default async function PageMethode() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+          <div className="carte">
             <h3 className="text-sm font-medium text-neutral-900">
               {interpretationZone.libelle}
             </h3>

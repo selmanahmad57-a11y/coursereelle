@@ -32,7 +32,7 @@ import {
 } from "@/lib/parametres";
 import { controlerCoherencePhysique } from "@/lib/validation/regles-physiques.ts";
 
-import { Champ, classesSaisie } from "./Champ";
+import { Champ } from "./Champ";
 import CalculEnDirect from "./CalculEnDirect";
 import ChampCapture from "./ChampCapture";
 
@@ -299,7 +299,7 @@ export default function FormulaireCourse() {
         </section>
 
         <section>
-          <h3 className="text-sm font-medium text-neutral-900">
+          <h3 className="etiquette-section">
             {textes.succes.recapitulatif}
           </h3>
           <div className="mt-2">
@@ -314,7 +314,7 @@ export default function FormulaireCourse() {
 
         <section className="space-y-3">
           <button
-            className="w-full rounded-md bg-mesure px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-mesure/90"
+            className="bouton-principal"
             onClick={reprendre}
             type="button"
           >
@@ -340,15 +340,15 @@ export default function FormulaireCourse() {
       onFocusCapture={noterPremierContact}
       onInputCapture={noterPremierContact}
     >
-      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+      <section className="carte space-y-4">
         <div>
-          <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_contexte}</h2>
+          <h2 className="etiquette-section">{textes.section_contexte}</h2>
           <p className="text-xs text-neutral-600">{textes.section_contexte_aide}</p>
         </div>
 
         <Champ identifiant="ville" intitule={textes.champs.ville}>
           <select
-            className={classesSaisie}
+            className="champ champ-select"
             id="ville"
             name="ville"
             onChange={(evenement) => majContexte("ville", evenement.target.value)}
@@ -367,7 +367,7 @@ export default function FormulaireCourse() {
         {contexte.ville === VILLE_AUTRE ? (
           <Champ identifiant="autre-ville" intitule={textes.autre_ville_champ}>
             <input
-              className={classesSaisie}
+              className="champ"
               id="autre-ville"
             name="ville_libre"
               onChange={(evenement) => setAutreVille(evenement.target.value)}
@@ -387,7 +387,7 @@ export default function FormulaireCourse() {
 
         <Champ identifiant="plateforme" intitule={textes.champs.plateforme}>
           <select
-            className={classesSaisie}
+            className="champ champ-select"
             id="plateforme"
             name="plateforme"
             onChange={(evenement) => majContexte("plateforme", evenement.target.value)}
@@ -404,7 +404,7 @@ export default function FormulaireCourse() {
 
         <Champ identifiant="vehicule" intitule={textes.champs.vehicule}>
           <select
-            className={classesSaisie}
+            className="champ champ-select"
             id="vehicule"
             name="vehicule"
             onChange={(evenement) => majContexte("vehicule", evenement.target.value)}
@@ -420,12 +420,12 @@ export default function FormulaireCourse() {
         </Champ>
       </section>
 
-      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
-        <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_course}</h2>
+      <section className="carte space-y-4">
+        <h2 className="etiquette-section">{textes.section_course}</h2>
 
         <Champ identifiant="date-course" intitule={textes.champs.date_course}>
           <input
-            className={classesSaisie}
+            className="champ"
             id="date-course"
             name="date_course"
             max={dateDuJour}
@@ -447,7 +447,7 @@ export default function FormulaireCourse() {
         <div className="grid grid-cols-2 gap-4">
           <Champ identifiant="distance" intitule={textes.champs.distance_km}>
             <input
-              className={classesSaisie}
+              className="champ"
               id="distance"
             name="distance_km"
               inputMode="decimal"
@@ -459,7 +459,7 @@ export default function FormulaireCourse() {
 
           <Champ identifiant="prix-paye" intitule={textes.champs.prix_paye}>
             <input
-              className={classesSaisie}
+              className="champ"
               id="prix-paye"
             name="prix_paye_euros"
               inputMode="decimal"
@@ -471,7 +471,7 @@ export default function FormulaireCourse() {
 
           <Champ identifiant="duree-estimee" intitule={textes.champs.duree_estimee}>
             <input
-              className={classesSaisie}
+              className="champ"
               id="duree-estimee"
               placeholder={textes.exemples.duree}
             name="duree_estimee_minutes"
@@ -488,7 +488,7 @@ export default function FormulaireCourse() {
             intitule={textes.champs.duree_reelle}
           >
             <input
-              className={classesSaisie}
+              className="champ"
               id="duree-reelle"
               placeholder={textes.exemples.duree}
             name="duree_reelle_minutes"
@@ -506,7 +506,7 @@ export default function FormulaireCourse() {
           intitule={textes.champs.pourboire}
         >
           <input
-            className={classesSaisie}
+            className="champ"
             id="pourboire"
             name="pourboire_euros"
             inputMode="decimal"
@@ -518,7 +518,7 @@ export default function FormulaireCourse() {
       </section>
 
       {dateCourse === "" ? null : (
-        <section className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+        <section className="carte">
           <ChampCapture dateCourse={dateCourse} key={essai} />
         </section>
       )}
@@ -530,12 +530,10 @@ export default function FormulaireCourse() {
         tauxCotisations={taux}
       />
 
-      <section className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+      <section className="carte">
         {cleTurnstile ? (
           <>
-            <p className="text-xs font-medium text-neutral-700">
-              {textes.envoi.verification}
-            </p>
+            <p className="etiquette-section">{textes.envoi.verification}</p>
             <p className="text-xs text-neutral-600">{textes.envoi.verification_aide}</p>
             <div className="cf-turnstile mt-2" data-sitekey={cleTurnstile} />
             <Script
@@ -550,7 +548,7 @@ export default function FormulaireCourse() {
         )}
 
         <button
-          className="mt-4 w-full rounded-md bg-mesure px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-mesure/90 disabled:bg-neutral-300 disabled:text-neutral-600"
+          className="bouton-principal mt-4"
           disabled={!cleTurnstile || envoi === "en_cours"}
           type="submit"
         >

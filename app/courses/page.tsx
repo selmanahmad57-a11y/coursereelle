@@ -48,11 +48,7 @@ function Verification({ course }: { course: CoursePubliee }) {
         /* Le rouge est réservé aux écarts contre une annonce. Une vérification
            partielle n'est pas une faute du livreur : c'est une limite de notre
            lecture, et elle se dit en gris. */
-        className={`inline-block rounded px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
-          nonVerifies.length === 0
-            ? "bg-mesure-clair text-mesure ring-mesure/25"
-            : "bg-neutral-100 text-neutral-700 ring-neutral-400/30"
-        }`}
+        className={nonVerifies.length === 0 ? "puce-mesure" : "puce-declare"}
       >
         {nonVerifies.length === 0 ? textes.badge_complete : textes.badge_partielle}
       </span>
@@ -131,7 +127,7 @@ function Fiche({ course }: { course: CoursePubliee }) {
   );
 
   return (
-    <li className="rounded-lg border border-neutral-200 bg-white p-4">
+    <li className="carte">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <span className="text-sm font-medium text-neutral-900">
           {ville === null ? libelles.formulaire.autre_ville : ville.libelle}
@@ -149,7 +145,7 @@ function Fiche({ course }: { course: CoursePubliee }) {
       <div className="mt-3 flex items-end justify-between gap-4">
         <div>
           <p className="text-xs text-neutral-600">{textes.colonnes.taux}</p>
-          <p className="font-mono text-2xl font-semibold tabular-nums text-mesure">
+          <p className="bandeau-chiffre">
             {resultat.tauxPlateforme === null
               ? "—"
               : formaterValeur(resultat.tauxPlateforme, UNITES.euroParHeure)}
@@ -249,8 +245,8 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
       <h1 className="text-2xl font-semibold text-neutral-900">{textes.titre}</h1>
       <p className="mt-3 max-w-2xl text-sm text-neutral-700">{textes.introduction}</p>
 
-      <p className="mt-6 flex flex-wrap items-baseline gap-x-3 border-l-4 border-mesure bg-white py-2 pr-3 pl-3 text-sm text-neutral-700">
-        <span className="font-mono text-2xl font-semibold tabular-nums text-mesure">
+      <p className="bandeau mt-6">
+        <span className="bandeau-chiffre">
           {formaterNombre(etat.effectif)}
         </span>
         <span>{textes.compteur_intitule}</span>

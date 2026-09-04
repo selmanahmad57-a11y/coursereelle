@@ -60,7 +60,7 @@ export default function BarresComparees({
           return (
             <div key={ligne.cle}>
               <div className="flex items-baseline justify-between gap-4">
-                <span className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+                <span className="etiquette-section">
                   {ligne.libelle}
                 </span>
                 <span

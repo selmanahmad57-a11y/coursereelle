@@ -200,9 +200,39 @@ test("la feuille de base ne porte aucune regle hors couche", async () => {
 
   const sansCommentaires = source.replace(/\/\*[\s\S]*?\*\//g, "");
 
+  /* Les blocs @layer sont retires en entier, accolades appariees : ce qu'ils
+     contiennent EST dans une couche, c'est precisement le but. */
+  const retirerBlocs = (texte) => {
+    let resultat = "";
+    let index = 0;
+
+    while (index < texte.length) {
+      const debut = texte.indexOf("@layer", index);
+      if (debut === -1) {
+        resultat += texte.slice(index);
+        break;
+      }
+
+      resultat += texte.slice(index, debut);
+      const ouverture = texte.indexOf("{", debut);
+      if (ouverture === -1) break;
+
+      let profondeur = 1;
+      let curseur = ouverture + 1;
+      while (curseur < texte.length && profondeur > 0) {
+        if (texte[curseur] === "{") profondeur += 1;
+        if (texte[curseur] === "}") profondeur -= 1;
+        curseur += 1;
+      }
+      index = curseur;
+    }
+
+    return resultat;
+  };
+
   /* Ce qui est autorise : les directives at-rule (@import, @theme, @layer). */
-  const regles = [...sansCommentaires.matchAll(/(^|\})\s*([^@{}]+)\{/g)].map((t) =>
-    t[2].trim()
+  const regles = [...retirerBlocs(sansCommentaires).matchAll(/(^|\})\s*([^@{}]+)\{/g)].map(
+    (t) => t[2].trim()
   );
 
   assert.deepEqual(

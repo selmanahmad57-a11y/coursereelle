@@ -162,13 +162,13 @@ export default async function PageSurveillance({
             </label>
             <input
               autoComplete="current-password"
-              className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus:border-neutral-900 focus:outline-none"
+              className="champ"
               id="motdepasse"
               name="motdepasse"
               type="password"
             />
             <button
-              className="mt-3 w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white"
+              className="bouton-principal mt-3"
               type="submit"
             >
               {textes.acces.bouton}
@@ -207,7 +207,7 @@ export default async function PageSurveillance({
           <h2 className="text-sm font-semibold text-neutral-900">
             {textes.sections[groupe.cle]}
           </h2>
-          <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
+          <div className="carte mt-2">
             <Compteurs entrees={groupe.entrees} table={groupe.table} vide={groupe.vide} />
             {groupe.cle === "lectures" ? (
               <p className="mt-3 border-t border-neutral-100 pt-2 text-xs text-neutral-600">
@@ -232,7 +232,7 @@ export default async function PageSurveillance({
         <h2 className="text-sm font-semibold text-neutral-900">
           {textes.remplissage.titre}
         </h2>
-        <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="carte mt-2">
           {resumes.length === 0 ? (
             <p className="text-sm text-neutral-600">{textes.remplissage.vide}</p>
           ) : (
@@ -296,7 +296,7 @@ export default async function PageSurveillance({
         <h2 className="text-sm font-semibold text-neutral-900">
           {textes.sections.villes_libres}
         </h2>
-        <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="carte mt-2">
           {etat.villesLibres.length === 0 ? (
             <p className="text-sm text-neutral-600">{textes.vide}</p>
           ) : (

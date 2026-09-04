@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-neutral-50 font-sans text-neutral-900">
+      <body className="flex min-h-full flex-col bg-fond font-sans text-encre">
         <header className="border-b border-neutral-200 bg-white">
           <nav className="mx-auto max-w-3xl px-4 py-3">
             <Link className="font-semibold text-neutral-900" href="/">
