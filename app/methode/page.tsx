@@ -321,6 +321,10 @@ export default async function PageMethode() {
               {libelles.methode.captures.regle}
             </p>
             <p className="mt-2 text-sm text-neutral-700">{libelles.methode.captures.reste}</p>
+            <p className="mt-2 text-sm text-neutral-700">
+              {libelles.methode.captures.traitement}
+            </p>
+
             <p className="mt-2 border-t border-neutral-200 pt-2 text-sm text-neutral-700">
               {libelles.methode.captures.controle}
             </p>

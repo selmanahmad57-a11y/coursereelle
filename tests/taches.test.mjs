@@ -102,10 +102,7 @@ test("les routes de tache ne reimplementent rien", async () => {
    * une seconde implementation de l'entretien, qui divergerait de la premiere
    * au premier changement.
    */
-  for (const chemin of [
-    "app/api/taches/entretien/route.ts",
-    "app/api/taches/lecture/route.ts",
-  ]) {
+  for (const chemin of ["app/api/taches/entretien/route.ts"]) {
     const source = await readFile(chemin, "utf8");
 
     assert.equal(/\bselect\s/i.test(source), false, `${chemin} : requete SQL en dur`);
@@ -120,5 +117,51 @@ test("la taille du lot de lecture est un entier positif, avec sa source", async 
   assert.ok(Number.isInteger(taches.lecture.courses_par_passage));
   assert.ok(taches.lecture.courses_par_passage > 0);
   assert.ok(taches.lecture.justification.length > 0, "un lot sans raison est un lot invente");
-  assert.ok(taches.lecture.source.url.startsWith("https://"));
+
+  /* Une source peut etre une mesure faite ici plutot qu'une page a citer : ce
+     qu'on exige, c'est qu'elle soit nommee, pas qu'elle soit un lien. */
+  assert.ok(taches.lecture.source.libelle.length > 0, "un lot sans source est un lot invente");
+  assert.ok(
+    taches.lecture.source.url === null || taches.lecture.source.url.startsWith("https://"),
+    "une source qui porte un lien doit porter un vrai lien"
+  );
+});
+
+test("la lecture est planifiee, et pas plus rarement qu'a l'heure", async () => {
+  /*
+   * Une course qui attend son verdict attend une lecture. La cadence n'engage
+   * aucune promesse publiee, contrairement a celle de l'entretien, mais une
+   * lecture trop rare rendrait le report du filtre 2 indistinguable d'un oubli.
+   */
+  const workflow = await readFile(".github/workflows/lecture.yml", "utf8");
+  const expressions = [...workflow.matchAll(/-\s*cron:\s*"([^"]+)"/g)].map((t) => t[1]);
+
+  assert.equal(expressions.length, 1);
+
+  const [minute, heure] = minuteEtHeure(expressions[0]);
+  assert.equal(heure, "*", "la lecture doit passer a toutes les heures au moins");
+  assert.match(minute, /^\*\/\d+$/, "une cadence infra-horaire, exprimee en pas de minutes");
+});
+
+test("le workflow de lecture n'expose que les variables dont il a besoin", async () => {
+  /*
+   * Ces identifiants ouvrent la base et le stockage. Chaque nom ajoute ici est
+   * une surface de plus sur un depot public : la liste doit se relire d'un coup
+   * d'oeil, et ne contenir que ce que la lecture emploie vraiment.
+   */
+  const workflow = await readFile(".github/workflows/lecture.yml", "utf8");
+  const employes = new Set(
+    [...workflow.matchAll(/secrets\.([A-Z_][A-Z0-9_]*)/g)].map((t) => t[1])
+  );
+
+  const attendus = new Set([
+    "DATABASE_URL",
+    "R2_ACCOUNT_ID",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_BUCKET_NAME",
+    "R2_JURIDICTION",
+  ]);
+
+  assert.deepEqual([...employes].sort(), [...attendus].sort());
 });

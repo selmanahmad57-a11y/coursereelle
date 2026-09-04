@@ -26,7 +26,7 @@
   },
   "stockage": {
     "titre": "Où vivent les données",
-    "chapeau": "Les données du site restent dans l'Union européenne. Deux prestataires interviennent, chacun pour une chose et une seule.",
+    "chapeau": "Les données du site sont stockées dans l'Union européenne. Un traitement fait exception, et il est éphémère : la lecture automatique des captures s'exécute sur des serveurs jetables situés hors de l'Union, où l'image transite le temps d'être lue sans jamais y être conservée.",
     "liste": [
       {
         "denomination": "Neon, LLC, filiale de Databricks, Inc.",
@@ -42,6 +42,12 @@
         "denomination": "Cloudflare, Inc.",
         "role": "Stockage temporaire des captures d'écran, le temps de leur lecture automatique, et protection contre les robots.",
         "localisation": "Juridiction Union européenne",
+        "source": null
+      },
+      {
+        "denomination": "GitHub, Inc.",
+        "role": "Lecture automatique des captures, sur des serveurs éphémères détruits après chaque passage. Rien n'y est conservé : ni l'image, ni le texte lu.",
+        "localisation": "Serveurs éphémères, hors Union européenne",
         "source": null
       }
     ]

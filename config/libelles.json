@@ -299,7 +299,8 @@
       "compteur_intitule": "Captures au-delà de leur délai",
       "compteur_regle": "Ce compteur est le contrôle, et c'est pourquoi il est publié ici plutôt que gardé pour nous. Il doit valoir zéro en permanence. S'il monte, c'est que la tâche s'est arrêtée : la promesse n'est pas seulement affirmée, elle est prouvable en défaut.",
       "compteur_detail": "{dans_le_delai} en cours de délai · {supprimees} déjà supprimées",
-      "compteur_indisponible": "Compteur indisponible : la base n'est pas jointe. Aucun chiffre n'est affiché plutôt qu'un zéro qui voudrait dire « tout va bien »."
+      "compteur_indisponible": "Compteur indisponible : la base n'est pas jointe. Aucun chiffre n'est affiché plutôt qu'un zéro qui voudrait dire « tout va bien ».",
+      "traitement": "Les captures sont stockées dans l'Union européenne ; leur lecture automatique s'exécute sur des serveurs éphémères (GitHub Actions) qui ne conservent rien — l'image y transite le temps de la lecture, puis la machine est détruite. Nous le disons parce que c'est vrai, et parce qu'un lecteur attentif le trouverait de toute façon dans le code, qui est public."
     },
     "verification": {
       "titre": "Ce qu'une capture doit prouver, et ce qu'elle peut seulement suggérer",

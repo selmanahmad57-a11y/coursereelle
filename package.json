@@ -16,6 +16,7 @@
     "calibrer": "node scripts/calibrer.mjs",
     "convertir:candidats": "node scripts/convertir-candidats.mjs",
     "lecture": "node scripts/avec-env.mjs .env.local node scripts/lire-captures.mjs",
+    "lecture:direct": "node scripts/lire-captures.mjs",
     "classer": "node scripts/avec-env.mjs .env.local node scripts/classer.mjs"
   },
   "dependencies": {

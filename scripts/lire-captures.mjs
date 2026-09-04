@@ -38,7 +38,8 @@ console.log(`  tolerances : prix ${regles.tolerances.prixEuros}, distance ${regl
 
 await demarrerLecteur(path.join(racine, "calibration"));
 
-const limite = Number(process.argv[2] ?? 20);
+const taches = await lireJson("config/taches.json");
+const limite = Number(process.argv[2] ?? taches.lecture.courses_par_passage);
 const verdicts = await traiterEnAttente(regles, limite);
 
 await arreterLecteur();

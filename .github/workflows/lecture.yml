@@ -1,47 +1,58 @@
 # Lecture des captures en attente, et verdicts.
 #
-# Le filtre 2 est différé exprès : un échec de lecture ne doit jamais faire
-# échouer un envoi par ailleurs valide. Ce report n'a de sens que si quelque
-# chose reprend le travail sans qu'on le lui demande — sinon les courses
-# resteraient « en attente » indéfiniment, ce qui reviendrait à ne jamais rendre
-# de verdict.
+# POURQUOI ICI ET NON DANS UNE FONCTION. Mesuré en production le 4 septembre
+# 2026 : la route /api/taches/lecture expirait au bout des trois cents secondes
+# accordées à une fonction, sans qu'aucune course soit en attente — c'est
+# l'initialisation du moteur qui ne passe pas, pas le volume. L'hypothèse du
+# compilateur qui ne suivrait pas les fichiers du moteur a été testée et
+# écartée. Cette tâche a donc besoin d'un vrai environnement Node, avec un
+# disque inscriptible et sans limite de durée : c'est ce qu'est un exécuteur
+# GitHub.
 #
-# Un quart d'heure est le compromis : un livreur qui publie entre deux courses
-# voit son verdict avant la fin de sa journée, sans qu'une fonction démarre pour
-# rien quand il n'y a rien à lire — la route ne fait aucun travail lorsque la
-# file est vide.
+# CE QUE CELA IMPLIQUE, ET QUI EST PUBLIÉ. La capture transite par cet
+# exécuteur le temps de sa lecture. La machine est jetable et ne conserve rien,
+# mais elle n'est pas dans l'Union européenne, alors que le stockage l'est. La
+# page Méthode et les mentions légales le disent — une limite annoncée avant
+# qu'un lecteur attentif la trouve.
 #
-# CADENCE SUSPENDUE : LA PORTE NE S'OUVRE PAS ENCORE.
-#
-# Mesuré en production le 4 septembre 2026 : /api/taches/lecture expire au bout
-# de 300 s — la durée maximale d'une fonction — alors qu'aucune course n'était en
-# attente. Ce n'est donc pas le lot qui est trop grand : c'est le moteur de
-# reconnaissance qui ne parvient pas à démarrer dans une fonction serverless.
-# Lui donner un quart d'heure de plus n'y changerait rien, et une planification
-# qui échoue toutes les quinze minutes est pire qu'une absence de planification :
-# elle donne l'apparence d'un mécanisme.
-#
-# Le déclenchement manuel reste, pour pouvoir reconstater. La cadence reviendra
-# quand la lecture aura un endroit où tourner — soit ici même, en exécutant la
-# commande plutôt qu'en appelant la route, soit dans la fonction si les données
-# de langue y sont embarquées.
+# Le secret des identifiants est confié au dépôt. GitHub ne les expose pas aux
+# workflows venus d'une bifurcation, et les actions employées ici sont
+# épinglées.
 
 name: Lecture des captures
 
 on:
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
+
+# Deux lectures simultanées liraient les mêmes courses en attente et rendraient
+# deux fois le même verdict.
+concurrency:
+  group: lecture-des-captures
+  cancel-in-progress: false
 
 jobs:
   lecture:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
-      - name: Déclencher la lecture des captures en attente
-        run: |
-          reponse=$(curl --silent --show-error --fail-with-body \
-            --max-time 300 \
-            --header "Authorization: Bearer $CRON_SECRET" \
-            "$SITE_URL/api/taches/lecture")
-          echo "$reponse"
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lire les captures en attente
+        run: npm run lecture:direct
         env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          SITE_URL: ${{ secrets.SITE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_JURIDICTION: ${{ secrets.R2_JURIDICTION }}
