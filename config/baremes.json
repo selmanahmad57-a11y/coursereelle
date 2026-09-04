@@ -18,7 +18,7 @@
         "url": null,
         "consultee_le": null
       },
-      "note": "Calculée par semaine, sur le seul temps « en course » estimé par la plateforme — ni sur le temps connecté, ni sur le temps vécu. C'est exactement l'écart que le site mesure. Montant brut : cotisations et frais de véhicule restent à la charge du livreur. Remplace une garantie antérieure de 11,75 €/h, non modélisée ici : le site n'accepte pas de courses assez anciennes pour en dépendre."
+      "note": "Calculée par semaine, sur le seul temps « en course » estimé par la plateforme — ni sur le temps connecté, ni sur le temps vécu. C'est exactement l'écart que le site mesure. Montant brut : cotisations et frais de véhicule restent à la charge du livreur. Remplace une garantie antérieure de 11,75 €/h, non modélisée ici : le site n'accepte pas de courses assez anciennes pour en dépendre. STUART EN EST ABSENTE, ET C'EST UNE INCERTITUDE, PAS UNE OMISSION. Stuart a signé l'accord de 2023 au sein de l'API, mais aucune source publique ne confirme qu'elle est couverte par l'avenant du 10 juillet 2026. Tant que le doute tient, une course Stuart n'est comparée à aucune garantie : le barème ne la nomme pas, la comparaison rend donc null, et la page affiche l'absence plutôt qu'un écart. Mieux vaut une catégorie manquante qu'une accusation sans base. Pour lever le doute : le texte de l'avenant auprès de l'ARPE, qui liste ses signataires."
     },
     {
       "cle": "minimum_par_course",
