@@ -14,8 +14,10 @@
  * CE QUI EST MESURÉ, ET QUI N'EST PAS RÉSOLU. En production, cette route expire
  * au bout des trois cents secondes accordées à une fonction, sans qu'aucune
  * course soit en attente : le moteur ne parvient pas à s'initialiser dans une
- * fonction serverless, probablement faute de pouvoir y récupérer ses données de
- * langue. La route est conservée parce que le problème est celui de
+ * fonction serverless. L'hypothèse du bundler a été testée le 4 septembre 2026 —
+ * externaliser tesseract.js et embarquer ses fichiers par
+ * `outputFileTracingIncludes` — et ne change rien : même expiration, même durée.
+ * La cause reste donc à établir. La route est conservée parce que le problème est celui de
  * l'initialisation, pas celui du code appelant — mais aucune planification ne la
  * vise tant qu'elle n'aura pas été rendue viable. Une porte qui ne s'ouvre pas
  * doit être annoncée comme telle plutôt que laissée dans une liste de tâches.
