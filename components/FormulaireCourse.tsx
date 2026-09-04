@@ -247,14 +247,35 @@ export default function FormulaireCourse() {
      * que le script ne s'est pas exécuté — un bloqueur, une coupure — et non que
      * la vérification a échoué. Le dire ici évite de laisser croire à un refus.
      */
-    if (jeton === null || jeton === "") {
+    /*
+     * DEUX VOIES POUR LE MÊME JETON, ET LA SOUMISSION ACCEPTE LES DEUX.
+     *
+     * Le widget appelle notre fonction avec le jeton, et dépose aussi un champ
+     * caché dans le formulaire. Ne lire que l'un des deux serait un pari : si le
+     * rappel ne se déclenchait pas — script partiellement chargé, remontage au
+     * mauvais moment — le livreur verrait « la vérification ne s'est pas
+     * exécutée » alors que le jeton est là, sous ses yeux, dans le formulaire.
+     *
+     * Cette redondance ne coûte rien et supprime une classe entière d'échecs que
+     * je n'ai aucun moyen de reproduire : un navigateur automatisé est
+     * précisément ce que Turnstile refuse.
+     */
+    const depose = formulaire.get("cf-turnstile-response");
+    const jetonEnvoye =
+      jeton !== null && jeton !== ""
+        ? jeton
+        : typeof depose === "string" && depose !== ""
+          ? depose
+          : null;
+
+    if (jetonEnvoye === null) {
       setRetourEnvoi({ reussite: false, message: textes.envoi.turnstile_sans_jeton });
       return;
     }
 
     /* Le widget est rendu explicitement : son jeton n'est pas déposé dans le
        formulaire, il est passé ici. */
-    formulaire.set("cf-turnstile-response", jeton);
+    formulaire.set("cf-turnstile-response", jetonEnvoye);
 
     setEnvoi("en_cours");
     setRetourEnvoi(null);
