@@ -38,6 +38,13 @@
  * Les deux teintes vives sont sourdes exprès. Un instrument de mesure n'a pas
  * de couleur de marque : il a une couleur de lecture. Tout ce qui brille ici
  * ressemblerait à une promesse, et ce site en démonte.
+ *
+ * CETTE PALETTE GOUVERNE L'INTERFACE, PAS LES CITATIONS. Une illustration qui
+ * évoque l'écran d'une autre application — le guide du bon écran à photographier
+ * — emprunte le vocabulaire de cette application, vert de départ et rouge
+ * d'arrivée compris. Ces couleurs-là vivent dans le dessin qui les cite, jamais
+ * dans un composant, et le test qui interdit une couleur de plus continue donc
+ * de dire vrai : il garde ce que le site affirme, pas ce qu'il montre d'autrui.
  */
 @theme {
   --color-fond: #f6f7f8;

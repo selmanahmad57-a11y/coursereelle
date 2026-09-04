@@ -144,6 +144,20 @@ function VignetteMauvaise() {
         <path d="M40 -5 L38 195" />
       </g>
 
+      {/*
+        * COULEUR D'ILLUSTRATION, PAS COULEUR DE RÔLE.
+        *
+        * Le vert de départ n'appartient pas à la palette du site, et il n'a pas
+        * à y entrer : les quatre rôles gouvernent l'INTERFACE — ce qui mesure,
+        * ce qui se déclare, ce qui alerte. Une vignette qui évoque l'écran d'une
+        * autre application est une citation visuelle, pas un composant. Le vert
+        * de départ et le rouge d'arrivée sont le vocabulaire commun de toutes
+        * les applications de navigation ; les remplacer par du blanc coûterait
+        * exactement la reconnaissance que ces vignettes existent pour obtenir.
+        *
+        * Cette couleur ne se réutilise nulle part ailleurs. Elle vit ici, dans
+        * une citation, et le test de palette continue de garder l'interface.
+        */}
       {/* Le tracé de l'itinéraire, et ses deux extrémités. */}
       <path
         d="M20 150 L20 104 L64 100 L66 52"
