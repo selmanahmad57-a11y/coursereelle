@@ -5,6 +5,9 @@ import { remplir } from "@/lib/modeles.ts";
 import type { Course, Resultat } from "@/lib/calculs.ts";
 import type { Anomalie } from "@/lib/validation/regles-physiques.ts";
 
+import { enDeca } from "@/lib/comparaison.ts";
+
+import BarresComparees from "./BarresComparees";
 import { Ligne } from "./Champ";
 
 const textes = libelles.formulaire.resultats;
@@ -73,7 +76,38 @@ export default function CalculEnDirect({
           <p className="mt-2 text-sm text-neutral-600">{textes.attente}</p>
         ) : (
           <>
-            <dl className="mt-2 divide-y divide-neutral-100">
+            <BarresComparees
+              legende={textes.barres.legende}
+              libelleManque={
+                resultat.ecartRelatif === null
+                  ? textes.barres.manque
+                  : `${textes.barres.manque} ${formaterValeur(resultat.ecartRelatif, UNITES.pourcent)}`
+              }
+              lignes={[
+                {
+                  cle: "reel",
+                  libelle: textes.barres.reel,
+                  valeur: resultat.tauxPlateforme,
+                  lisible: mettreEnForme(resultat.tauxPlateforme, UNITES.euroParHeure) ?? "—",
+                  provenance: remplir(modeles.taux_plateforme, saisi),
+                  /* Déclaré, pas mesuré : rien n'est vérifié tant que la capture
+                     n'a pas été lue. La couleur pleine est réservée à la preuve. */
+                  mesuree: false,
+                  alerte: enDeca(resultat.tauxPlateforme, resultat.tauxPlateformeEstime),
+                },
+                {
+                  cle: "estime",
+                  libelle: textes.barres.estime,
+                  valeur: resultat.tauxPlateformeEstime,
+                  lisible: mettreEnForme(resultat.tauxPlateformeEstime, UNITES.euroParHeure) ?? "—",
+                  provenance: remplir(modeles.taux_plateforme_estime, saisi),
+                  mesuree: false,
+                  alerte: false,
+                },
+              ]}
+            />
+
+            <dl className="mt-4 divide-y divide-neutral-100">
               <Ligne
                 accent
                 calcul={remplir(modeles.taux_plateforme, saisi)}
@@ -124,18 +158,18 @@ export default function CalculEnDirect({
       </section>
 
       {anomalies.length > 0 ? (
-        <section className="rounded-lg border border-amber-300 bg-amber-50 p-4">
-          <h2 className="text-sm font-medium text-amber-900">
+        <section className="rounded-lg border border-ecart/40 bg-ecart-clair p-4">
+          <h2 className="text-sm font-medium text-ecart">
             {libelles.formulaire.anomalies_titre}
           </h2>
           <ul className="mt-2 space-y-1.5">
             {anomalies.map((anomalie) => (
-              <li key={anomalie.code} className="text-sm text-amber-900">
+              <li key={anomalie.code} className="text-sm text-ecart">
                 {messageAnomalie(anomalie)}
               </li>
             ))}
           </ul>
-          <p className="mt-3 border-t border-amber-200 pt-2 text-xs text-amber-800">
+          <p className="mt-3 border-t border-ecart/30 pt-2 text-xs text-ecart">
             {libelles.formulaire.anomalies_introduction}
           </p>
         </section>

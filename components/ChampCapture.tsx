@@ -84,7 +84,7 @@ export default function ChampCapture({
       <p className="mt-1 text-xs text-neutral-600">{textes.aide}</p>
 
       <label
-        className="mt-2 inline-block cursor-pointer rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:border-neutral-900"
+        className="mt-2 flex min-h-12 w-full cursor-pointer items-center justify-center rounded-md border border-dashed border-mesure/50 bg-mesure-clair px-4 py-3 text-base font-medium text-mesure hover:border-mesure"
         htmlFor="capture"
       >
         {selection ? textes.remplacer : textes.bouton}
@@ -112,15 +112,15 @@ export default function ChampCapture({
       </dl>
 
       {refus ? (
-        <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2">
-          <p className="text-sm font-medium text-amber-900">
+        <div className="mt-3 rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2">
+          <p className="text-sm font-medium text-ecart">
             {motifs[refus.motif] ?? refus.motif}
           </p>
           {expliquerFormat ? (
-            <p className="mt-1 text-sm text-amber-900">{expliquerFormat}</p>
+            <p className="mt-1 text-sm text-ecart">{expliquerFormat}</p>
           ) : null}
           {refus.motif === "format_non_pris_en_charge" && !expliquerFormat ? (
-            <p className="mt-1 text-sm text-amber-900">{textes.heic}</p>
+            <p className="mt-1 text-sm text-ecart">{textes.heic}</p>
           ) : null}
         </div>
       ) : null}

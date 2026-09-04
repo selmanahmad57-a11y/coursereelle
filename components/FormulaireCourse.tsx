@@ -291,11 +291,11 @@ export default function FormulaireCourse() {
   if (envoyee) {
     return (
       <div className="space-y-6">
-        <section className="rounded-lg border border-emerald-300 bg-emerald-50 p-4">
-          <h2 className="text-base font-semibold text-emerald-900">
+        <section className="rounded-lg border border-mesure/40 bg-mesure-clair p-4">
+          <h2 className="text-base font-semibold text-mesure">
             {textes.succes.titre}
           </h2>
-          <p className="mt-2 text-sm text-emerald-900">{textes.succes.explication}</p>
+          <p className="mt-2 text-sm text-mesure">{textes.succes.explication}</p>
         </section>
 
         <section>
@@ -314,7 +314,7 @@ export default function FormulaireCourse() {
 
         <section className="space-y-3">
           <button
-            className="w-full rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white"
+            className="w-full rounded-md bg-mesure px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-mesure/90"
             onClick={reprendre}
             type="button"
           >
@@ -335,14 +335,14 @@ export default function FormulaireCourse() {
 
   return (
     <form
-      className="space-y-8"
+      className="space-y-4"
       onSubmit={envoyer}
       onFocusCapture={noterPremierContact}
       onInputCapture={noterPremierContact}
     >
-      <section className="space-y-4">
+      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
         <div>
-          <h2 className="text-sm font-semibold text-neutral-900">{textes.section_contexte}</h2>
+          <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_contexte}</h2>
           <p className="text-xs text-neutral-600">{textes.section_contexte_aide}</p>
         </div>
 
@@ -420,8 +420,8 @@ export default function FormulaireCourse() {
         </Champ>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-neutral-900">{textes.section_course}</h2>
+      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+        <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_course}</h2>
 
         <Champ identifiant="date-course" intitule={textes.champs.date_course}>
           <input
@@ -436,7 +436,7 @@ export default function FormulaireCourse() {
         </Champ>
 
         {tropAncienne && limiteAnciennete !== null ? (
-          <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p className="rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2 text-sm text-ecart">
             {textes.anciennete_depassee.replace(
               "{limite}",
               formaterValeur(limiteAnciennete, UNITES.jours)
@@ -518,7 +518,7 @@ export default function FormulaireCourse() {
       </section>
 
       {dateCourse === "" ? null : (
-        <section>
+        <section className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
           <ChampCapture dateCourse={dateCourse} key={essai} />
         </section>
       )}
@@ -530,7 +530,7 @@ export default function FormulaireCourse() {
         tauxCotisations={taux}
       />
 
-      <section>
+      <section className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
         {cleTurnstile ? (
           <>
             <p className="text-xs font-medium text-neutral-700">
@@ -544,13 +544,13 @@ export default function FormulaireCourse() {
             />
           </>
         ) : (
-          <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p className="rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2 text-sm text-ecart">
             {textes.envoi.turnstile_absent}
           </p>
         )}
 
         <button
-          className="mt-4 w-full rounded-md bg-neutral-900 px-4 py-3 text-base font-medium text-white disabled:bg-neutral-300 disabled:text-neutral-600"
+          className="mt-4 w-full rounded-md bg-mesure px-4 py-4 text-base font-semibold text-white transition-colors hover:bg-mesure/90 disabled:bg-neutral-300 disabled:text-neutral-600"
           disabled={!cleTurnstile || envoi === "en_cours"}
           type="submit"
         >
@@ -561,8 +561,8 @@ export default function FormulaireCourse() {
           <p
             className={`mt-3 rounded-md border px-3 py-2 text-sm ${
               retourEnvoi.reussite
-                ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-                : "border-amber-300 bg-amber-50 text-amber-900"
+                ? "border-mesure/40 bg-mesure-clair text-mesure"
+                : "border-ecart/40 bg-ecart-clair text-ecart"
             }`}
           >
             {retourEnvoi.message}

@@ -23,7 +23,10 @@ export default function PageFaq() {
 
       <p className="mt-3 max-w-2xl text-sm text-neutral-700">{faq.chapeau}</p>
 
-      <nav aria-label="Sommaire" className="mt-8 rounded-lg border border-neutral-200 bg-white p-4">
+      <nav
+        aria-label="Sommaire"
+        className="mt-8 rounded-lg border-l-4 border-mesure bg-white py-3 pr-4 pl-4"
+      >
         <ul className="space-y-1.5">
           {faq.questions.map((entree) => (
             <li key={entree.cle}>
@@ -41,7 +44,9 @@ export default function PageFaq() {
       <div className="mt-10 space-y-8">
         {faq.questions.map((entree) => (
           <section key={entree.cle} id={entree.cle} className="scroll-mt-6">
-            <h2 className="text-lg font-semibold text-neutral-900">{entree.question}</h2>
+            <h2 className="border-b border-neutral-200 pb-2 text-lg font-semibold text-neutral-900">
+              {entree.question}
+            </h2>
 
             {entree.reponse.map((paragraphe) => (
               <p key={paragraphe.slice(0, 40)} className="mt-3 text-sm text-neutral-700">

@@ -39,9 +39,11 @@ export default async function PageStatistiques() {
       <h1 className="text-2xl font-semibold text-neutral-900">{textes.titre}</h1>
       <p className="mt-3 max-w-2xl text-sm text-neutral-700">{textes.introduction}</p>
 
-      <section className="mt-8 rounded-lg border border-neutral-200 bg-white p-6">
-        <p className="text-sm text-neutral-600">{textes.compteur_intitule}</p>
-        <p className="mt-1 font-mono text-4xl font-semibold tabular-nums text-neutral-900">
+      <section className="mt-8 rounded-lg border border-neutral-300 bg-white p-5 shadow-xs sm:p-6">
+        <p className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+          {textes.compteur_intitule}
+        </p>
+        <p className="mt-1 font-mono text-5xl font-semibold tabular-nums text-mesure">
           {formaterNombre(etat.effectif)}
         </p>
         <p className="mt-1 text-xs text-neutral-500">
@@ -63,7 +65,19 @@ export default async function PageStatistiques() {
             : null}
         </p>
 
-        <p className="mt-1 text-xs text-neutral-500">{textes.provenance_seuil}</p>
+        {etat.seuil === null || etat.seuil === 0 ? null : (
+          <div
+            aria-hidden="true"
+            className="mt-4 flex h-3 w-full overflow-hidden rounded-sm bg-neutral-200"
+          >
+            <div
+              className="bg-mesure"
+              style={{ width: `${Math.min(100, (etat.effectif / etat.seuil) * 100)}%` }}
+            />
+          </div>
+        )}
+
+        <p className="mt-2 text-xs text-neutral-500">{textes.provenance_seuil}</p>
 
         {donnees.requetesDisponibles ? null : (
           <p className="mt-3 border-t border-neutral-200 pt-3 text-xs text-neutral-600">

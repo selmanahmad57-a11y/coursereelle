@@ -42,8 +42,8 @@ export const metadata: Metadata = {
 type Entree = RegleAnnoncee | RegleLegale | ParametreSysteme;
 
 const couleursEtat: Record<ReturnType<typeof etatSource>, string> = {
-  verifiee: "bg-emerald-50 text-emerald-900 ring-emerald-600/20",
-  citee: "bg-amber-50 text-amber-900 ring-amber-600/20",
+  verifiee: "bg-mesure-clair text-mesure ring-mesure/25",
+  citee: "bg-ecart-clair text-ecart ring-ecart/30",
   absente: "bg-neutral-100 text-neutral-700 ring-neutral-500/20",
 };
 
@@ -89,7 +89,7 @@ function Carte({ entree }: { entree: Entree }) {
     <li className="rounded-lg border border-neutral-200 bg-white p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="text-sm font-medium text-neutral-900">{entree.libelle}</h3>
-        <span className="font-mono text-lg font-semibold tabular-nums text-neutral-900">
+        <span className="font-mono text-lg font-semibold tabular-nums text-mesure">
           {formaterValeur(entree.valeur, entree.unite)}
         </span>
       </div>
@@ -112,7 +112,7 @@ function Carte({ entree }: { entree: Entree }) {
       </dl>
 
       {entree.precision_date ? (
-        <p className="mt-2 border-l-2 border-amber-300 pl-3 text-xs text-neutral-700">
+        <p className="mt-2 border-l-2 border-ecart/40 pl-3 text-xs text-neutral-700">
           {entree.precision_date}
         </p>
       ) : null}
@@ -329,8 +329,8 @@ export default async function PageMethode() {
               {libelles.methode.captures.controle}
             </p>
 
-            <div className="mt-3 rounded border border-neutral-300 bg-neutral-50 p-3">
-              <p className="text-xs text-neutral-600">
+            <div className="mt-3 rounded-lg border border-neutral-300 bg-white p-4 shadow-xs">
+              <p className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
                 {libelles.methode.captures.compteur_intitule}
               </p>
 
@@ -341,8 +341,10 @@ export default async function PageMethode() {
               ) : (
                 <>
                   <p
-                    className={`mt-0.5 font-mono text-3xl font-semibold tabular-nums ${
-                      etatDesCaptures.echues === 0 ? "text-neutral-900" : "text-rose-700"
+                    /* Zéro est ici un bon état, prouvé : il porte la couleur de
+                       la donnée. Tout autre nombre est un écart, et le dit. */
+                    className={`mt-0.5 font-mono text-4xl font-semibold tabular-nums ${
+                      etatDesCaptures.echues === 0 ? "text-mesure" : "text-ecart"
                     }`}
                   >
                     {formaterNombre(etatDesCaptures.echues)}
@@ -396,7 +398,7 @@ export default async function PageMethode() {
               {interpretationZone.libelle}
             </h3>
             <p className="mt-2 text-sm text-neutral-700">{interpretationZone.regle}</p>
-            <p className="mt-2 border-l-2 border-amber-300 pl-3 text-sm text-neutral-700">
+            <p className="mt-2 border-l-2 border-ecart/40 pl-3 text-sm text-neutral-700">
               {interpretationZone.incertitude}
             </p>
             <p className="mt-3 border-t border-neutral-200 pt-3 text-xs text-neutral-600">

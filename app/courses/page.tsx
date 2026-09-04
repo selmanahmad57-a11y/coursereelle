@@ -45,10 +45,13 @@ function Verification({ course }: { course: CoursePubliee }) {
   return (
     <>
       <span
+        /* Le rouge est réservé aux écarts contre une annonce. Une vérification
+           partielle n'est pas une faute du livreur : c'est une limite de notre
+           lecture, et elle se dit en gris. */
         className={`inline-block rounded px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
           nonVerifies.length === 0
-            ? "bg-emerald-50 text-emerald-900 ring-emerald-600/20"
-            : "bg-amber-50 text-amber-900 ring-amber-600/20"
+            ? "bg-mesure-clair text-mesure ring-mesure/25"
+            : "bg-neutral-100 text-neutral-700 ring-neutral-400/30"
         }`}
       >
         {nonVerifies.length === 0 ? textes.badge_complete : textes.badge_partielle}
@@ -90,7 +93,7 @@ function Conformite({ course }: { course: CoursePubliee }) {
             className={`inline-block rounded px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
               classement.categorie === "conforme"
                 ? "bg-neutral-100 text-neutral-700 ring-neutral-500/20"
-                : "bg-rose-50 text-rose-900 ring-rose-600/20"
+                : "bg-ecart-clair text-ecart ring-ecart/30"
             }`}
           >
             {traduire(libelles.categories, classement.categorie)}
@@ -188,11 +191,11 @@ export default async function PageCourses({ searchParams }: PageProps<"/courses"
       <h1 className="text-2xl font-semibold text-neutral-900">{textes.titre}</h1>
       <p className="mt-3 max-w-2xl text-sm text-neutral-700">{textes.introduction}</p>
 
-      <p className="mt-6 text-sm text-neutral-600">
-        {textes.compteur_intitule} :{" "}
-        <span className="font-mono font-semibold tabular-nums text-neutral-900">
+      <p className="mt-6 flex flex-wrap items-baseline gap-x-3 border-l-4 border-mesure bg-white py-2 pr-3 pl-3 text-sm text-neutral-700">
+        <span className="font-mono text-2xl font-semibold tabular-nums text-mesure">
           {formaterNombre(etat.effectif)}
         </span>
+        <span>{textes.compteur_intitule}</span>
       </p>
 
       {liste.courses.length === 0 ? (

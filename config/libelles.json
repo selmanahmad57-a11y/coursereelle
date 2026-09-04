@@ -214,7 +214,13 @@
         "net": "{reel} moins {taux} de cotisations",
         "vitesse": "{distance} en {duree_reelle}"
       },
-      "provenance": "Chaque chiffre affiche d'où il sort : vous devez pouvoir refaire le calcul."
+      "provenance": "Chaque chiffre affiche d'où il sort : vous devez pouvoir refaire le calcul.",
+      "barres": {
+        "reel": "Votre taux réel",
+        "estime": "Ce que l'application laisse croire",
+        "manque": "Écart",
+        "legende": "Longueurs proportionnelles aux montants. Ces chiffres sont les vôtres : ils ne seront vérifiés qu'après lecture de la capture."
+      }
     },
     "anomalies_titre": "À vérifier avant d'envoyer",
     "anomalies_introduction": "Ces contrôles ne portent que sur la cohérence physique. Le montant payé n'entre jamais en compte : une course mal payée est une preuve à publier, pas une erreur.",

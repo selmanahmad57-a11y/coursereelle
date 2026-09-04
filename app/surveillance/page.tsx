@@ -127,7 +127,7 @@ function Compteurs({
       {entrees.map((entree) => (
         <li key={entree.cle} className="flex items-baseline justify-between gap-4 py-1.5">
           <span className="text-sm text-neutral-700">{intituler(table, entree.cle)}</span>
-          <span className="font-mono text-sm font-medium tabular-nums text-neutral-900">
+          <span className="font-mono text-sm font-medium tabular-nums text-mesure">
             {formaterNombre(entree.nombre)}
           </span>
         </li>
@@ -174,11 +174,11 @@ export default async function PageSurveillance({
               {textes.acces.bouton}
             </button>
             {parametres?.refus ? (
-              <p className="mt-3 text-sm text-amber-800">{textes.acces.refus}</p>
+              <p className="mt-3 text-sm text-ecart">{textes.acces.refus}</p>
             ) : null}
           </form>
         ) : (
-          <p className="mt-6 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p className="mt-6 rounded-md border border-ecart/40 bg-ecart-clair px-3 py-2 text-sm text-ecart">
             {textes.acces.non_configure}
           </p>
         )}

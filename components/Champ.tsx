@@ -7,7 +7,7 @@
  */
 
 export const classesSaisie =
-  "mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-base text-neutral-900 focus:border-neutral-900 focus:outline-none";
+  "mt-1.5 min-h-12 w-full rounded-md border border-neutral-300 bg-white px-3 py-3 text-base text-neutral-900 focus:border-mesure focus:ring-2 focus:ring-mesure/20 focus:outline-none";
 
 export function Champ({
   identifiant,
@@ -61,7 +61,7 @@ export function Ligne({
       </div>
       <dd
         className={`shrink-0 font-mono tabular-nums ${
-          accent ? "text-xl font-semibold text-neutral-900" : "text-sm text-neutral-800"
+          accent ? "text-2xl font-semibold text-neutral-900" : "text-sm text-neutral-800"
         }`}
       >
         {valeur}

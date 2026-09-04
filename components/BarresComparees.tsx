@@ -8,7 +8,7 @@ export interface LigneComparee {
   /** La valeur telle qu'elle s'écrit, avec son unité. */
   lisible: string;
   /** D'où sort ce nombre. Chaque chiffre du site porte son origine. */
-  provenance: string;
+  provenance: string | null;
   /**
    * Une mesure porte la couleur pleine ; une annonce reste grise. Le gris n'est
    * pas une nuance de style : il dit qu'un chiffre annoncé n'est pas une preuve.
@@ -100,7 +100,9 @@ export default function BarresComparees({
                 </p>
               ) : null}
 
-              <p className="mt-1 text-xs text-neutral-500">{ligne.provenance}</p>
+              {ligne.provenance === null ? null : (
+                <p className="mt-1 text-xs text-neutral-500">{ligne.provenance}</p>
+              )}
             </div>
           );
         })}

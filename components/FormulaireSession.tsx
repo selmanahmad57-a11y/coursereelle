@@ -97,10 +97,10 @@ export default function FormulaireSession() {
   const rienACalculer = resultat.dureeConnecteeMinutes === null;
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-4">
+    <div className="space-y-4">
+      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
         <div>
-          <h2 className="text-sm font-semibold text-neutral-900">{textes.section_contexte}</h2>
+          <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_contexte}</h2>
           <p className="text-xs text-neutral-600">{textes.section_contexte_aide}</p>
         </div>
 
@@ -154,8 +154,8 @@ export default function FormulaireSession() {
         </Champ>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-neutral-900">{textes.section_session}</h2>
+      <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4 sm:p-5">
+        <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">{textes.section_session}</h2>
 
         <Champ identifiant="date-session" intitule={textes.champs.date_session}>
           <input
@@ -285,11 +285,11 @@ export default function FormulaireSession() {
         </section>
 
         {anomalies.length > 0 ? (
-          <section className="rounded-lg border border-amber-300 bg-amber-50 p-4">
-            <h2 className="text-sm font-medium text-amber-900">{textes.anomalies_titre}</h2>
+          <section className="rounded-lg border border-ecart/40 bg-ecart-clair p-4">
+            <h2 className="text-sm font-medium text-ecart">{textes.anomalies_titre}</h2>
             <ul className="mt-2 space-y-1.5">
               {anomalies.map((anomalie) => (
-                <li key={anomalie.code} className="text-sm text-amber-900">
+                <li key={anomalie.code} className="text-sm text-ecart">
                   {motifs[anomalie.code] ?? anomalie.code} —{" "}
                   {formaterValeur(anomalie.valeur, unitesAnomalie[anomalie.code])} pour une
                   limite de {formaterValeur(anomalie.limite, unitesAnomalie[anomalie.code])}.
