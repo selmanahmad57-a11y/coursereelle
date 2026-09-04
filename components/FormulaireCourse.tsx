@@ -31,10 +31,12 @@ import {
   zoneDeLaVille,
 } from "@/lib/parametres";
 import { controlerCoherencePhysique } from "@/lib/validation/regles-physiques.ts";
+import { appelleLeGuide } from "@/lib/motifs-guide.ts";
 
 import { Champ } from "./Champ";
 import CalculEnDirect from "./CalculEnDirect";
 import ChampCapture from "./ChampCapture";
+import GuideCapture from "./GuideCapture";
 
 const textes = libelles.formulaire;
 
@@ -129,6 +131,8 @@ export default function FormulaireCourse() {
   const [retourEnvoi, setRetourEnvoi] = useState<{
     reussite: boolean;
     message: string;
+    /** Le motif brut, pour décider si un guide peut réparer le rejet. */
+    motif?: string | null;
   } | null>(null);
 
   const contexte = contexteSaisi ?? decoder(memoire);
@@ -245,6 +249,7 @@ export default function FormulaireCourse() {
 
       setRetourEnvoi({
         reussite,
+        motif: corps.motif ?? null,
         message: reussite
           ? textes.envoi.reussite
           : `${textes.envoi.rejet} ${motifs[corps.motif ?? ""] ?? corps.motif ?? ""}${precision}`.trim(),
@@ -519,7 +524,11 @@ export default function FormulaireCourse() {
 
       {dateCourse === "" ? null : (
         <section className="carte">
-          <ChampCapture dateCourse={dateCourse} key={essai} />
+          <ChampCapture
+            dateCourse={dateCourse}
+            key={essai}
+            premiereVisite={memoire === null}
+          />
         </section>
       )}
 
@@ -556,15 +565,27 @@ export default function FormulaireCourse() {
         </button>
 
         {retourEnvoi ? (
-          <p
-            className={`mt-3 rounded-md border px-3 py-2 text-sm ${
-              retourEnvoi.reussite
-                ? "border-mesure/40 bg-mesure-clair text-mesure"
-                : "border-ecart/40 bg-ecart-clair text-ecart"
-            }`}
-          >
-            {retourEnvoi.message}
-          </p>
+          <>
+            <p
+              className={`mt-3 rounded-md border px-3 py-2 text-sm ${
+                retourEnvoi.reussite
+                  ? "border-mesure/40 bg-mesure-clair text-mesure"
+                  : "border-ecart/40 bg-ecart-clair text-ecart"
+              }`}
+            >
+              {retourEnvoi.message}
+            </p>
+
+            {/*
+              * LE REJET ENSEIGNE. Un motif technique seul perd un testeur ; le
+              * même motif suivi de « voici l'écran qu'il faut » en garde un.
+              * C'est le moment exact où il est réceptif — il vient d'échouer et
+              * il a encore son téléphone en main.
+              */}
+            {!retourEnvoi.reussite && appelleLeGuide(retourEnvoi.motif) ? (
+              <GuideCapture ouvert introduction={libelles.formulaire.guide_capture.apres_rejet} />
+            ) : null}
+          </>
         ) : null}
       </section>
     </form>

@@ -266,6 +266,16 @@
       "autre": "Publier une autre course",
       "autre_aide": "Votre ville, votre plateforme et votre véhicule sont conservés.",
       "statistiques": "Voir les statistiques"
+    },
+    "guide_capture": {
+      "resume": "Quel écran capturer ?",
+      "chemin": "Dans l'application Uber : Gains → touchez la course → l'écran « Détails de la course », celui avec le prix en gros. Capturez cet écran-là.",
+      "bon_titre": "Cet écran",
+      "bon_aide": "Le récapitulatif d'après course : un montant en gros, la durée, la distance.",
+      "mauvais_titre": "Pas ceux-là",
+      "mauvais_aide": "La carte, la navigation, la course en cours : ils n'affichent aucun montant, et il n'y a donc rien à vérifier.",
+      "note": "Ces vignettes sont des schémas, pas des captures : une vraie capture porterait l'adresse d'un client.",
+      "apres_rejet": "L'écran envoyé n'a pas pu être lu. Voici celui qui convient — c'est presque toujours l'écran qui manquait, pas la course."
     }
   },
   "methode": {

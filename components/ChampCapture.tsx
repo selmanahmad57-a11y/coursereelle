@@ -23,11 +23,16 @@ interface Selection {
   apercu: string;
 }
 
+import GuideCapture from "./GuideCapture";
+
 export default function ChampCapture({
   dateCourse,
+  premiereVisite = false,
   onChange,
 }: {
   dateCourse: string;
+  /** Vrai tant que rien n'a été retenu sur cet appareil : le guide s'ouvre. */
+  premiereVisite?: boolean;
   onChange?: (fichier: File | null) => void;
 }) {
   const [selection, setSelection] = useState<Selection | null>(null);
@@ -82,6 +87,8 @@ export default function ChampCapture({
     <div>
       <p className="etiquette-section">{textes.intitule}</p>
       <p className="mt-1 text-xs text-neutral-600">{textes.aide}</p>
+
+      <GuideCapture ouvert={premiereVisite} />
 
       <label
         className="bouton-fichier mt-2"
