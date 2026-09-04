@@ -11,6 +11,15 @@
  * démarrage. En environnement serverless, seul le répertoire temporaire est
  * inscriptible : `os.tmpdir()` le désigne sans supposer de chemin.
  *
+ * CE QUI EST MESURÉ, ET QUI N'EST PAS RÉSOLU. En production, cette route expire
+ * au bout des trois cents secondes accordées à une fonction, sans qu'aucune
+ * course soit en attente : le moteur ne parvient pas à s'initialiser dans une
+ * fonction serverless, probablement faute de pouvoir y récupérer ses données de
+ * langue. La route est conservée parce que le problème est celui de
+ * l'initialisation, pas celui du code appelant — mais aucune planification ne la
+ * vise tant qu'elle n'aura pas été rendue viable. Une porte qui ne s'ouvre pas
+ * doit être annoncée comme telle plutôt que laissée dans une liste de tâches.
+ *
  * La réponse ne contient que des comptes et des motifs. Aucun texte lu sur une
  * capture ne traverse cette route — la même règle que partout ailleurs, et elle
  * vaut d'autant plus ici que la sortie part sur le réseau.

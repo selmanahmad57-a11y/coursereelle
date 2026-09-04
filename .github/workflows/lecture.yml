@@ -11,13 +11,24 @@
 # rien quand il n'y a rien à lire — la route ne fait aucun travail lorsque la
 # file est vide.
 #
-# Même remarque que pour l'entretien : le cron Vercel quotidien reste en filet.
+# CADENCE SUSPENDUE : LA PORTE NE S'OUVRE PAS ENCORE.
+#
+# Mesuré en production le 4 septembre 2026 : /api/taches/lecture expire au bout
+# de 300 s — la durée maximale d'une fonction — alors qu'aucune course n'était en
+# attente. Ce n'est donc pas le lot qui est trop grand : c'est le moteur de
+# reconnaissance qui ne parvient pas à démarrer dans une fonction serverless.
+# Lui donner un quart d'heure de plus n'y changerait rien, et une planification
+# qui échoue toutes les quinze minutes est pire qu'une absence de planification :
+# elle donne l'apparence d'un mécanisme.
+#
+# Le déclenchement manuel reste, pour pouvoir reconstater. La cadence reviendra
+# quand la lecture aura un endroit où tourner — soit ici même, en exécutant la
+# commande plutôt qu'en appelant la route, soit dans la fonction si les données
+# de langue y sont embarquées.
 
 name: Lecture des captures
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 jobs:
