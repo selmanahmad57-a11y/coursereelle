@@ -34,19 +34,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col bg-neutral-50 font-sans text-neutral-900">
         <header className="border-b border-neutral-200 bg-white">
-          <nav className="mx-auto flex max-w-3xl flex-wrap items-baseline gap-x-6 gap-y-2 px-4 py-4">
+          <nav className="mx-auto max-w-3xl px-4 py-3">
             <Link className="font-semibold text-neutral-900" href="/">
               {navigation.marque}
             </Link>
-            {navigation.liens.map((lien) => (
-              <Link
-                key={lien.href}
-                className="text-sm text-neutral-600 hover:text-neutral-900"
-                href={lien.href}
-              >
-                {lien.libelle}
-              </Link>
-            ))}
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+              {navigation.liens.map((lien) => (
+                <Link
+                  key={lien.href}
+                  className="text-xs text-neutral-600 hover:text-mesure sm:text-sm"
+                  href={lien.href}
+                >
+                  {lien.libelle}
+                </Link>
+              ))}
+            </div>
           </nav>
         </header>
 

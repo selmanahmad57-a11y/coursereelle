@@ -687,11 +687,18 @@
       "provenance_distance": "Distance parcourue : {distance}",
       "sans_garantie": "Aucune garantie horaire annoncée n'est en vigueur à la date de cette course : le site ne compare donc rien, plutôt que de comparer à un chiffre d'une autre période.",
       "aucune": "Aucune course n'a encore été vérifiée. Cette place restera vide jusqu'à la première : un exemple inventé, même pour montrer la mise en page, ferait de ce site exactement ce qu'il reproche aux autres.",
-      "provenance_ecart": "La garantie annoncée dépasse de {ecart} ce que cette course a réellement payé à l'heure."
+      "provenance_ecart": "La garantie annoncée dépasse de {ecart} ce que cette course a réellement payé à l'heure.",
+      "barres": {
+        "mesure": "Mesuré",
+        "annonce": "Annoncé",
+        "manque": "Écart",
+        "legende": "Longueurs proportionnelles aux montants : une barre deux fois plus longue vaut le double."
+      }
     },
     "compteur": {
       "intitule": "Courses vérifiées",
-      "lien": "Voir les statistiques"
+      "lien": "Voir les statistiques",
+      "chapeau": "courses vérifiées, sur {recues} reçues"
     },
     "actions": [
       {

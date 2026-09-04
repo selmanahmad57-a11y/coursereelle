@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import libelles from "@/config/libelles.json";
+import BarresComparees from "@/components/BarresComparees";
 import { formaterNombre, formaterValeur } from "@/lib/baremes";
 import { calculer, ecartRelatif } from "@/lib/calculs.ts";
+import { enDeca } from "@/lib/comparaison.ts";
 import { CLES_ANNONCEES, UNITES } from "@/lib/cles.ts";
 import {
   lireDerniereCourseVerifiee,
@@ -31,32 +33,6 @@ export const metadata: Metadata = {
     "Les courses réelles des livreurs, vérifiées automatiquement par leur propre capture, pour mesurer l'écart entre les annonces des plateformes et la réalité du terrain.",
 };
 
-function Chiffre({
-  intitule,
-  valeur,
-  provenance,
-  accent = false,
-}: {
-  intitule: string;
-  valeur: string;
-  provenance: string;
-  accent?: boolean;
-}) {
-  return (
-    <div>
-      <p className="text-sm text-neutral-600">{intitule}</p>
-      <p
-        className={`mt-0.5 font-mono font-semibold tabular-nums text-neutral-900 ${
-          accent ? "text-4xl" : "text-2xl"
-        }`}
-      >
-        {valeur}
-      </p>
-      <p className="mt-1 text-xs text-neutral-500">{provenance}</p>
-    </div>
-  );
-}
-
 function Vitrine({ course }: { course: CourseVerifiee }) {
   const resultat = calculer(
     {
@@ -74,31 +50,45 @@ function Vitrine({ course }: { course: CourseVerifiee }) {
   });
 
   const ecart = ecartRelatif(resultat.tauxPlateforme, garantie);
+  const barres = textes.vitrine.barres;
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2">
-        {resultat.tauxPlateforme === null ? null : (
-          <Chiffre
-            accent
-            intitule={textes.vitrine.intitule_taux}
-            valeur={formaterValeur(resultat.tauxPlateforme, UNITES.euroParHeure)}
-            provenance={remplacer(textes.vitrine.provenance_taux, {
+      <BarresComparees
+        lignes={[
+          {
+            cle: "mesure",
+            libelle: barres.mesure,
+            valeur: resultat.tauxPlateforme,
+            lisible:
+              resultat.tauxPlateforme === null
+                ? "—"
+                : formaterValeur(resultat.tauxPlateforme, UNITES.euroParHeure),
+            provenance: remplacer(textes.vitrine.provenance_taux, {
               prix: formaterValeur(course.prixEuros, UNITES.euroParCourse),
               duree: formaterValeur(course.dureeReelleMinutes, UNITES.minutes),
-            })}
-          />
-        )}
-
-        {garantie === null ? null : (
-          <Chiffre
-            accent
-            intitule={textes.vitrine.intitule_garantie}
-            valeur={formaterValeur(garantie, UNITES.euroParHeure)}
-            provenance={textes.vitrine.provenance_garantie}
-          />
-        )}
-      </div>
+            }),
+            mesuree: true,
+            alerte: enDeca(resultat.tauxPlateforme, garantie),
+          },
+          {
+            cle: "annonce",
+            libelle: barres.annonce,
+            valeur: garantie,
+            lisible: garantie === null ? "—" : formaterValeur(garantie, UNITES.euroParHeure),
+            provenance: textes.vitrine.provenance_garantie,
+            mesuree: false,
+            /* L'annonce ne porte jamais l'alerte : c'est elle qui sert de repère. */
+            alerte: false,
+          },
+        ]}
+        libelleManque={
+          ecart === null
+            ? barres.manque
+            : `${barres.manque} ${formaterValeur(ecart, UNITES.pourcent)}`
+        }
+        legende={barres.legende}
+      />
 
       {ecart === null ? null : (
         <p className="mt-6 border-t border-neutral-200 pt-4 text-sm text-neutral-800">
@@ -114,7 +104,7 @@ function Vitrine({ course }: { course: CourseVerifiee }) {
         </p>
       ) : null}
 
-      <p className="mt-3 text-xs text-neutral-500">
+      <p className="mt-2 text-xs text-neutral-500">
         {remplacer(textes.vitrine.provenance_distance, {
           distance: formaterValeur(course.distanceKm, UNITES.kilometre),
         })}
@@ -143,46 +133,45 @@ export default async function Accueil() {
   );
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-neutral-900">
+    <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+      {/* Le compteur d'abord : ce que le site a vérifié se lit avant ce qu'il affirme. */}
+      <Link
+        className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-l-4 border-mesure bg-white py-2 pr-3 pl-3 text-sm text-neutral-700 transition-colors hover:bg-mesure-clair"
+        href="/statistiques"
+      >
+        <span className="font-mono text-2xl font-semibold tabular-nums text-mesure">
+          {formaterNombre(etat.effectif)}
+        </span>
+        <span>
+          {remplacer(textes.compteur.chapeau, {
+            validees: formaterNombre(etat.effectif),
+            recues: formaterNombre(donnees.effectifRecu),
+          })}
+        </span>
+      </Link>
+
+      <h1 className="mt-6 max-w-2xl text-3xl font-semibold tracking-tight text-balance text-neutral-900">
         {textes.titre}
       </h1>
       <p className="mt-4 max-w-2xl text-sm text-neutral-700">{textes.chapeau}</p>
 
-      <section className="mt-10 rounded-lg border border-neutral-300 bg-white p-6">
-        <h2 className="text-sm font-medium text-neutral-900">{textes.vitrine.titre}</h2>
+      <section className="mt-8 rounded-lg border border-neutral-300 bg-white p-5 shadow-xs sm:p-6">
+        <h2 className="text-xs font-medium tracking-wide text-neutral-600 uppercase">
+          {textes.vitrine.titre}
+        </h2>
 
-        <div className="mt-5">
-          {course === null ? (
-            <p className="text-sm text-neutral-700">{textes.vitrine.aucune}</p>
-          ) : (
-            <Vitrine course={course} />
-          )}
-        </div>
+        {course === null ? (
+          <p className="mt-4 text-sm text-neutral-700">{textes.vitrine.aucune}</p>
+        ) : (
+          <Vitrine course={course} />
+        )}
       </section>
 
-      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-6">
-        <p className="text-sm text-neutral-600">{textes.compteur.intitule}</p>
-        <p className="mt-1 font-mono text-3xl font-semibold tabular-nums text-neutral-900">
-          {formaterNombre(etat.effectif)}
-        </p>
-        <p className="mt-1 text-xs text-neutral-500">
-          {libelles.statistiques.provenance_compteur
-            .replace("{validees}", formaterNombre(etat.effectif))
-            .replace("{recues}", formaterNombre(donnees.effectifRecu))}
-        </p>
-        <p className="mt-3 text-sm">
-          <Link className="text-neutral-900 underline underline-offset-2" href="/statistiques">
-            {textes.compteur.lien}
-          </Link>
-        </p>
-      </section>
-
-      <section className="mt-10 grid gap-3 sm:grid-cols-3">
+      <section className="mt-8 grid gap-3 sm:grid-cols-3">
         {textes.actions.map((action) => (
           <Link
             key={action.href}
-            className="rounded-lg border border-neutral-200 bg-white p-4 transition-colors hover:border-neutral-400"
+            className="rounded-lg border border-neutral-200 bg-white p-4 transition-colors hover:border-mesure"
             href={action.href}
           >
             <span className="text-sm font-medium text-neutral-900">{action.libelle}</span>
