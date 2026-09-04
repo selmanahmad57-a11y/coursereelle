@@ -185,3 +185,29 @@ test("l'accueil annonce des actions completes", () => {
     assert.ok(action.description.length > 0, `${action.href} : action sans description`);
   }
 });
+
+test("la feuille de base ne porte aucune regle hors couche", async () => {
+  /*
+   * Une regle CSS sans couche l'emporte sur tout ce que Tailwind ecrit dans
+   * « @layer utilities ». Le gabarit de depart en laissait une — body {
+   * background: … } — qui remplacait silencieusement le fond de la page. Rien
+   * ne le signalait : la classe etait bien presente dans le HTML et bien
+   * definie dans la feuille, elle etait simplement perdante. Une classe qui ne
+   * s'applique pas ne casse rien, elle ment.
+   */
+  const { readFile } = await import("node:fs/promises");
+  const source = await readFile("app/globals.css", "utf8");
+
+  const sansCommentaires = source.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  /* Ce qui est autorise : les directives at-rule (@import, @theme, @layer). */
+  const regles = [...sansCommentaires.matchAll(/(^|\})\s*([^@{}]+)\{/g)].map((t) =>
+    t[2].trim()
+  );
+
+  assert.deepEqual(
+    regles,
+    [],
+    `regle hors couche dans app/globals.css : ${regles.join(", ")} — elle battrait les utilitaires`
+  );
+});

@@ -1,19 +1,17 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/*
+ * Les polices chargées par le composant de mise en page deviennent les polices
+ * par défaut des utilitaires `font-sans` et `font-mono`.
+ *
+ * CE FICHIER NE PORTE AUCUNE RÈGLE HORS COUCHE, et c'est délibéré. Il en portait
+ * une, héritée du gabarit de départ : `body { background: … }`. Une règle sans
+ * couche l'emporte sur tout ce que Tailwind écrit dans `@layer utilities` — le
+ * `bg-neutral-50` de la page était donc silencieusement remplacé par du blanc,
+ * sans qu'aucune erreur ne le signale. Une classe qui ne s'applique pas est le
+ * pire genre de panne : elle ne casse rien, elle ment.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
 }
