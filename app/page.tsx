@@ -12,7 +12,14 @@ import {
   lireDonneesPubliques,
   type CourseVerifiee,
 } from "@/lib/donnees.ts";
-import { regleAnnoncee, seuilsStatistiques, tauxCotisations } from "@/lib/parametres";
+import {
+  delaiSuppressionCaptureHeures,
+  regleAnnoncee,
+  seuilsStatistiques,
+  tauxCotisations,
+  valeursDesJetons,
+} from "@/lib/parametres";
+import { etatCapture } from "@/lib/cycle-capture.ts";
 import { etatPublication } from "@/lib/publication.ts";
 import { remplacer } from "@/lib/textes.ts";
 import { aujourdhui } from "@/lib/contexte-livreur.ts";
@@ -51,6 +58,17 @@ function Vitrine({ course }: { course: CourseVerifiee }) {
 
   const ecart = ecartRelatif(resultat.tauxPlateforme, garantie);
   const barres = textes.vitrine.barres;
+
+  const etat = etatCapture(
+    course.capture,
+    new Date().toISOString(),
+    delaiSuppressionCaptureHeures(aujourdhui())
+  );
+
+  const cycle = textes.vitrine.cycle as Record<string, string | undefined>;
+  const modele = etat === null ? undefined : cycle[etat];
+  const phraseCycle =
+    modele === undefined ? null : remplacer(modele, valeursDesJetons(aujourdhui()));
 
   return (
     <>
@@ -110,8 +128,17 @@ function Vitrine({ course }: { course: CourseVerifiee }) {
         })}
       </p>
 
+      {/*
+        * L'ÉTAT DE LA PREUVE SE LIT, IL NE SE DÉDUIT PAS. Cette phrase affirmait
+        * « la capture a été supprimée » depuis un texte fixe, alors que le délai
+        * courait encore et que le compteur de la page Méthode disait l'inverse.
+        * Elle passe maintenant par `etatCapture`, la fonction même qui alimente
+        * ce compteur : les deux pages ne peuvent plus se contredire, faute de
+        * pouvoir diverger.
+        */}
       <p className="mt-4 border-t border-neutral-200 pt-3 text-sm text-neutral-700">
         {textes.vitrine.preuve}
+        {phraseCycle === null ? null : ` ${phraseCycle}`}
       </p>
       <p className="mt-2 text-xs text-neutral-500">{textes.vitrine.selection}</p>
     </>

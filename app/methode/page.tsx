@@ -6,7 +6,9 @@ import {
   delaiSuppressionCaptureHeures,
   granulariteMaximale,
   interpretationZone,
+  valeursDesJetons,
 } from "@/lib/parametres";
+import { remplacer } from "@/lib/textes.ts";
 import { aujourdhui } from "@/lib/contexte-livreur.ts";
 import { etatCaptures } from "@/lib/entretien.ts";
 import {
@@ -319,7 +321,7 @@ export default async function PageMethode() {
             </h3>
             <p className="mt-2 text-sm text-neutral-700">{libelles.methode.captures.texte}</p>
             <p className="mt-2 text-sm font-medium text-neutral-900">
-              {libelles.methode.captures.regle}
+              {remplacer(libelles.methode.captures.regle, valeursDesJetons(aujourdhui()))}
             </p>
             <p className="mt-2 text-sm text-neutral-700">{libelles.methode.captures.reste}</p>
             <p className="mt-2 text-sm text-neutral-700">

@@ -24,6 +24,8 @@
  * La date de la course sert quand même : c'est elle qui résout les barèmes
  * annoncés, puisqu'une course se juge selon les règles en vigueur à sa date.
  */
+import type { CaptureSuivie } from "./cycle-capture.ts";
+
 export interface CourseVerifiee {
   dateCourse: string;
   plateforme: string;
@@ -31,6 +33,15 @@ export interface CourseVerifiee {
   distanceKm: number;
   dureeReelleMinutes: number;
   dureeEstimeeMinutes: number | null;
+  /**
+   * L'état de la preuve, tel que la base le porte.
+   *
+   * L'accueil affirmait « la capture a été supprimée » depuis un texte fixe,
+   * alors que le délai courait encore : une inférence publiée, contredite par le
+   * compteur de la page Méthode. L'état voyage donc avec la course, et la phrase
+   * se choisit par la MÊME fonction que les compteurs.
+   */
+  capture: CaptureSuivie;
 }
 
 export interface DonneesPubliques {
@@ -96,19 +107,24 @@ export const lireDerniereCourseVerifiee = async (): Promise<CourseVerifiee | nul
   const { db } = await import("./db.ts");
 
   const lignes = (await db()`
-    select date_course, plateforme, prix_paye_euros, distance_km,
-           duree_reelle_minutes, duree_estimee_minutes
+    select id, date_course, plateforme, prix_paye_euros, distance_km,
+           duree_reelle_minutes, duree_estimee_minutes,
+           capture_cle_r2, capture_supprimee_le, verdict_le
     from courses
     where statut = 'validee_auto'
     order by verdict_le desc nulls last, soumise_le desc
     limit 1
   `) as {
+    id: string;
     date_course: string | Date;
     plateforme: string;
     prix_paye_euros: string | number;
     distance_km: string | number;
     duree_reelle_minutes: string | number;
     duree_estimee_minutes: string | number | null;
+    capture_cle_r2: string | null;
+    capture_supprimee_le: string | Date | null;
+    verdict_le: string | Date | null;
   }[];
 
   if (lignes.length === 0) return null;
@@ -126,6 +142,15 @@ export const lireDerniereCourseVerifiee = async (): Promise<CourseVerifiee | nul
     dureeReelleMinutes: Number(ligne.duree_reelle_minutes),
     dureeEstimeeMinutes:
       ligne.duree_estimee_minutes === null ? null : Number(ligne.duree_estimee_minutes),
+    capture: {
+      id: ligne.id,
+      cleR2: ligne.capture_cle_r2,
+      verdictLe: ligne.verdict_le === null ? null : new Date(ligne.verdict_le).toISOString(),
+      supprimeeLe:
+        ligne.capture_supprimee_le === null
+          ? null
+          : new Date(ligne.capture_supprimee_le).toISOString(),
+    },
   };
 };
 
