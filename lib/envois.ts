@@ -16,6 +16,17 @@
  * perdre le SUIVI, jamais les courses — elles restent publiées. C'est le prix de
  * l'absence de compte, et ce prix a été choisi.
  *
+ * CE QU'ELLE NE FAIT PAS, ET POURQUOI. Elle met fin au silence du REGISTRE :
+ * le verdict existe désormais là où son auteur peut aller le chercher. Le
+ * silence de la NOTIFICATION, lui, reste entier — et il est voulu. Sans compte
+ * ni adresse, le site ne va vers personne ; c'est au livreur de revenir. Aucune
+ * ligne de code ne réparera cela : seule la clarté de la phrase qui l'annonce
+ * peut donner envie de revenir.
+ *
+ * C'est donc une hypothèse, pas une certitude — et elle est mesurable. Si
+ * « Mes envois » se révèle une page que personne ne rouvre, il faudra y
+ * revenir : après le test fermé, avec les chiffres devant soi, jamais avant.
+ *
  * Module pur pour l'encodage ; les accès au stockage n'échouent jamais
  * bruyamment.
  */
