@@ -511,7 +511,7 @@
       "usage": "affichage",
       "valable_du": "2026-09-04",
       "valable_au": null,
-      "justification": "PROPOSITION, en attente de confirmation. Le seuil des courses vaut cent, et il ne s'applique pas tel quel : une session couvre une demi-journée de travail et plusieurs courses, si bien que cent sessions représenteraient un corpus bien plus grand que cent courses — et arriveraient bien plus tard. Trente est le point où une médiane cesse de dépendre d'un cas particulier sans exiger un an de collecte. Ce seuil ne rejette rien : il retarde une publication, donc il peut être resserré plus tard sans rien invalider de ce qui aura été publié — l'inverse ne serait pas vrai."
+      "justification": "CONFIRMÉ. Le seuil des courses vaut cent, et il ne s'applique pas tel quel : une session couvre une demi-journée de travail et agrège cinq à dix courses, si bien que trente sessions portent à peu près le même ordre d'information que cent courses — c'est l'équivalence approximative qui a décidé du chiffre. Cent sessions représenteraient un corpus bien plus grand, et arriveraient bien plus tard. Trente est le point où une médiane cesse de dépendre d'un cas particulier sans exiger un an de collecte. Ce seuil ne rejette rien : il retarde une publication, donc il peut être resserré plus tard sans rien invalider de ce qui aura été publié — l'inverse ne serait pas vrai."
     }
   ]
 }

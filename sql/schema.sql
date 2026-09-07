@@ -482,3 +482,20 @@ alter table villes_saisies_libres add constraint une_seule_origine
 
 create index if not exists villes_saisies_libres_session_idx
   on villes_saisies_libres (session_id);
+
+-- Un verdict a-t-il été consulté au moins une fois.
+--
+-- « Mes envois » repose sur un pari : sans compte ni adresse, le site ne peut
+-- prévenir personne, donc il faut que le livreur revienne voir. Le pari est
+-- peut-être faux. La case ci-dessous est le seul instrument capable de le dire,
+-- et elle doit exister AVANT le test fermé — on ne rouvre pas un test pour y
+-- poser un thermomètre.
+--
+-- La forme est la plus pauvre qui réponde à la question. Un compteur dirait
+-- l'assiduité de quelqu'un ; un horodatage dirait ses habitudes ; une trace par
+-- appareil dirait qui. Aucun des trois n'ajoute quoi que ce soit au ratio
+-- cherché — rejets consultés sur rejets émis — et aucun des trois n'existe ici.
+--
+-- Elle se lève côté serveur, au moment où la route rend le verdict : un
+-- navigateur ne peut donc ni l'éviter ni la gonfler.
+alter table courses add column if not exists verdict_consulte boolean not null default false;

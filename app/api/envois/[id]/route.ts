@@ -13,6 +13,11 @@
  *
  * Aucun texte lu sur une capture ne traverse cette route — seulement des
  * nombres, des statuts et des motifs, comme partout ailleurs.
+ *
+ * ELLE ÉCRIT UNE CHOSE, ET UNE SEULE. Rendre un verdict lève une case sur la
+ * course : « consulté au moins une fois ». Ni quand, ni combien de fois, ni
+ * depuis quel appareil — voir la note plus bas, et la page Méthode, où cette
+ * collecte est annoncée avant d'être trouvée.
  */
 
 import { db } from "@/lib/db.ts";
@@ -55,6 +60,29 @@ export async function GET(_requete: Request, { params }: RouteContext<"/api/envo
   }
 
   const ligne = lignes[0];
+
+  /**
+   * LA SEULE TRACE QU'UNE VISITE LAISSE.
+   *
+   * « Mes envois » repose sur un pari : le site ne pouvant prévenir personne,
+   * il faut que le livreur revienne voir. Cette case dira si le pari tient —
+   * le ratio des rejets consultés sur les rejets émis — et elle doit exister
+   * avant le test fermé, pas après.
+   *
+   * Elle est levée ici, côté serveur, au moment où le verdict est réellement
+   * rendu : un navigateur ne peut ni l'éviter ni la gonfler. La condition sur
+   * la valeur courante fait qu'elle ne s'écrit qu'une fois — la seconde visite
+   * ne touche rien, et rien ne compte les visites.
+   *
+   * Une course sans verdict n'a rien à consulter : la case reste fausse.
+   */
+  if (ligne.verdict_le !== null) {
+    await sql`
+      update courses
+      set verdict_consulte = true
+      where id = ${id} and verdict_consulte = false
+    `;
+  }
 
   const lectures = (await sql`
     select champ, statut_lecture, confiance

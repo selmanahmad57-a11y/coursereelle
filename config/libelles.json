@@ -360,8 +360,15 @@
     "remplissage": {
       "titre": "Le temps que ce formulaire vous prend",
       "texte": "Nous mesurons le temps de remplissage pour tenir la promesse des {objectif_remplissage} secondes ; c'est un nombre, il n'identifie rien. Le formulaire compte les secondes entre le premier champ que vous touchez et l'envoi, et ce nombre part avec votre course.",
-      "portee": "Rien d'autre n'est mesuré : aucun outil d'analyse tiers, aucun identifiant, aucune trace de navigation, aucun enregistrement de ce que vous tapez. S'y ajoute seulement le type d'appareil, réduit à deux valeurs — téléphone ou ordinateur — parce que l'exigence des {objectif_remplissage} secondes porte sur le téléphone.",
+      "portee": "Rien d'autre n'est mesuré pendant le remplissage : aucun outil d'analyse tiers, aucun identifiant, aucune trace de navigation, aucun enregistrement de ce que vous tapez. S'y ajoute seulement le type d'appareil, réduit à deux valeurs — téléphone ou ordinateur — parce que l'exigence des {objectif_remplissage} secondes porte sur le téléphone.",
       "consequence": "Ce chiffre ne juge jamais une course : un remplissage lent ne rejette rien et n'écarte rien. Il juge le formulaire. S'il dépasse l'objectif, c'est notre travail qui est en cause, pas votre envoi."
+    },
+    "consultation": {
+      "titre": "La seule trace qu'une visite laisse",
+      "texte": "Nous enregistrons qu'un verdict a été consulté au moins une fois, jamais quand ni combien de fois. Une case à deux valeurs, posée sur la course et non sur vous.",
+      "raison": "Elle sert à savoir si la page « Mes envois » remplit son rôle. Le site n'a aucun moyen de vous prévenir qu'une course a été refusée : il faut que vous reveniez voir. Si personne ne revient, cette page échoue, et il faudra chercher autre chose — cette case est la seule chose capable de le dire.",
+      "portee": "Un compteur dirait votre assiduité, un horodatage dirait vos habitudes, une trace par appareil dirait qui vous êtes : aucun des trois n'ajouterait quoi que ce soit à la question posée, et aucun des trois n'existe. La case est levée par le serveur au moment où il rend le verdict, jamais par votre navigateur : elle n'est ni contournable, ni gonflable.",
+      "consequence": "Elle est annoncée ici avant d'avoir servi, parce qu'une mesure découverte après coup ne vaut rien, quelle que soit son innocuité."
     }
   },
   "statuts": {

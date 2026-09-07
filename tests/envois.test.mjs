@@ -85,3 +85,63 @@ test("le rejet différé enseigne comme le rejet immédiat", async () => {
   assert.match(liste, /appelleLeGuide\(/);
   assert.match(liste, /<GuideCapture/);
 });
+
+test("la case de consultation est annoncée avant d'être trouvée", async () => {
+  /*
+   * LA RÈGLE DE LA MAISON. Une mesure découverte après coup ne vaut rien, quelle
+   * que soit son innocuité. La route lève une case « verdict consulté » ; ce
+   * test lie cette écriture à sa déclaration publique — retirer la section de la
+   * page Méthode sans retirer la mesure fait échouer la suite.
+   */
+  const route = await readFile("app/api/envois/[id]/route.ts", "utf8");
+
+  if (!/verdict_consulte/.test(route)) return;
+
+  const libelles = JSON.parse(await readFile("config/libelles.json", "utf8"));
+  const section = libelles.methode.consultation;
+
+  assert.ok(section, "la mesure existe : la page Méthode doit la déclarer");
+  for (const part of ["titre", "texte", "raison", "portee", "consequence"]) {
+    assert.equal(typeof section[part], "string");
+    assert.notEqual(section[part].trim(), "");
+  }
+
+  assert.match(section.texte, /au moins une fois/);
+  assert.match(section.texte, /jamais quand ni combien de fois/);
+
+  const page = await readFile("app/methode/page.tsx", "utf8");
+  assert.match(page, /libelles\.methode\.consultation\.texte/, "la section doit être rendue");
+  assert.match(page, /libelles\.methode\.consultation\.raison/);
+  assert.match(page, /libelles\.methode\.consultation\.portee/);
+});
+
+test("la mesure reste la plus pauvre qui réponde à la question", async () => {
+  /*
+   * Un compteur dirait l'assiduité, un horodatage dirait les habitudes : ni l'un
+   * ni l'autre n'ajoute quoi que ce soit au ratio cherché. Ce test empêche la
+   * dérive silencieuse d'un booléen vers une trace de fréquentation.
+   */
+  const schema = await readFile("sql/schema.sql", "utf8");
+  const route = await readFile("app/api/envois/[id]/route.ts", "utf8");
+  const liste = await readFile("components/ListeEnvois.tsx", "utf8");
+
+  assert.match(schema, /verdict_consulte boolean/, "une case, pas un nombre ni une date");
+  assert.equal(
+    /consultations?_(nombre|compte|total)|derniere_consultation|consulte_le/.test(schema),
+    false,
+    "ni compteur ni horodatage de consultation"
+  );
+
+  assert.match(route, /set verdict_consulte = true/, "elle se lève, elle ne s'incrémente pas");
+  assert.match(
+    route,
+    /where id = \$\{id\} and verdict_consulte = false/,
+    "écrite une seule fois : la seconde visite ne touche rien"
+  );
+
+  assert.equal(
+    /verdict_consulte/.test(liste),
+    false,
+    "levée par le serveur, jamais par le navigateur — sinon elle serait gonflable"
+  );
+});

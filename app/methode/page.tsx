@@ -383,6 +383,24 @@ export default async function PageMethode() {
 
           <div className="carte">
             <h3 className="text-sm font-medium text-neutral-900">
+              {libelles.methode.consultation.titre}
+            </h3>
+            <p className="mt-2 text-sm text-neutral-700">
+              {libelles.methode.consultation.texte}
+            </p>
+            <p className="mt-2 text-sm text-neutral-700">
+              {libelles.methode.consultation.raison}
+            </p>
+            <p className="mt-2 text-sm text-neutral-700">
+              {libelles.methode.consultation.portee}
+            </p>
+            <p className="mt-2 border-l-2 border-neutral-300 pl-3 text-sm text-neutral-700">
+              {libelles.methode.consultation.consequence}
+            </p>
+          </div>
+
+          <div className="carte">
+            <h3 className="text-sm font-medium text-neutral-900">
               {libelles.methode.anti_fraude.titre}
             </h3>
             <p className="mt-2 text-sm text-neutral-700">
