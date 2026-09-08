@@ -1,3 +1,24 @@
+/**
+ * Le formulaire de course.
+ *
+ * PROCHAIN CHANTIER, DÉCIDÉ ET DATÉ : le pré-remplissage par la lecture.
+ *
+ * LE PARTAGE DES CHAMPS EST TRANCHÉ, et il est définitif pour ce chantier. La
+ * lecture pré-remplit le prix, la distance, la durée affichée et la date si elle
+ * est visible — tous corrigeables d'un tap. Le livreur ne saisit que le temps
+ * réel, plus le pourboire s'il y en a un ; le véhicule reste pré-rempli par la
+ * mémoire locale, comme aujourd'hui. Cible : trois gestes pour un habitué.
+ *
+ * TROIS QUESTIONS D'INSTRUCTION RESTENT OUVERTES, et aucune ne se devine : où
+ * tourne la lecture ; comment la lecture serveur demeure seule juge du verdict ;
+ * ce que le pré-remplissage hérite du brouillon, du guide et de Mes envois.
+ *
+ * ÉCHÉANCE : après le test fermé, jamais avant, avec les médianes du formulaire
+ * actuel comme point de comparaison — celles que `duree_remplissage_secondes`
+ * accumule, et que la page Méthode annonce sous « Le temps que ce formulaire
+ * vous prend ». Ce sera la première évolution décidée par l'instrument plutôt
+ * que par une intuition : le site s'appliquant sa propre méthode.
+ */
 "use client";
 
 import Link from "next/link";
