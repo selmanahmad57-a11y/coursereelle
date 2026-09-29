@@ -67,7 +67,9 @@ jobs:
         run: |
           echo "version=$(node -p "require('./node_modules/tesseract.js/package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      # v6 et non v4 : la v4 tourne sur le runtime Node 20, que GitHub declare
+      # deprecie — l'executeur la forcait deja sur Node 24 en l'annoncant.
+      - uses: actions/cache@v6
         with:
           path: cache-moteur
           key: moteur-lecture-${{ runner.os }}-tesseract-${{ steps.moteur.outputs.version }}
