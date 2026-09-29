@@ -303,13 +303,23 @@ export const classerCourse = (
   );
 };
 
-export const traiterEnAttente = async (
-  regles: ReglesTraitement,
-  limite: number
+/**
+ * Traite un lot déjà constitué.
+ *
+ * Séparé de `traiterEnAttente` pour que l'appelant puisse savoir s'il y a du
+ * travail AVANT de démarrer le moteur de lecture : son initialisation télécharge
+ * les données de langue, donc elle dépend du réseau, et cette dépendance n'a
+ * aucune raison d'être payée par un passage qui n'a rien à lire. Un incident de
+ * CDN le 29 septembre 2026 a fait échouer un passage à vide — sans conséquence,
+ * mais sans raison d'être non plus.
+ */
+export const traiterCourses = async (
+  courses: readonly CourseAlire[],
+  regles: ReglesTraitement
 ): Promise<Verdict[]> => {
   const verdicts: Verdict[] = [];
 
-  for (const course of await coursesEnAttente(limite)) {
+  for (const course of courses) {
     const verdict = await lireUneCourse(course, regles);
     await enregistrerVerdict(verdict);
 
@@ -324,3 +334,9 @@ export const traiterEnAttente = async (
 
   return verdicts;
 };
+
+/** Le lot des courses en attente, lu puis traité. Une seule façon de traiter. */
+export const traiterEnAttente = async (
+  regles: ReglesTraitement,
+  limite: number
+): Promise<Verdict[]> => traiterCourses(await coursesEnAttente(limite), regles);

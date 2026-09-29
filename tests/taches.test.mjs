@@ -165,3 +165,50 @@ test("le workflow de lecture n'expose que les variables dont il a besoin", async
 
   assert.deepEqual([...employes].sort(), [...attendus].sort());
 });
+
+test("le moteur de lecture ne demarre qu'apres avoir constate du travail", async () => {
+  /*
+   * L'INCIDENT DU 29 SEPTEMBRE 2026. Le rondier demarrait le moteur avant de
+   * regarder s'il avait quelque chose a lire. L'initialisation telechargeant les
+   * donnees de langue, chacun des quatre-vingt-seize passages quotidiens
+   * dependait du reseau — et un « fetch failed » de CDN a tue un passage a vide.
+   * Sans consequence : rien n'attendait. Mais la surface d'echec etait offerte
+   * pour rien, et elle le serait a nouveau un soir de forte soumission.
+   */
+  const script = await readFile("scripts/lire-captures.mjs", "utf8");
+
+  const constat = script.indexOf("coursesEnAttente(");
+  const demarrage = script.indexOf("demarrerLecteur(");
+
+  assert.notEqual(constat, -1, "le script doit compter les courses en attente");
+  assert.notEqual(demarrage, -1, "le script doit demarrer le lecteur");
+  assert.ok(
+    constat < demarrage,
+    "compter d'abord, demarrer ensuite : sinon un passage a vide depend du reseau"
+  );
+});
+
+test("le cache du moteur ne se melange pas aux specimens de tiers", async () => {
+  /*
+   * Ce cache est remonte dans le cache de l'executeur GitHub. Le dossier de
+   * calibration, lui, contient des captures pretees par des collegues, traitees
+   * comme des donnees de production. Les deux ne partagent pas un dossier.
+   */
+  const script = await readFile("scripts/lire-captures.mjs", "utf8");
+  const ignore = await readFile(".gitignore", "utf8");
+  const flux = await readFile(".github/workflows/lecture.yml", "utf8");
+
+  assert.equal(
+    /demarrerLecteur\(path\.join\(racine, "calibration"\)\)/.test(script),
+    false,
+    "le cache du moteur ne vit pas dans le dossier des specimens"
+  );
+  assert.match(ignore, /^\/cache-moteur\/$/m, "et il n'est jamais versionne");
+
+  assert.match(flux, /path: cache-moteur/, "c'est ce dossier-la qui est mis en cache");
+  assert.match(
+    flux,
+    /key: .*tesseract-\$\{\{ steps\.moteur\.outputs\.version \}\}/,
+    "la cle porte la version du moteur : une montee de version invalide le cache"
+  );
+});

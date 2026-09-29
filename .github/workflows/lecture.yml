@@ -47,6 +47,31 @@ jobs:
 
       - run: npm ci
 
+      # Les donnees de langue du moteur, gardees d'un passage a l'autre.
+      #
+      # Sans ce cache, chaque passage les retelecharge depuis le CDN de
+      # tesseract.js : pres de cent dependances reseau par jour, et un point de
+      # defaillance exterieur au pipeline de verdict. C'est precisement ce qui a
+      # echoue le 29 septembre 2026.
+      #
+      # La cle porte la version du moteur : une montee de version invalide le
+      # cache au lieu de servir les donnees d'une autre epoque.
+      #
+      # NE PAS CREER LE DOSSIER A L'AVANCE. Un passage a vide ne demarre plus le
+      # moteur, donc ne telecharge rien : le dossier reste absent et aucune
+      # entree n'est ecrite. Le creer vide ferait enregistrer un cache vide sous
+      # cette cle, qui repondrait « trouve » a tous les passages suivants — et
+      # les donnees reelles ne seraient jamais mises en cache.
+      - name: Version du moteur de lecture
+        id: moteur
+        run: |
+          echo "version=$(node -p "require('./node_modules/tesseract.js/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: cache-moteur
+          key: moteur-lecture-${{ runner.os }}-tesseract-${{ steps.moteur.outputs.version }}
+
       - name: Lire les captures en attente
         run: npm run lecture:direct
         env:

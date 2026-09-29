@@ -37,3 +37,8 @@ next-env.d.ts
 # entrent, servent, et sont supprimées. Les gabarits candidats attendent une
 # relecture avant d'entrer dans config/gabarits.json.
 /calibration/
+
+# Cache du moteur de lecture — les donnees de langue, telechargees puis gardees.
+# Dossier separe de /calibration/ a dessein : ce cache est remonte dans le cache
+# de l'executeur GitHub, et rien de ce qui vient d'un tiers ne doit y entrer.
+/cache-moteur/

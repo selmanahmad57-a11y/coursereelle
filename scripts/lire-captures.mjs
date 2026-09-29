@@ -17,9 +17,16 @@ import path from "node:path";
 
 import { arreterLecteur, demarrerLecteur } from "../lib/ocr-tesseract.ts";
 import { reglesTraitementDepuis } from "../lib/regles-traitement.ts";
-import { traiterEnAttente } from "../lib/traitement-lecture.ts";
+import { coursesEnAttente, traiterCourses } from "../lib/traitement-lecture.ts";
 
 const racine = new URL("../", import.meta.url).pathname;
+
+/*
+ * Les donnees de langue du moteur, hors du dossier de calibration : celui-ci
+ * contient des specimens pretes par des tiers, et un cache d'executeur part
+ * chez GitHub. Deux natures de fichiers, deux dossiers.
+ */
+const CACHE_MOTEUR = "cache-moteur";
 const lireJson = async (nom) => JSON.parse(await readFile(path.join(racine, nom), "utf8"));
 
 const baremes = await lireJson("config/baremes.json");
@@ -37,17 +44,30 @@ console.log("Seuils en vigueur :");
 console.log(`  confiance minimale de lecture : ${regles.lecture.confianceMinimale} %`);
 console.log(`  tolerances : prix ${regles.tolerances.prixEuros}, distance ${regles.tolerances.distanceKm}, duree ${regles.tolerances.dureeEstimeeMinutes}\n`);
 
-await demarrerLecteur(path.join(racine, "calibration"));
-
 const limite = Number(process.argv[2] ?? taches.lecture.courses_par_passage);
-const verdicts = await traiterEnAttente(regles, limite);
+const aLire = await coursesEnAttente(limite);
 
-await arreterLecteur();
-
-if (verdicts.length === 0) {
+/*
+ * COMPTER AVANT DE DEMARRER LE MOTEUR.
+ *
+ * Son initialisation telecharge les donnees de langue : elle depend du reseau.
+ * Le rondier passe au quart d'heure, donc presque cent fois par jour, et la
+ * plupart de ces passages n'ont rien a lire — les faire dependre d'un CDN etait
+ * une surface d'echec offerte pour rien. Le 29 septembre 2026, un « fetch
+ * failed » a tue un passage a vide : sans consequence, mais sans motif.
+ *
+ * Desormais le moteur ne demarre que les jours ou des courses arrivent.
+ */
+if (aLire.length === 0) {
   console.log("Aucune course en attente de lecture.");
   process.exit(0);
 }
+
+await demarrerLecteur(path.join(racine, CACHE_MOTEUR));
+
+const verdicts = await traiterCourses(aLire, regles);
+
+await arreterLecteur();
 
 for (const verdict of verdicts) {
   console.log(`  ${verdict.id.slice(0, 8)}  ->  ${verdict.statut}${verdict.motif ? ` (${verdict.motif})` : ""}`);
