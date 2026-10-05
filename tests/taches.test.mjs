@@ -212,3 +212,24 @@ test("le cache du moteur ne se melange pas aux specimens de tiers", async () => 
     "la cle porte la version du moteur : une montee de version invalide le cache"
   );
 });
+
+test("les deux flux tournent sur une image epinglee, avec sa condition de sortie", async () => {
+  /*
+   * LE 19 OCTOBRE 2026, `ubuntu-latest` bascule sur Ubuntu 26. Le moteur de
+   * lecture repose sur des binaires natifs : une image qui change sous nos pieds
+   * casserait la lecture sans preavis, et le test ferme a commence. L'epinglage
+   * transforme une date subie en decision choisie — ce test empeche qu'un retour
+   * a `ubuntu-latest` efface la raison en meme temps que la version.
+   */
+  for (const flux of ["lecture", "entretien"]) {
+    const source = await readFile(`.github/workflows/${flux}.yml`, "utf8");
+
+    assert.match(source, /^    runs-on: ubuntu-\d+\.\d+$/m, `${flux} : image epinglee`);
+    assert.equal(
+      /runs-on: ubuntu-latest/.test(source),
+      false,
+      `${flux} : plus aucune image flottante`
+    );
+    assert.match(source, /QUAND LA RETIRER/, `${flux} : la condition de sortie est ecrite`);
+  }
+});

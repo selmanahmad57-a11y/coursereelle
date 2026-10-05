@@ -27,7 +27,20 @@ on:
 
 jobs:
   entretien:
-    runs-on: ubuntu-latest
+    # Image épinglée le 6 octobre 2026, pour traverser la migration
+    # ubuntu-latest → Ubuntu 26 annoncée au 19 octobre 2026.
+    #
+    # POURQUOI. Le moteur de lecture repose sur des binaires natifs — sharp, et
+    # ceux de tesseract.js. Une image qui changerait sous nos pieds casserait la
+    # lecture sans préavis, et se manifesterait comme la pénurie de machines du
+    # 5 octobre : des passages rouges que personne n'annonce — mais cette fois
+    # avec de vraies courses derrière, le test fermé ayant commencé.
+    #
+    # QUAND LA RETIRER. Après le test fermé, un jour calme, délibérément : on
+    # repasse sur l'image suivante et on vérifie que sharp et tesseract lisent
+    # encore, par un passage de contrôle. La migration devient alors une
+    # décision, au lieu d'être une date subie.
+    runs-on: ubuntu-24.04
     steps:
       - name: Déclencher la suppression des captures échues
         run: |
